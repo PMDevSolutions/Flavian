@@ -11,8 +11,8 @@
       "description": "Figma remote MCP server (fallback)"
     },
     "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest", "--headless"],
+      "command": "cmd",
+      "args": ["/c", "npx", "@playwright/mcp@latest", "--headless"],
       "description": "Playwright browser automation - defaults to Chromium. Change browser via PLAYWRIGHT_MCP_BROWSER env var or restart with --browser firefox|webkit"
     }
   }

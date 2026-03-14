@@ -116,6 +116,8 @@ Common issues and solutions for the Claude Code WordPress Template.
 
 ## Figma MCP Connection
 
+**See also:** [MCP-TROUBLESHOOTING.md](./MCP-TROUBLESHOOTING.md) for comprehensive MCP troubleshooting.
+
 ### Figma Desktop MCP not connecting
 
 **Symptoms:** Figma MCP tools fail with connection errors
@@ -158,6 +160,8 @@ Common issues and solutions for the Claude Code WordPress Template.
 ---
 
 ## Playwright MCP (Cross-Browser Testing)
+
+**See also:** [MCP-TROUBLESHOOTING.md](./MCP-TROUBLESHOOTING.md) for comprehensive MCP troubleshooting.
 
 ### Playwright browsers not installed
 

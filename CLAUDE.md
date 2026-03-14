@@ -435,6 +435,8 @@ Result: themes/[theme-name]/ ready for WordPress
 
 **Documentation Structure:**
 - `CLAUDE.md` (this file) - WordPress development guidance and quick reference
+- `docs/QUICK-START.md` - 5-minute getting started guide
+- `docs/PREREQUISITES.md` - Complete requirements checklist
 - `docs/figma-to-wordpress/` - Figma-to-FSE automation documentation
   - `README.md` - User guide and quick start
   - `IMPLEMENTATION.md` - Technical implementation details
@@ -444,6 +446,13 @@ Result: themes/[theme-name]/ ready for WordPress
 - `.claude/AGENT-NAMING-GUIDE.md` - Agent name disambiguation
 - `.claude/skills/README.md` - WordPress skills catalog
 - `LOCAL-DEVELOPMENT.md` - Docker setup for local WordPress
+- `themes/flavor-starter/` - Example generated FSE theme
+
+**Troubleshooting:**
+- `docs/TROUBLESHOOTING.md` - General troubleshooting guide
+- `docs/COMMON-FAILURES-FIXES.md` - Figma-to-WordPress workflow issues
+- `docs/MCP-TROUBLESHOOTING.md` - MCP server debugging
+- `docs/E2E-VALIDATION.md` - End-to-end validation procedures
 
 ---
 

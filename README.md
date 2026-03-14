@@ -9,7 +9,11 @@ A clean `wp-content` directory structure for modern WordPress development, enhan
 - **Git Configuration**: Comprehensive `.gitignore` for WordPress development
 - **Claude Code Integration**: WordPress-specific guidance in `CLAUDE.md` for AI-assisted development
 
-## Quick Start
+## 🚀 Quick Start
+
+**New to this template?** Start here: **[docs/QUICK-START.md](docs/QUICK-START.md)** - 5 minutes to your first theme.
+
+**Check your setup:** Run `./scripts/check-prerequisites.sh` to verify all requirements.
 
 ### Option 1: Use as wp-content Directory
 ```bash
@@ -150,6 +154,8 @@ This template is optimized for WordPress development with Claude Code, featuring
 
 ### **Claude Code Documentation**
 - **`CLAUDE.md`** - WordPress development guidance and quick reference
+- **`docs/QUICK-START.md`** - 5-minute getting started guide
+- **`docs/PREREQUISITES.md`** - Complete requirements checklist
 - **`docs/figma-to-wordpress/`** - Figma-to-FSE automation documentation
   - `README.md` - User guide and quick start
   - `IMPLEMENTATION.md` - Technical implementation details
@@ -159,6 +165,12 @@ This template is optimized for WordPress development with Claude Code, featuring
 - **`.claude/CUSTOM-AGENTS-GUIDE.md`** - Custom agent catalog
 - **`.claude/AGENT-NAMING-GUIDE.md`** - Agent disambiguation
 - **`LOCAL-DEVELOPMENT.md`** - Docker setup for local WordPress
+
+### **Troubleshooting**
+- **`docs/TROUBLESHOOTING.md`** - General troubleshooting guide
+- **`docs/COMMON-FAILURES-FIXES.md`** - Figma-to-WordPress specific issues
+- **`docs/MCP-TROUBLESHOOTING.md`** - MCP server debugging
+- **`docs/E2E-VALIDATION.md`** - End-to-end testing procedures
 
 ### **What Claude Code Provides**
 - WordPress coding standards compliance

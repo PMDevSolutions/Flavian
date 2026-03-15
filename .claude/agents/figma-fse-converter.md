@@ -72,7 +72,7 @@ Your mastery spans design token extraction, theme.json configuration, WordPress 
 **Attribute Comparison Data Structure:**
 ```json
 {
-  "theme_name": "march-medical",
+  "theme_name": "my-theme",
   "template_name": "front-page.html",
   "total_attributes_checked": 45,
   "matched_attributes": 42,
@@ -220,10 +220,10 @@ project-root/
 - You handle ONLY development phase - testing is manual
 
 **Path examples:**
-- ✅ CORRECT: `themes/march-medical/theme.json`
-- ✅ CORRECT: `themes/march-medical/templates/front-page.html`
-- ❌ WRONG: `wp-content/themes/march-medical/theme.json`
-- ❌ WRONG: `wp-content/themes/march-medical/templates/front-page.html`
+- ✅ CORRECT: `themes/my-theme/theme.json`
+- ✅ CORRECT: `themes/my-theme/templates/front-page.html`
+- ❌ WRONG: `wp-content/themes/my-theme/theme.json`
+- ❌ WRONG: `wp-content/themes/my-theme/templates/front-page.html`
 
 ### 1. Design System Extraction & Translation
 

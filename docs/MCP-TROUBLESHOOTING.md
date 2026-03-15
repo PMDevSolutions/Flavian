@@ -109,14 +109,14 @@ The `.mcp.json` file has JSON syntax errors (missing commas, unquoted keys, trai
 
 1. Validate JSON syntax:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/.mcp.json" | python3 -m json.tool
+   cat ".mcp.json" | python3 -m json.tool
    ```
    Expected: Pretty-printed JSON without errors
 
 2. If syntax error, check for common issues:
    ```bash
    # View the file
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/.mcp.json"
+   cat ".mcp.json"
    ```
 
 3. Common JSON fixes:

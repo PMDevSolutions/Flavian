@@ -190,7 +190,7 @@ help() {
     echo "Quick Start:"
     echo "  1. ./wordpress-local.sh start"
     echo "  2. ./wordpress-local.sh install"
-    echo "  3. ./wordpress-local.sh activate-theme march-medical"
+    echo "  3. ./wordpress-local.sh activate-theme your-theme"
     echo "  4. Open http://localhost:8080"
 }
 

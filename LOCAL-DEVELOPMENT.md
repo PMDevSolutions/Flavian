@@ -14,7 +14,7 @@
 
 **3. Activate your theme:**
 ```bash
-./wordpress-local.sh activate-theme march-medical
+./wordpress-local.sh activate-theme your-theme
 ```
 
 **4. Open in browser:**
@@ -207,9 +207,9 @@ docker-compose exec db mysql -u wordpress -pwordpress wordpress
 
 Once WordPress is running:
 
-1. **Test your march-medical theme:**
+1. **Test your generated theme:**
    ```bash
-   ./wordpress-local.sh activate-theme march-medical
+   ./wordpress-local.sh activate-theme your-theme
    ```
    View at: http://localhost:8080
 
@@ -220,7 +220,7 @@ Once WordPress is running:
 
 3. **Iterate on designs:**
    - Edit theme.json for token changes
-   - Modify templates in themes/march-medical/templates/
+   - Modify templates in themes/your-theme/templates/
    - Refresh browser to see changes
 
 4. **Generate more themes:**

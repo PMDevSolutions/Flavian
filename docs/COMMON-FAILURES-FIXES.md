@@ -53,12 +53,12 @@ The project is missing CLAUDE.md or the .claude/ configuration directory. Claude
 
 1. Verify CLAUDE.md exists at project root:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/CLAUDE.md"
+   ls -la "CLAUDE.md"
    ```
 
 2. Verify .claude directory exists with skills:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/.claude/skills/"
+   ls -la ".claude/skills/"
    ```
 
 3. If missing, re-clone or restore from template:
@@ -115,7 +115,7 @@ The Figma Desktop app MCP server is not running. This happens when:
 
 5. Check .mcp.json configuration:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/.mcp.json"
+   cat ".mcp.json"
    ```
    Expected: Contains "figma-desktop" with url "http://127.0.0.1:3845/mcp"
 
@@ -298,7 +298,7 @@ The design system location was not identified correctly, or Figma variables are 
 
 5. Manually verify extracted tokens:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | jq '.settings.color.palette'
+   cat "themes/[theme-name]/theme.json" | jq '.settings.color.palette'
    ```
 
 6. If tokens are wrong, update theme.json manually or re-run extraction with explicit guidance.
@@ -334,12 +334,12 @@ Image assets could not be exported from Figma, or they were not saved to the cor
 
 1. Check if assets folder exists:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/assets/images/"
+   ls -la "themes/[theme-name]/assets/images/"
    ```
 
 2. If missing, create the directory:
    ```bash
-   mkdir -p "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/assets/images/"
+   mkdir -p "themes/[theme-name]/assets/images/"
    ```
 
 3. Export images manually from Figma:
@@ -350,7 +350,7 @@ Image assets could not be exported from Figma, or they were not saved to the cor
 
 4. Verify image paths in pattern files match actual filenames:
    ```bash
-   grep -r "get_template_directory_uri" "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/patterns/"
+   grep -r "get_template_directory_uri" "themes/[theme-name]/patterns/"
    ```
 
 5. Update pattern files if filenames differ:
@@ -544,7 +544,7 @@ The theme is missing required files or has invalid structure. WordPress requires
 1. Verify theme is in correct location for WordPress testing:
    ```bash
    # Development location (this template)
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/"
+   ls -la "themes/[theme-name]/"
 
    # Must be copied to WordPress for activation
    ls -la "/path/to/wordpress/wp-content/themes/[theme-name]/"
@@ -552,12 +552,12 @@ The theme is missing required files or has invalid structure. WordPress requires
 
 2. Copy theme to WordPress installation:
    ```bash
-   cp -r "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]" "/path/to/wordpress/wp-content/themes/"
+   cp -r "themes/[theme-name]" "/path/to/wordpress/wp-content/themes/"
    ```
 
 3. Verify style.css has valid header:
    ```bash
-   head -20 "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/style.css"
+   head -20 "themes/[theme-name]/style.css"
    ```
    Expected: Theme header with "Theme Name:" field
 
@@ -579,12 +579,12 @@ The theme is missing required files or has invalid structure. WordPress requires
 
 5. Verify theme.json exists and is valid JSON:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | python3 -m json.tool
+   cat "themes/[theme-name]/theme.json" | python3 -m json.tool
    ```
 
 6. Verify index template exists:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/index.html"
+   ls -la "themes/[theme-name]/templates/index.html"
    ```
 
 **Prevention**
@@ -617,12 +617,12 @@ The conversion workflow was interrupted or encountered an error before creating 
 
 1. Check what files exist:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/"
+   ls -la "themes/[theme-name]/"
    ```
 
 2. If theme.json missing, create from template:
    ```bash
-   cat > "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" << 'EOF'
+   cat > "themes/[theme-name]/theme.json" << 'EOF'
    {
      "$schema": "https://schemas.wp.org/trunk/theme.json",
      "version": 2,
@@ -681,12 +681,12 @@ Pattern files are missing required headers or have incorrect slug format. WordPr
 
 1. Check pattern file exists:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/patterns/"
+   ls -la "themes/[theme-name]/patterns/"
    ```
 
 2. Verify pattern header format:
    ```bash
-   head -15 "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/patterns/hero-section.php"
+   head -15 "themes/[theme-name]/patterns/hero-section.php"
    ```
 
    Expected format:
@@ -707,7 +707,7 @@ Pattern files are missing required headers or have incorrect slug format. WordPr
 
 4. Check for PHP syntax errors:
    ```bash
-   php -l "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/patterns/hero-section.php"
+   php -l "themes/[theme-name]/patterns/hero-section.php"
    ```
    Expected: "No syntax errors detected"
 
@@ -755,22 +755,22 @@ Generated block markup has syntax errors or doesn't match WordPress block gramma
 
 1. Run template validation:
    ```bash
-   ./scripts/figma-fse/validate-template.sh "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/front-page.html"
+   ./scripts/figma-fse/validate-template.sh "themes/[theme-name]/templates/front-page.html"
    ```
 
 2. Check for balanced blocks:
    ```bash
    # Count opening tags
-   grep -c '<!-- wp:' "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/front-page.html"
+   grep -c '<!-- wp:' "themes/[theme-name]/templates/front-page.html"
 
    # Count closing tags (should be less due to self-closing blocks)
-   grep -c '<!-- /wp:' "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/front-page.html"
+   grep -c '<!-- /wp:' "themes/[theme-name]/templates/front-page.html"
    ```
 
 3. Validate JSON in block attributes:
    ```bash
    # Extract and validate JSON (manual check)
-   grep -oP '<!-- wp:\w+ \K\{[^}]+\}' "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/front-page.html" | while read json; do
+   grep -oP '<!-- wp:\w+ \K\{[^}]+\}' "themes/[theme-name]/templates/front-page.html" | while read json; do
      echo "$json" | python3 -m json.tool > /dev/null || echo "Invalid: $json"
    done
    ```
@@ -826,7 +826,7 @@ functions.php has PHP syntax errors or uses undefined functions/classes.
 
 1. Check for PHP syntax errors:
    ```bash
-   php -l "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/functions.php"
+   php -l "themes/[theme-name]/functions.php"
    ```
 
 2. Check WordPress debug log:
@@ -871,7 +871,7 @@ functions.php has PHP syntax errors or uses undefined functions/classes.
 
 5. Run coding standards check:
    ```bash
-   ./scripts/wordpress/check-coding-standards.sh "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/functions.php"
+   ./scripts/wordpress/check-coding-standards.sh "themes/[theme-name]/functions.php"
    ```
 
 **Prevention**
@@ -911,8 +911,8 @@ PHP code was placed in HTML template files, which don't execute PHP. This is the
 
 1. Identify affected templates:
    ```bash
-   grep -r 'src=""' "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/"
-   grep -r '<?php' "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/"
+   grep -r 'src=""' "themes/[theme-name]/templates/"
+   grep -r '<?php' "themes/[theme-name]/templates/"
    ```
 
 2. Create PHP pattern for image-containing section:
@@ -949,7 +949,7 @@ PHP code was placed in HTML template files, which don't execute PHP. This is the
 
 4. Verify images exist:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/assets/images/"
+   ls -la "themes/[theme-name]/assets/images/"
    ```
 
 5. Test in WordPress to confirm images load.
@@ -987,12 +987,12 @@ Design tokens were not extracted correctly, or templates use wrong color slugs. 
 
 1. Compare Figma colors with theme.json:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | jq '.settings.color.palette'
+   cat "themes/[theme-name]/theme.json" | jq '.settings.color.palette'
    ```
 
 2. Check for hardcoded colors in templates:
    ```bash
-   grep -r '#[0-9A-Fa-f]\{6\}' "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/"
+   grep -r '#[0-9A-Fa-f]\{6\}' "themes/[theme-name]/templates/"
    ```
    Expected: No matches (all colors should use tokens)
 
@@ -1057,7 +1057,7 @@ Typography tokens not extracted or applied correctly. Common causes:
 
 1. Check theme.json typography settings:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | jq '.settings.typography'
+   cat "themes/[theme-name]/theme.json" | jq '.settings.typography'
    ```
 
 2. Verify font families are defined and loaded:
@@ -1147,12 +1147,12 @@ Layout structure not properly translated from Figma, or spacing tokens not appli
 
 1. Verify layout settings in theme.json:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | jq '.settings.layout'
+   cat "themes/[theme-name]/theme.json" | jq '.settings.layout'
    ```
 
 2. Check spacing tokens:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | jq '.settings.spacing.spacingSizes'
+   cat "themes/[theme-name]/theme.json" | jq '.settings.spacing.spacingSizes'
    ```
 
 3. Verify correct block structure:
@@ -1577,7 +1577,7 @@ How to recover from major issues.
 
 1. Check what was created:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/"
+   ls -la "themes/[theme-name]/"
    ```
 
 2. Decide: Salvage or start fresh
@@ -1593,7 +1593,7 @@ How to recover from major issues.
    mv "themes/[theme-name]" "themes/[theme-name]-backup-$(date +%Y%m%d)"
 
    # Or delete
-   rm -rf "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]"
+   rm -rf "themes/[theme-name]"
    ```
 
 3. Restart conversion with explicit instructions:
@@ -1608,7 +1608,7 @@ How to recover from major issues.
 
 5. Verify completion:
    ```bash
-   ls -la "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/"
+   ls -la "themes/[theme-name]/"
    cat .claude/reports/figma-fse-comparison.md
    ```
 
@@ -1703,16 +1703,16 @@ How to recover from major issues.
 2. **Fixing theme.json:**
    ```bash
    # Edit theme.json
-   code "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json"
+   code "themes/[theme-name]/theme.json"
 
    # Validate JSON syntax
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | python3 -m json.tool
+   cat "themes/[theme-name]/theme.json" | python3 -m json.tool
    ```
 
 3. **Fixing templates:**
    ```bash
    # Edit template
-   code "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/templates/front-page.html"
+   code "themes/[theme-name]/templates/front-page.html"
 
    # Validate blocks
    ./scripts/figma-fse/validate-template.sh "themes/[theme-name]/templates/front-page.html"
@@ -1721,10 +1721,10 @@ How to recover from major issues.
 4. **Fixing patterns:**
    ```bash
    # Edit pattern
-   code "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/patterns/hero-section.php"
+   code "themes/[theme-name]/patterns/hero-section.php"
 
    # Check PHP syntax
-   php -l "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/patterns/hero-section.php"
+   php -l "themes/[theme-name]/patterns/hero-section.php"
    ```
 
 5. **Common manual fixes:**
@@ -1792,7 +1792,7 @@ How to recover from major issues.
 
 2. Attempt to identify JSON error:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | python3 -m json.tool 2>&1
+   cat "themes/[theme-name]/theme.json" | python3 -m json.tool 2>&1
    ```
    Error will show line number and issue.
 
@@ -1813,7 +1813,7 @@ How to recover from major issues.
 
 4. If too corrupted, start fresh with minimal theme.json:
    ```bash
-   cat > "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" << 'EOF'
+   cat > "themes/[theme-name]/theme.json" << 'EOF'
    {
      "$schema": "https://schemas.wp.org/trunk/theme.json",
      "version": 2,
@@ -1845,7 +1845,7 @@ How to recover from major issues.
 
 6. Validate restored theme.json:
    ```bash
-   cat "C:/Users/paulm/OneDrive/Desktop/Projects/CC-WP-Template/themes/[theme-name]/theme.json" | python3 -m json.tool
+   cat "themes/[theme-name]/theme.json" | python3 -m json.tool
    ```
 
 **Prevention**

@@ -446,7 +446,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - `.claude/AGENT-NAMING-GUIDE.md` - Agent name disambiguation
 - `.claude/skills/README.md` - WordPress skills catalog
 - `LOCAL-DEVELOPMENT.md` - Docker setup for local WordPress
-- `themes/flavor-starter/` - Example generated FSE theme
+- `themes/` - Generated FSE themes go here
 
 **Troubleshooting:**
 - `docs/TROUBLESHOOTING.md` - General troubleshooting guide

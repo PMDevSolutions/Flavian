@@ -122,6 +122,22 @@ Required only if using GitHub for version control and deployment.
 
 ---
 
+### Node.js
+
+Required for Playwright MCP (browser automation and testing) configured in `.mcp.json`.
+
+| | |
+|---|---|
+| **Minimum Version** | 18.0.0 (LTS) |
+| **Verify** | `node --version` |
+| **Expected** | `v18.x.x` or `v20.x.x` |
+
+**Install:**
+- **All platforms:** https://nodejs.org/
+- **Version manager:** https://github.com/nvm-sh/nvm
+
+---
+
 ## 3. Optional but Recommended
 
 These tools enhance the development experience but are not required.
@@ -163,22 +179,6 @@ Enables GitHub integration from command line (PRs, issues, etc.).
 ```bash
 gh auth login
 ```
-
----
-
-### Node.js
-
-Required only if using JavaScript build tools (not needed for basic theme conversion).
-
-| | |
-|---|---|
-| **Minimum Version** | 18.0.0 (LTS) |
-| **Verify** | `node --version` |
-| **Expected** | `v18.x.x` or `v20.x.x` |
-
-**Install:**
-- **All platforms:** https://nodejs.org/
-- **Version manager:** https://github.com/nvm-sh/nvm
 
 ---
 

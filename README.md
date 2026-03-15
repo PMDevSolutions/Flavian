@@ -9,29 +9,50 @@ A clean `wp-content` directory structure for modern WordPress development, enhan
 - **Git Configuration**: Comprehensive `.gitignore` for WordPress development
 - **Claude Code Integration**: WordPress-specific guidance in `CLAUDE.md` for AI-assisted development
 
+## Prerequisites
+
+You need these installed before using this template:
+
+| Requirement | What For | Install |
+|-------------|----------|---------|
+| **[Claude Code](https://claude.ai/code)** | AI-assisted development (the core tool) | `npm install -g @anthropic-ai/claude-code` |
+| **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** | Local WordPress environment | [docker.com/download](https://www.docker.com/products/docker-desktop/) |
+| **[Node.js](https://nodejs.org/) 18+** | Playwright MCP (browser testing) | [nodejs.org](https://nodejs.org/) |
+| **[Git](https://git-scm.com/)** | Version control | [git-scm.com](https://git-scm.com/) |
+
+**For Figma-to-WordPress conversion (optional):**
+| Requirement | What For |
+|-------------|----------|
+| **[Figma](https://www.figma.com/) Professional+** | Design token extraction via Dev Mode |
+
+**Full details:** [docs/PREREQUISITES.md](docs/PREREQUISITES.md) | **Auto-check:** `./scripts/check-prerequisites.sh`
+
 ## 🚀 Quick Start
 
-**New to this template?** Start here: **[docs/QUICK-START.md](docs/QUICK-START.md)** - 5 minutes to your first theme.
-
-**Check your setup:** Run `./scripts/check-prerequisites.sh` to verify all requirements.
-
-### Option 1: Use as wp-content Directory
 ```bash
-# Clone or copy this template
+# 1. Clone and enter the project
+git clone <repository-url>
+cd CC-WP-Template
+
+# 2. Start local WordPress (Docker must be running)
+./wordpress-local.sh start
+./wordpress-local.sh install
+
+# 3. Open Claude Code and start building
+claude
+```
+
+WordPress will be at http://localhost:8080 (admin: admin/admin).
+
+**Detailed guide:** [docs/QUICK-START.md](docs/QUICK-START.md)
+
+### Alternative: Use as wp-content Directory
+```bash
 git clone <repository-url> wp-content
-cd wp-content
-
-# Download WordPress core (one level up)
-cd ..
-wp core download --skip-content
-
-# Create config and install
+cd .. && wp core download --skip-content
 wp config create --dbname=your_db --dbuser=root --dbpass=password
 wp core install --url=example.test --title="Your Site" --admin_user=admin --admin_password=password --admin_email=you@example.com
 ```
-
-### Option 2: Develop Separately and Sync
-Develop themes/plugins here and sync to your WordPress installation's `wp-content` directory.
 
 ## Directory Structure
 
@@ -197,4 +218,4 @@ This template is optimized for WordPress development with Claude Code, featuring
 
 ## License
 
-This template structure is provided as-is for WordPress development. WordPress itself is licensed under GPL v2 or later.
+This template is licensed under the [MIT License](LICENSE). WordPress itself is licensed under GPL v2 or later.

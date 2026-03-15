@@ -54,10 +54,7 @@ start() {
     echo "  • WordPress:   http://localhost:8080"
     echo "  • phpMyAdmin:  http://localhost:8081"
     echo ""
-    echo "Database credentials:"
-    echo "  • Database:    wordpress"
-    echo "  • Username:    wordpress"
-    echo "  • Password:    wordpress"
+    echo "Database credentials: (see .env file)"
     echo ""
     print_warning "First-time setup may take 1-2 minutes while WordPress downloads..."
     echo ""
@@ -118,13 +115,18 @@ install() {
     echo "Waiting for WordPress to be ready..."
     sleep 5
 
+    # Admin credentials (override via environment variables or .env)
+    local admin_user="${WP_ADMIN_USER:-admin}"
+    local admin_password="${WP_ADMIN_PASSWORD:-admin}"
+    local admin_email="${WP_ADMIN_EMAIL:-admin@example.com}"
+
     # Install WordPress
     docker-compose exec wordpress wp core install \
         --url="http://localhost:8080" \
         --title="FSE Dev Site" \
-        --admin_user="admin" \
-        --admin_password="admin" \
-        --admin_email="admin@example.com" \
+        --admin_user="$admin_user" \
+        --admin_password="$admin_password" \
+        --admin_email="$admin_email" \
         --skip-email \
         --allow-root
 
@@ -132,8 +134,8 @@ install() {
     echo ""
     echo "Admin Login:"
     echo "  • URL:      http://localhost:8080/wp-admin"
-    echo "  • Username: admin"
-    echo "  • Password: admin"
+    echo "  • Username: $admin_user"
+    echo "  • Password: $admin_password"
 }
 
 # Activate a theme

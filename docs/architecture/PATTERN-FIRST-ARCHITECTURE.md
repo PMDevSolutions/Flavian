@@ -108,7 +108,7 @@ themes/[theme-name]/
 - ✅ Images work immediately (no manual uploads)
 - ✅ Portable across environments (localhost, staging, production)
 - ✅ Reusable across multiple pages
-- ✅ Follows WordPress core theme patterns (Twenty Twenty-Five model)
+- ✅ Follows WordPress core FSE theme patterns
 - ✅ Template generator can produce working themes automatically
 
 **NEVER:**

@@ -139,7 +139,7 @@ When converting Figma to WordPress FSE, images broke because PHP doesn't execute
 - **Images → PHP patterns** - All image-containing sections as patterns
 - **Text → Inline templates** - Text-only content stays in templates
 - **Automatic validation** - Hooks enforce correct architecture
-- **WordPress-native** - Follows Twenty Twenty-Five theme patterns
+- **WordPress-native** - Follows WordPress core FSE theme patterns
 
 ---
 

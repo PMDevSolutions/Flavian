@@ -1,4 +1,4 @@
-# WordPress Development Template
+# Flavian
 
 A clean `wp-content` directory structure for modern WordPress development, enhanced with Claude Code integration and WordPress-specific development tools.
 
@@ -32,7 +32,7 @@ You need these installed before using this template:
 ```bash
 # 1. Clone and enter the project
 git clone <repository-url>
-cd CC-WP-Template
+cd Flavian
 
 # 2. Start local WordPress (Docker must be running)
 ./wordpress-local.sh start

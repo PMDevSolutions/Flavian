@@ -1,4 +1,4 @@
-# Contributing to CC-WP-Template
+# Contributing to Flavian
 
 Thank you for your interest in contributing!
 

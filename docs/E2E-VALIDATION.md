@@ -161,9 +161,9 @@ Install and activate theme in local WordPress.
 WordPress Status
 ===================================
 NAME              COMMAND                  STATUS          PORTS
-wp-fse-db         "docker-entrypoint.s..." Up 2 minutes    3306/tcp
-wp-fse-dev        "docker-entrypoint.s..." Up 2 minutes    0.0.0.0:8080->80/tcp
-wp-fse-phpmyadmin "/docker-entrypoint...." Up 2 minutes    0.0.0.0:8081->80/tcp
+flavian-db        "docker-entrypoint.s..." Up 2 minutes    3306/tcp
+flavian-wp        "docker-entrypoint.s..." Up 2 minutes    0.0.0.0:8080->80/tcp
+flavian-phpmyadmin "/docker-entrypoint...." Up 2 minutes    0.0.0.0:8081->80/tcp
 ```
 
 ### 2.2 Install WordPress (First Time Only)

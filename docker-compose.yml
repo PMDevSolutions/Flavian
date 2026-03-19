@@ -3,7 +3,7 @@ version: '3.8'
 services:
   wordpress:
     image: wordpress:latest
-    container_name: wp-fse-dev
+    container_name: flavian-wp
     ports:
       - "8080:80"
     environment:
@@ -26,7 +26,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: wp-fse-db
+    container_name: flavian-db
     environment:
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
       MYSQL_USER: ${WORDPRESS_DB_USER}
@@ -39,7 +39,7 @@ services:
   # Optional: phpMyAdmin for database management
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: wp-fse-phpmyadmin
+    container_name: flavian-phpmyadmin
     ports:
       - "8081:80"
     environment:

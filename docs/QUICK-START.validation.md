@@ -146,6 +146,6 @@ Document metrics:
 - Role-based next steps: 3 roles covered
 
 Minor note for future updates:
-- git clone URL uses placeholder (your-org/CC-WP-Template)
+- git clone URL uses placeholder (your-org/Flavian)
 - Update to actual repository URL when published
 ```

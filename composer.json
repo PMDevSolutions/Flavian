@@ -1,6 +1,6 @@
 {
-	"name": "pmds/claude-code-wordpress-template",
-	"description": "Claude Code-integrated WordPress development template",
+	"name": "pmds/flavian",
+	"description": "Flavian — Claude Code-integrated WordPress development template",
 	"type": "project",
 	"license": "MIT",
 	"require-dev": {

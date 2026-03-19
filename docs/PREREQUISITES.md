@@ -405,8 +405,8 @@ Once all prerequisites are met:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-org/CC-WP-Template.git
-   cd CC-WP-Template
+   git clone https://github.com/your-org/Flavian.git
+   cd Flavian
    ```
 
 2. **Start WordPress:**

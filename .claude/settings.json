@@ -10,6 +10,43 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"validate-theme\\|check-coding-standards\\|phpcs\" && echo \"$TOOL_OUTPUT\" | grep -qiE \"pass|success|no (errors|violations)\"; then echo \"[post-build-qa] Theme validation passed. Run full quality gate: ./scripts/wordpress/check-coding-standards.sh && ./scripts/wordpress/security-scan.sh && ./scripts/wordpress/check-performance.sh\"; fi'",
+            "description": "Remind to run full quality gate after theme validation passes"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"git commit\"; then if [ -d themes ] || [ -d plugins ]; then for dir in themes/*/style.css; do THEME_DIR=$(dirname \"$dir\"); RESULT=$(grep -rn \"#[0-9a-fA-F]\\{3,8\\}\" \"$THEME_DIR/templates/\" \"$THEME_DIR/parts/\" \"$THEME_DIR/patterns/\" 2>/dev/null | grep -v \"theme.json\" | head -5); if [ -n \"$RESULT\" ]; then echo \"[pre-commit-guard] Hardcoded color values found. Use theme.json tokens instead:\"; echo \"$RESULT\"; fi; done; fi; fi'",
+            "description": "Check for hardcoded design values that should use theme.json tokens before commits"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"phpunit\\|pest\" && echo \"$TOOL_OUTPUT\" | grep -qiE \"coverage|clover\"; then echo \"[coverage-check] Review coverage output above. Ensure theme/plugin coverage meets your target threshold (recommended: 80%).\"; fi'",
+            "description": "Remind to check coverage threshold after PHPUnit/Pest runs with coverage"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"visual-diff.js\" && echo \"$TOOL_OUTPUT\" | grep -q \"PASS\"; then echo \"[dark-mode-reminder] Visual diff passed. Consider running dark mode verification: ./scripts/check-dark-mode.sh\"; fi'",
+            "description": "Remind to run dark mode verification after visual diff passes"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -q \"git commit\"; then MAX_THEME_KB=5120; MAX_PLUGIN_KB=10240; for dir in themes/*/; do if [ -d \"$dir\" ]; then SIZE_KB=$(du -sk \"$dir\" 2>/dev/null | cut -f1); if [ \"${SIZE_KB:-0}\" -gt \"$MAX_THEME_KB\" ]; then echo \"[bundle-guard] Theme $(basename $dir) is ${SIZE_KB}KB — exceeds ${MAX_THEME_KB}KB limit. Review for large assets.\"; fi; fi; done; for dir in plugins/*/; do if [ -d \"$dir\" ]; then SIZE_KB=$(du -sk \"$dir\" 2>/dev/null | cut -f1); if [ \"${SIZE_KB:-0}\" -gt \"$MAX_PLUGIN_KB\" ]; then echo \"[bundle-guard] Plugin $(basename $dir) is ${SIZE_KB}KB — exceeds ${MAX_PLUGIN_KB}KB limit.\"; fi; fi; done; fi'",
+            "description": "Warn if theme (>5MB) or plugin (>10MB) directory size exceeds limits before commits"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$TOOL_INPUT\" | grep -qE \"phpunit|pest\" && echo \"$TOOL_OUTPUT\" | grep -qiE \"OK \\(|Tests:.*passed|All tests passed\"; then echo \"[mutation-test] All tests passed. Consider running PHP mutation testing to validate test quality: vendor/bin/infection --min-msi=70 --min-covered-msi=80\"; fi'",
+            "description": "Suggest PHP mutation testing (Infection) after all tests pass"
+          }
+        ]
+      }
     ]
   }
 }

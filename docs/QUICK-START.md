@@ -49,8 +49,8 @@ All items required. If missing any, see the **[complete prerequisites guide](./P
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/CC-WP-Template.git
-cd CC-WP-Template
+git clone https://github.com/your-org/Flavian.git
+cd Flavian
 ```
 
 ### Step 2: Open in Claude Code

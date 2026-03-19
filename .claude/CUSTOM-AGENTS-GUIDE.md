@@ -1,7 +1,7 @@
 # Custom Agents Reference Guide
 
-**Last Updated:** 2026-03-06
-**Total Custom Agents:** 20
+**Last Updated:** 2026-03-19
+**Total Custom Agents:** 45
 **Location:** `.claude/agents/`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.
@@ -116,15 +116,56 @@ These agents can be useful but aren't WordPress-specific:
 
 ---
 
-## Removed Agents (14 total)
+## Generic/Cross-Domain Agents (25 total)
 
-The following agents were removed as they had zero relevance to WordPress FSE development:
+These agents are domain-agnostic and useful across all project types. Backported from the Coding Framework project.
 
-**Marketing/Business (8):** tiktok-strategist, trend-researcher, brand-guardian, visual-storyteller, support-responder, feedback-synthesizer, project-shipper, legal-compliance-checker
+### Meta/Ops (7)
+| Agent | Purpose |
+|-------|---------|
+| agent-expert | Creating and designing specialized Claude Code agents |
+| command-expert | Creating Claude Code slash commands |
+| studio-coach | Development coaching and mentoring |
+| studio-producer | Project production and coordination |
+| project-shipper | Getting projects to release |
+| sprint-prioritizer | Sprint planning and prioritization |
+| experiment-tracker | Tracking A/B tests and experiments |
 
-**Infrastructure/Tooling (4):** mcp-expert, tool-evaluator, rapid-prototyper, db-reader
+### Business (5)
+| Agent | Purpose |
+|-------|---------|
+| brand-guardian | Brand consistency and guidelines |
+| finance-tracker | Financial tracking and budgeting |
+| legal-compliance-checker | Legal and compliance review |
+| support-responder | Customer support responses |
+| feedback-synthesizer | Synthesizing user feedback |
 
-**Product/UX (2):** experiment-tracker, whimsy-injector
+### Marketing/Social (8)
+| Agent | Purpose |
+|-------|---------|
+| content-creator | Content creation and copywriting |
+| growth-hacker | Growth strategies and experiments |
+| instagram-curator | Instagram content strategy |
+| reddit-community-builder | Reddit community engagement |
+| tiktok-strategist | TikTok content strategy |
+| twitter-engager | Twitter/X engagement |
+| visual-storyteller | Visual content and storytelling |
+| trend-researcher | Trend research and analysis |
+
+### Engineering (4)
+| Agent | Purpose |
+|-------|---------|
+| devops-automator | CI/CD, infrastructure automation |
+| infrastructure-maintainer | Server and infrastructure maintenance |
+| tool-evaluator | Evaluating development tools |
+| joker | Tech humor and team morale |
+
+### Adapted for WordPress (3)
+| Agent | Purpose | Adaptation |
+|-------|---------|------------|
+| ai-engineer | AI/ML feature integration | Generic (no changes needed) |
+| backend-architect | Backend architecture and APIs | Added WordPress REST API, $wpdb, nonces |
+| migration-specialist | Version upgrades and migrations | Rewritten for WordPress/PHP migrations |
 
 ---
 
@@ -179,7 +220,7 @@ User: "Use the frontend-developer agent to help me build this block pattern"
 ```
 WordPress Skills (8)
     ↓ Provide workflows and best practices
-Agents (20)
+Agents (45)
     ↓ Execute specialized tasks
 Plugins (6)
     ↓ Provide tooling and memory
@@ -194,7 +235,7 @@ Automation Scripts (4)
 ## Current Architecture Status
 
 **Plugins:** ✅ Already optimized (5 user + 1 local)
-**Custom Agents:** 20 total (all WordPress-relevant)
+**Custom Agents:** 45 total (20 WordPress-focused + 25 generic cross-domain)
 
 ---
 
@@ -219,6 +260,14 @@ Automation Scripts (4)
 | **Seed demo content** | **content-seeder** | wp-environment-manager |
 | **SEO audit** | **seo-schema-agent** | - |
 | **Build a plugin** | **plugin-developer** | frontend-developer (if UI-heavy) |
+| Create an agent | agent-expert | command-expert (for commands) |
+| Backend API design | backend-architect | plugin-developer (WP-specific) |
+| WordPress migration | migration-specialist | - |
+| CI/CD automation | devops-automator | infrastructure-maintainer |
+| Brand consistency | brand-guardian | content-creator |
+| Social media content | content-creator | platform-specific agents |
+| AI/ML features | ai-engineer | - |
+| Sprint planning | sprint-prioritizer | project-shipper |
 
 ---
 
@@ -285,4 +334,4 @@ These agents are research/audit-only and don't need automated hooks:
 
 ---
 
-**Architecture Assessment:** 20 custom agents provide comprehensive WordPress development coverage, with specialized agents for visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, and SEO.
+**Architecture Assessment:** 45 custom agents provide comprehensive development coverage — 20 WordPress-specific agents for visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, and SEO, plus 25 generic cross-domain agents for business, marketing, engineering, and meta/ops tasks.

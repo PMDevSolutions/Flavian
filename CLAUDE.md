@@ -280,9 +280,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 5 plugin
 
 ---
 
-### Custom Agents (20 Total)
+### Custom Agents (45 Total)
 
-20 specialized agents provide WordPress development capabilities. Key agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, and others.
+45 specialized agents: 20 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -428,10 +428,9 @@ Result: themes/[theme-name]/ ready for WordPress
 - GitHub integration via `gh` CLI (not a plugin)
 
 **Agent Philosophy:**
-- 18 custom agents available (all WordPress-focused)
+- 45 custom agents available (20 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
-- Optional: Remove 16 non-WordPress agents (see `.claude/CUSTOM-AGENTS-GUIDE.md`)
 
 **Documentation Structure:**
 - `CLAUDE.md` (this file) - WordPress development guidance and quick reference
@@ -489,6 +488,22 @@ gh auth status                # Check authentication
 ./scripts/wordpress/check-performance.sh [path]
 ```
 
+**Visual QA & Quality Scripts:**
+```bash
+./scripts/visual-diff.js [actual] [expected]     # Pixel-level screenshot comparison
+./scripts/check-responsive.sh [url]               # Responsive screenshots at all breakpoints
+./scripts/check-dark-mode.sh [url]                # Dark mode visual verification
+./scripts/check-dead-code.sh [--json]             # PHP dead code detection (Psalm/PHPStan)
+```
+
+### PostToolUse Hooks (6 Total)
+- **post-build-qa** — Reminds to run full quality gate after theme validation
+- **pre-commit-guard** — Checks for hardcoded colors before commits
+- **coverage-check** — Reminds to review PHPUnit/Pest coverage output
+- **dark-mode-reminder** — Suggests dark mode verification after visual diff
+- **bundle-guard** — Warns if theme >5MB or plugin >10MB before commits
+- **mutation-test** — Suggests Infection PHP after all tests pass
+
 **Plugin Management:**
 ```bash
 /plugin list                  # List installed plugins
@@ -498,5 +513,5 @@ gh auth status                # Check authentication
 
 ---
 
-**Last Updated:** 2026-03-09
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI)
+**Last Updated:** 2026-03-19
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 45 agents)

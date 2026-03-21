@@ -42,7 +42,7 @@ jobs:
           ./vendor/bin/phpcs
           --standard=WordPress-Extra,WordPress-Docs
           --extensions=php
-          --ignore=*/index.php
+          --ignore=*/index.php,plugins/akismet/*,plugins/hello.php
           --report=checkstyle
           plugins/
           | cs2pr

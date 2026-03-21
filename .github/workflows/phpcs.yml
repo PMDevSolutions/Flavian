@@ -1,0 +1,56 @@
+name: PHPCS
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  phpcs:
+    name: WordPress Coding Standards
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: cs2pr
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Verify WordPress standards are registered
+        run: ./vendor/bin/phpcs -i
+
+      - name: Run PHPCS on themes
+        if: hashFiles('themes/**/*.php') != ''
+        run: >
+          ./vendor/bin/phpcs
+          --standard=WordPress-Extra,WordPress-Docs
+          --extensions=php
+          --report=checkstyle
+          themes/
+          | cs2pr
+
+      - name: Run PHPCS on plugins
+        if: hashFiles('plugins/**/*.php') != ''
+        run: >
+          ./vendor/bin/phpcs
+          --standard=WordPress-Extra,WordPress-Docs
+          --extensions=php
+          --report=checkstyle
+          plugins/
+          | cs2pr
+
+      - name: Run PHPCS on mu-plugins
+        if: hashFiles('mu-plugins/**/*.php') != ''
+        run: >
+          ./vendor/bin/phpcs
+          --standard=WordPress-Extra,WordPress-Docs
+          --extensions=php
+          --report=checkstyle
+          mu-plugins/
+          | cs2pr

@@ -44,7 +44,7 @@ claude
 
 WordPress will be at http://localhost:8080 (admin: admin/admin).
 
-**Detailed guide:** [docs/QUICK-START.md](docs/QUICK-START.md)
+**Detailed guide:** [docs/QUICK-START.md](docs/QUICK-START.md) | **Docker issues?** [docs/docker-troubleshooting.md](docs/docker-troubleshooting.md)
 
 ### Alternative: Use as wp-content Directory
 ```bash
@@ -189,6 +189,7 @@ This template is optimized for WordPress development with Claude Code, featuring
 
 ### **Troubleshooting**
 - **`docs/TROUBLESHOOTING.md`** - General troubleshooting guide
+- **`docs/docker-troubleshooting.md`** - Docker & container issues
 - **`docs/COMMON-FAILURES-FIXES.md`** - Figma-to-WordPress specific issues
 - **`docs/MCP-TROUBLESHOOTING.md`** - MCP server debugging
 - **`docs/E2E-VALIDATION.md`** - End-to-end testing procedures

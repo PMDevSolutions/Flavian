@@ -449,6 +449,7 @@ Result: themes/[theme-name]/ ready for WordPress
 
 **Troubleshooting:**
 - `docs/TROUBLESHOOTING.md` - General troubleshooting guide
+- `docs/docker-troubleshooting.md` - Docker & container issues (15 common problems)
 - `docs/COMMON-FAILURES-FIXES.md` - Figma-to-WordPress workflow issues
 - `docs/MCP-TROUBLESHOOTING.md` - MCP server debugging
 - `docs/E2E-VALIDATION.md` - End-to-end validation procedures

@@ -6,6 +6,8 @@ Common issues and solutions for the Claude Code WordPress Template.
 
 ## Docker & Local Development
 
+**See also:** [docker-troubleshooting.md](./docker-troubleshooting.md) for a comprehensive Docker troubleshooting guide covering 15 common issues with platform-specific solutions.
+
 ### Docker Desktop not starting
 
 **Symptoms:** `docker compose` commands fail with "Cannot connect to the Docker daemon"

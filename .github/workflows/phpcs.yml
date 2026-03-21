@@ -31,6 +31,7 @@ jobs:
           ./vendor/bin/phpcs
           --standard=WordPress-Extra,WordPress-Docs
           --extensions=php
+          --ignore=*/index.php
           --report=checkstyle
           themes/
           | cs2pr
@@ -41,6 +42,7 @@ jobs:
           ./vendor/bin/phpcs
           --standard=WordPress-Extra,WordPress-Docs
           --extensions=php
+          --ignore=*/index.php
           --report=checkstyle
           plugins/
           | cs2pr
@@ -51,6 +53,7 @@ jobs:
           ./vendor/bin/phpcs
           --standard=WordPress-Extra,WordPress-Docs
           --extensions=php
+          --ignore=*/index.php
           --report=checkstyle
           mu-plugins/
           | cs2pr

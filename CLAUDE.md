@@ -280,9 +280,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 5 plugin
 
 ---
 
-### Custom Agents (45 Total)
+### Custom Agents (46 Total)
 
-45 specialized agents: 20 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+46 specialized agents: 21 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -305,9 +305,9 @@ Use this guide to select the right one:
 
 ---
 
-### Custom WordPress Skills (8 Total)
+### Custom WordPress Skills (9 Total)
 
-8 WordPress-specific skills provide systematic workflows:
+9 WordPress-specific skills provide systematic workflows:
 
 **Core:** FSE block theme development, block pattern creation, security hardening, WP-CLI workflows
 
@@ -393,6 +393,30 @@ Result: themes/[theme-name]/ ready for WordPress
 
 **Documentation:** `docs/figma-to-wordpress/README.md`
 
+**5. Canva-to-WordPress Automation**
+Convert Canva HTML/CSS exports to WordPress FSE themes:
+```
+User: "Convert this Canva export to WordPress"
+      [Provide path to Canva export directory]
+
+Claude: [Autonomous workflow 5-30 minutes]
+        → Parses CSS for design tokens (colors, fonts, spacing)
+        → Converts HTML to WordPress block markup
+        → Complete FSE theme with theme.json, templates, patterns
+        → Zero manual intervention
+
+Result: themes/[theme-name]/ ready for WordPress
+```
+
+**Features:**
+- CSS design token extraction (colors, typography, spacing)
+- HTML-to-block conversion (headings, paragraphs, images, sections)
+- Shared validation infrastructure with Figma pipeline
+- PHP patterns for images (pattern-first architecture)
+- 100% theme.json token usage (no hardcoded values)
+
+**Documentation:** `docs/canva-to-wordpress/README.md`
+
 ---
 
 ### WordPress + Claude Code Best Practices
@@ -428,7 +452,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - GitHub integration via `gh` CLI (not a plugin)
 
 **Agent Philosophy:**
-- 45 custom agents available (20 WordPress-focused + 25 generic cross-domain)
+- 46 custom agents available (21 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -515,4 +539,4 @@ gh auth status                # Check authentication
 ---
 
 **Last Updated:** 2026-03-19
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 45 agents)
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 46 agents)

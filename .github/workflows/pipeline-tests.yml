@@ -18,6 +18,7 @@ jobs:
           filters: |
             scripts:
               - 'scripts/figma-fse/**'
+              - 'scripts/canva-fse/**'
             tests:
               - 'tests/**'
 
@@ -38,10 +39,15 @@ jobs:
           sudo apt-get install -y -qq jq
 
       - name: Make scripts executable
-        run: chmod +x scripts/figma-fse/*.sh
+        run: |
+          chmod +x scripts/figma-fse/*.sh
+          chmod +x scripts/canva-fse/*.sh
 
       - name: Run Figma-to-FSE pipeline tests
         run: ./tests/libs/bats-core/bin/bats tests/figma-fse/
+
+      - name: Run Canva-to-FSE pipeline tests
+        run: ./tests/libs/bats-core/bin/bats tests/canva-fse/
 
   test-status:
     runs-on: ubuntu-latest

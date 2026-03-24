@@ -1,0 +1,49 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 2,
+	"settings": {
+		"color": {
+			"palette": [
+				{ "slug": "primary", "color": "#1a3f6f", "name": "Primary" },
+				{ "slug": "secondary", "color": "#e8491d", "name": "Secondary" },
+				{ "slug": "accent", "color": "#f4a261", "name": "Accent" },
+				{ "slug": "dark", "color": "#1d1d1f", "name": "Dark" },
+				{ "slug": "light", "color": "#fafafa", "name": "Light" },
+				{ "slug": "white", "color": "#ffffff", "name": "White" },
+				{ "slug": "gray", "color": "#6b7280", "name": "Gray" },
+				{ "slug": "success", "color": "#10b981", "name": "Success" }
+			]
+		},
+		"typography": {
+			"fontSizes": [
+				{ "slug": "small", "size": "0.875rem", "name": "Small" },
+				{ "slug": "base", "size": "1rem", "name": "Base" },
+				{ "slug": "medium", "size": "1.125rem", "name": "Medium" },
+				{ "slug": "large", "size": "1.25rem", "name": "Large" },
+				{ "slug": "x-large", "size": "1.5rem", "name": "Extra Large" },
+				{ "slug": "2x-large", "size": "2rem", "name": "2X Large" }
+			],
+			"fontFamilies": [
+				{ "slug": "primary", "fontFamily": "Inter, sans-serif", "name": "Primary" },
+				{ "slug": "heading", "fontFamily": "Playfair Display, serif", "name": "Heading" }
+			]
+		},
+		"spacing": {
+			"spacingSizes": [
+				{ "slug": "20", "size": "0.5rem", "name": "XS" },
+				{ "slug": "30", "size": "0.75rem", "name": "Small" },
+				{ "slug": "40", "size": "1rem", "name": "Base" },
+				{ "slug": "50", "size": "1.5rem", "name": "Medium" },
+				{ "slug": "60", "size": "2rem", "name": "Large" },
+				{ "slug": "70", "size": "3rem", "name": "XL" },
+				{ "slug": "80", "size": "4rem", "name": "2XL" }
+			]
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var(--wp--preset--color--white)",
+			"text": "var(--wp--preset--color--dark)"
+		}
+	}
+}

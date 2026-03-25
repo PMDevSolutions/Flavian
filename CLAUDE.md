@@ -280,9 +280,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 5 plugin
 
 ---
 
-### Custom Agents (46 Total)
+### Custom Agents (49 Total)
 
-46 specialized agents: 21 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+49 specialized agents: 24 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -350,6 +350,15 @@ git checkout -b feature/hero-block-pattern
 
 # Performance check (use root-level paths)
 ./scripts/wordpress/check-performance.sh themes/my-theme
+
+# Dependency vulnerability scan
+./scripts/security-audit/scan-dependencies.sh .
+
+# Generate security report with severity ratings
+./scripts/security-audit/scan-dependencies.sh . 2>/dev/null | ./scripts/security-audit/generate-report.sh
+
+# Auto-create issues for critical findings
+./scripts/security-audit/scan-dependencies.sh . 2>/dev/null | ./scripts/security-audit/create-issues.sh
 
 # Fix issues and commit
 /commit
@@ -513,6 +522,13 @@ gh auth status                # Check authentication
 ./scripts/wordpress/check-performance.sh [path]
 ```
 
+**Security Audit:**
+```bash
+./scripts/security-audit/scan-dependencies.sh [path]   # Scan dependencies for CVEs
+./scripts/security-audit/generate-report.sh             # Generate vulnerability report (stdin)
+./scripts/security-audit/create-issues.sh               # Create GitHub issues for critical findings (stdin)
+```
+
 **Visual QA & Quality Scripts:**
 ```bash
 ./scripts/visual-diff.js [actual] [expected]     # Pixel-level screenshot comparison
@@ -538,5 +554,5 @@ gh auth status                # Check authentication
 
 ---
 
-**Last Updated:** 2026-03-19
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 46 agents)
+**Last Updated:** 2026-03-25
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 49 agents)

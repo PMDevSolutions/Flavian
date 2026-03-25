@@ -1,0 +1,83 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'package-lock.json'
+      - 'themes/**/composer.json'
+      - 'themes/**/composer.lock'
+      - 'themes/**/package.json'
+      - 'themes/**/pnpm-lock.yaml'
+      - 'themes/**/package-lock.json'
+      - 'plugins/**/composer.json'
+      - 'plugins/**/composer.lock'
+      - 'plugins/**/package.json'
+      - 'plugins/**/pnpm-lock.yaml'
+      - 'plugins/**/package-lock.json'
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --quiet
+        continue-on-error: true
+
+      - name: Run dependency scan
+        id: scan
+        run: |
+          chmod +x scripts/security-audit/scan-dependencies.sh
+          chmod +x scripts/security-audit/generate-report.sh
+          SCAN_OUTPUT=$(./scripts/security-audit/scan-dependencies.sh . 2>/dev/null) || true
+          echo "$SCAN_OUTPUT" > /tmp/scan-output.json
+          echo "$SCAN_OUTPUT" | ./scripts/security-audit/generate-report.sh > /dev/null 2>&1 || true
+          CRITICAL=$(echo "$SCAN_OUTPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(1 for r in d['results'] for v in r['vulnerabilities'] if v.get('severity')=='critical'))" 2>/dev/null || echo "0")
+          HIGH=$(echo "$SCAN_OUTPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(1 for r in d['results'] for v in r['vulnerabilities'] if v.get('severity')=='high'))" 2>/dev/null || echo "0")
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: .claude/security-reports/
+          retention-days: 90
+        if: always()
+
+      - name: Fail on critical vulnerabilities
+        if: steps.scan.outputs.critical != '0'
+        run: |
+          echo "::error::${{ steps.scan.outputs.critical }} critical vulnerability(ies) found. See security report artifact."
+          exit 1

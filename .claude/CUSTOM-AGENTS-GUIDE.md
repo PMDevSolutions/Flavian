@@ -1,7 +1,7 @@
 # Custom Agents Reference Guide
 
-**Last Updated:** 2026-03-19
-**Total Custom Agents:** 45
+**Last Updated:** 2026-03-25
+**Total Custom Agents:** 46
 **Location:** `.claude/agents/`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.
@@ -72,6 +72,11 @@ These agents directly support WordPress block theme development:
 - **Purpose:** WordPress demo content generation
 - **Use for:** Creating pages matching templates, sample posts, navigation menus, homepage configuration
 - **WordPress relevance:** High - fully populated sites for testing
+
+### **security-audit-agent** (NEW)
+- **Purpose:** Automated dependency vulnerability scanning and security auditing
+- **Use for:** Running Composer/npm audits, generating security reports, auto-creating issues for critical CVEs, pre-release security checks
+- **WordPress relevance:** Critical - dependency vulnerabilities are a top WordPress attack vector
 
 ### **seo-schema-agent** (NEW)
 - **Purpose:** SEO and structured data auditing
@@ -259,6 +264,7 @@ Automation Scripts (4)
 | **Token compliance** | **theme-token-auditor** | block-markup-validator |
 | **Seed demo content** | **content-seeder** | wp-environment-manager |
 | **SEO audit** | **seo-schema-agent** | - |
+| **Security/dependency audit** | **security-audit-agent** | legal-compliance-checker |
 | **Build a plugin** | **plugin-developer** | frontend-developer (if UI-heavy) |
 | Create an agent | agent-expert | command-expert (for commands) |
 | Backend API design | backend-architect | plugin-developer (WP-specific) |

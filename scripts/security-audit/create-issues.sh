@@ -102,15 +102,23 @@ SKIPPED=0
 
 # Iterate vulnerabilities via Python-generated line-delimited JSON
 while IFS= read -r vuln_line; do
-  # Parse fields from the vulnerability
-  PACKAGE="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['package'])" "$vuln_line")"
-  SEVERITY="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['severity'])" "$vuln_line")"
-  CVE="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['cve'])" "$vuln_line")"
-  DESCRIPTION="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['description'])" "$vuln_line")"
-  AFFECTED="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['affected_versions'])" "$vuln_line")"
-  SOURCE="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['source'])" "$vuln_line")"
-  SCAN_DATE="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['scan_date'])" "$vuln_line")"
-  TITLE_ID="$($PYTHON -c "import json,sys; print(json.loads(sys.argv[1])['title'])" "$vuln_line")"
+  # Parse all fields from the vulnerability in a single Python call
+  FIELDS="$($PYTHON -c "
+import json, sys
+v = json.loads(sys.argv[1])
+# Output fields separated by newlines
+for k in ['package','severity','cve','description','affected_versions','source','scan_date','title']:
+    print(v.get(k, ''))
+" "$vuln_line")"
+
+  PACKAGE="$(echo "$FIELDS" | sed -n '1p')"
+  SEVERITY="$(echo "$FIELDS" | sed -n '2p')"
+  CVE="$(echo "$FIELDS" | sed -n '3p')"
+  DESCRIPTION="$(echo "$FIELDS" | sed -n '4p')"
+  AFFECTED="$(echo "$FIELDS" | sed -n '5p')"
+  SOURCE="$(echo "$FIELDS" | sed -n '6p')"
+  SCAN_DATE="$(echo "$FIELDS" | sed -n '7p')"
+  TITLE_ID="$(echo "$FIELDS" | sed -n '8p')"
 
   # Build issue title
   CVE_SUFFIX=""

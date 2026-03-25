@@ -280,9 +280,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 5 plugin
 
 ---
 
-### Custom Agents (47 Total)
+### Custom Agents (49 Total)
 
-47 specialized agents: 22 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+49 specialized agents: 24 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -555,4 +555,4 @@ gh auth status                # Check authentication
 ---
 
 **Last Updated:** 2026-03-25
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 47 agents)
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 49 agents)

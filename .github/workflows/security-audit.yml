@@ -6,12 +6,19 @@ on:
     paths:
       - 'composer.json'
       - 'composer.lock'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'package-lock.json'
       - 'themes/**/composer.json'
       - 'themes/**/composer.lock'
       - 'themes/**/package.json'
+      - 'themes/**/pnpm-lock.yaml'
+      - 'themes/**/package-lock.json'
       - 'plugins/**/composer.json'
       - 'plugins/**/composer.lock'
       - 'plugins/**/package.json'
+      - 'plugins/**/pnpm-lock.yaml'
+      - 'plugins/**/package-lock.json'
   pull_request:
     branches: [main]
   schedule:

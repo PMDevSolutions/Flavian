@@ -48,13 +48,14 @@ fi
 
 log "Generating security report …"
 
-# Temp file for exit code (Python writes it, bash reads it)
+# Temp files for inter-process communication
 EXIT_CODE_FILE="$REPORT_DIR/.exit_code_$$"
-trap 'rm -f "$EXIT_CODE_FILE"' EXIT
-
-# Write the Python script to a temp file to avoid bash quoting issues
 PYSCRIPT="$(mktemp)"
-trap 'rm -f "$EXIT_CODE_FILE" "$PYSCRIPT"' EXIT
+JSON_INPUT="$(mktemp)"
+trap 'rm -f "$EXIT_CODE_FILE" "$PYSCRIPT" "$JSON_INPUT"' EXIT
+
+# Write JSON to temp file (avoids command-line argument length limits)
+echo "$SCAN_JSON" > "$JSON_INPUT"
 
 cat > "$PYSCRIPT" << 'PYTHON_EOF'
 import json
@@ -62,7 +63,8 @@ import sys
 import os
 from datetime import datetime
 
-data = json.loads(sys.argv[1])
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    data = json.load(f)
 report_dir = sys.argv[2]
 exit_code_file = sys.argv[3]
 
@@ -310,7 +312,7 @@ with open(exit_code_file, "w") as f:
 PYTHON_EOF
 
 export PYTHONUTF8=1
-$PYTHON "$PYSCRIPT" "$SCAN_JSON" "$REPORT_DIR" "$EXIT_CODE_FILE"
+$PYTHON "$PYSCRIPT" "$JSON_INPUT" "$REPORT_DIR" "$EXIT_CODE_FILE"
 
 # Read exit code from temp file
 EXIT_CODE=0

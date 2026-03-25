@@ -1,7 +1,7 @@
 # Custom Agents Reference Guide
 
 **Last Updated:** 2026-03-25
-**Total Custom Agents:** 46
+**Total Custom Agents:** 49
 **Location:** `.claude/agents/`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.

@@ -15,9 +15,10 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 echo "Running agent configuration validation (CI mode)..."
 echo ""
 
+set +e
 "$SCRIPT_DIR/validate-agent-configs.sh" --dry-run
-
 EXIT_CODE=$?
+set -e
 
 if [ "$EXIT_CODE" -ne 0 ]; then
   echo ""

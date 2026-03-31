@@ -1,23 +1,28 @@
 # Local WordPress Development with Docker
 
-## Quick Start (3 steps)
+## Quick Start (4 steps)
 
-**1. Start WordPress:**
+**1. Build the Docker image (first time only):**
+```bash
+./wordpress-local.sh build
+```
+
+**2. Start WordPress:**
 ```bash
 ./wordpress-local.sh start
 ```
 
-**2. Install WordPress (first time only):**
+**3. Install WordPress (first time only):**
 ```bash
 ./wordpress-local.sh install
 ```
 
-**3. Activate your theme:**
+**4. Activate your theme:**
 ```bash
 ./wordpress-local.sh activate-theme your-theme
 ```
 
-**4. Open in browser:**
+**5. Open in browser:**
 - **Site:** http://localhost:8080
 - **Admin:** http://localhost:8080/wp-admin (admin/admin)
 - **Database:** http://localhost:8081 (phpMyAdmin)
@@ -200,6 +205,58 @@ docker-compose exec db mysql -u wordpress -pwordpress wordpress
 1. **Use WSL2 backend** (Docker Desktop → Settings → General → Use WSL2)
 2. **Allocate more resources** (Docker Desktop → Settings → Resources)
 3. **Restart Docker Desktop** if slow after long usage
+
+---
+
+## Docker Build Optimization
+
+This project uses an optimized Docker setup with multi-stage builds and layer caching for faster build times.
+
+### Build Commands
+
+```bash
+./wordpress-local.sh build      # Build with layer caching
+./wordpress-local.sh rebuild    # Rebuild without cache (baseline)
+./wordpress-local.sh benchmark  # Run build time benchmark
+```
+
+### Optimizations Implemented
+
+1. **Multi-stage builds**: WP-CLI and PHP extensions are built in separate stages and cached
+2. **Layer ordering**: Dependencies are installed before application code for better cache hits
+3. **.dockerignore**: Excludes unnecessary files (docs, tests, git) from build context
+4. **BuildKit**: Enabled by default for parallel stage building
+
+### Running Benchmarks
+
+To verify build optimization effectiveness:
+
+```bash
+# Quick benchmark via helper script
+./wordpress-local.sh benchmark
+
+# Detailed benchmark with full report
+./scripts/docker/benchmark-build.sh
+```
+
+The benchmark measures:
+- Clean build time (baseline, no cache)
+- Cached build time (no changes)
+- Incremental build time (simulated code change)
+
+**Target:** 30% improvement in cached builds over clean builds
+
+### Development vs Production Images
+
+Use environment variable to select build target:
+
+```bash
+# Production image (default) - smaller, optimized
+DOCKER_TARGET=production docker-compose build
+
+# Development image - includes vim, git, composer
+DOCKER_TARGET=development docker-compose build
+```
 
 ---
 

@@ -40,6 +40,112 @@ check_docker() {
     fi
 }
 
+# Build Docker images with layer caching
+build() {
+    print_header "Building WordPress Docker Image"
+    check_docker
+
+    local start_time=$(date +%s)
+
+    # Build with BuildKit for better caching
+    DOCKER_BUILDKIT=1 docker-compose build --progress=plain wordpress
+
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+
+    echo ""
+    print_success "Build completed in ${duration} seconds"
+}
+
+# Rebuild without cache (for benchmarking)
+rebuild() {
+    print_header "Rebuilding WordPress Docker Image (no cache)"
+    check_docker
+
+    local start_time=$(date +%s)
+
+    # Build without cache
+    DOCKER_BUILDKIT=1 docker-compose build --no-cache --progress=plain wordpress
+
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+
+    echo ""
+    print_success "Clean build completed in ${duration} seconds"
+}
+
+# Benchmark build times (with and without cache)
+benchmark() {
+    print_header "Docker Build Benchmark"
+    check_docker
+
+    echo ""
+    echo "This will run two builds to measure cache effectiveness."
+    echo "1. Clean build (no cache)"
+    echo "2. Cached build (incremental)"
+    echo ""
+    read -p "Continue? [y/N] " confirm
+
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        print_warning "Benchmark cancelled."
+        return
+    fi
+
+    # Clean build
+    echo ""
+    print_header "Step 1/2: Clean Build (no cache)"
+    local clean_start=$(date +%s)
+    DOCKER_BUILDKIT=1 docker-compose build --no-cache --progress=plain wordpress 2>&1 | tail -20
+    local clean_end=$(date +%s)
+    local clean_duration=$((clean_end - clean_start))
+
+    # Make a trivial change to force rebuild while using cache
+    touch .dockerignore
+
+    # Cached build
+    echo ""
+    print_header "Step 2/2: Cached Build"
+    local cache_start=$(date +%s)
+    DOCKER_BUILDKIT=1 docker-compose build --progress=plain wordpress 2>&1 | tail -20
+    local cache_end=$(date +%s)
+    local cache_duration=$((cache_end - cache_start))
+
+    # Calculate improvement
+    local improvement=0
+    if [ $clean_duration -gt 0 ]; then
+        improvement=$(( (clean_duration - cache_duration) * 100 / clean_duration ))
+    fi
+
+    # Results
+    echo ""
+    print_header "Benchmark Results"
+    echo ""
+    echo "  Clean build time:  ${clean_duration}s"
+    echo "  Cached build time: ${cache_duration}s"
+    echo "  Improvement:       ${improvement}%"
+    echo ""
+
+    if [ $improvement -ge 30 ]; then
+        print_success "Layer caching achieved ${improvement}% improvement (target: 30%)"
+    else
+        print_warning "Layer caching achieved ${improvement}% improvement (target: 30%)"
+    fi
+
+    # Save results to file
+    local results_file="docker-benchmark-results.txt"
+    {
+        echo "Docker Build Benchmark - $(date)"
+        echo "================================"
+        echo "Clean build time:  ${clean_duration}s"
+        echo "Cached build time: ${cache_duration}s"
+        echo "Improvement:       ${improvement}%"
+        echo ""
+    } >> "$results_file"
+
+    echo ""
+    echo "Results appended to: $results_file"
+}
+
 # Start WordPress
 start() {
     print_header "Starting WordPress Development Environment"
@@ -189,11 +295,17 @@ help() {
     echo "  clean              Delete all data and start fresh"
     echo "  help               Show this help message"
     echo ""
+    echo "Build Commands:"
+    echo "  build              Build Docker image with layer caching"
+    echo "  rebuild            Rebuild Docker image (no cache)"
+    echo "  benchmark          Run build time benchmark"
+    echo ""
     echo "Quick Start:"
-    echo "  1. ./wordpress-local.sh start"
-    echo "  2. ./wordpress-local.sh install"
-    echo "  3. ./wordpress-local.sh activate-theme your-theme"
-    echo "  4. Open http://localhost:8080"
+    echo "  1. ./wordpress-local.sh build    (first time only)"
+    echo "  2. ./wordpress-local.sh start"
+    echo "  3. ./wordpress-local.sh install"
+    echo "  4. ./wordpress-local.sh activate-theme your-theme"
+    echo "  5. Open http://localhost:8080"
 }
 
 # Main command router
@@ -227,6 +339,15 @@ case "$1" in
         ;;
     shell)
         shell
+        ;;
+    build)
+        build
+        ;;
+    rebuild)
+        rebuild
+        ;;
+    benchmark)
+        benchmark
         ;;
     help|--help|-h)
         help

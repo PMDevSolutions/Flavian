@@ -133,6 +133,9 @@ local-config.php
 *.seed
 *.pid.lock
 
+# Docker benchmark results
+docker-benchmark-results.txt
+
 # OS Generated Files
 .DS_Store
 .DS_Store?

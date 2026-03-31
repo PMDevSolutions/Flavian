@@ -1,0 +1,77 @@
+# Git
+.git
+.gitignore
+.gitmodules
+.github
+
+# Claude Code configuration
+.claude
+CLAUDE.md
+
+# Documentation
+docs
+*.md
+!README.md
+
+# Development files
+.editorconfig
+.env.example
+.mcp.json
+
+# Tests
+tests
+phpunit.xml
+phpunit.xml.dist
+
+# Archive and upgrade directories
+archive
+upgrade
+
+# Node modules (if any)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Composer development dependencies
+vendor/phpunit
+vendor/squizlabs
+
+# IDE and editor files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.log
+*.tmp
+*.temp
+
+# Docker files (not needed in image)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Scripts not needed at runtime
+scripts/security-audit
+scripts/wordpress/setup-phpcs.sh
+scripts/wordpress/check-coding-standards.sh
+
+# Languages directory (translations downloaded at runtime)
+languages
+
+# Local development script
+wordpress-local.sh
+
+# Changelog and contribution docs
+CHANGELOG.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+LICENSE
+DOCUMENTATION-*.md

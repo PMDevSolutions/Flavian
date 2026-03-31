@@ -6,7 +6,10 @@
  * Keywords: pricing, cards, simple, plans, cost
  * Description: A simple two-card pricing layout for comparing plans.
  * Viewport Width: 1200
+ *
+ * @package Flavian
  */
+
 ?>
 <!-- wp:group {"align":"full","backgroundColor":"light","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-light-background-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)"><!-- wp:heading {"textAlign":"center"} -->

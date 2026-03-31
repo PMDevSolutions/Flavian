@@ -6,7 +6,10 @@
  * Keywords: hero, banner, header, call to action, cta
  * Description: A full-width hero section with heading, description, and call-to-action button.
  * Viewport Width: 1200
+ *
+ * @package Flavian
  */
+
 ?>
 <!-- wp:cover {"overlayColor":"primary","dimRatio":50,"isUserOverlayColor":true,"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}}} -->
 <div class="wp-block-cover alignfull" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)"><span aria-hidden="true" class="wp-block-cover__background has-primary-background-color has-background-dim-50 has-background-dim"></span><div class="wp-block-cover__inner-container"><!-- wp:group {"style":{"layout":{"selfStretch":"fixed","flexSize":"800px"}},"layout":{"type":"constrained","contentSize":"800px"}} -->

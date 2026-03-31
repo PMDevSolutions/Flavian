@@ -6,7 +6,10 @@
  * Keywords: cta, call to action, boxed, card, conversion
  * Description: A centered boxed call-to-action section with accent background and dual buttons.
  * Viewport Width: 1200
+ *
+ * @package Flavian
  */
+
 ?>
 <!-- wp:group {"align":"full","backgroundColor":"light","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"default"}} -->
 <div class="wp-block-group alignfull has-light-background-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)"><!-- wp:group {"backgroundColor":"accent","style":{"spacing":{"padding":{"top":"var:preset|spacing|60","bottom":"var:preset|spacing|60","left":"var:preset|spacing|60","right":"var:preset|spacing|60"}},"border":{"radius":"8px"}},"layout":{"type":"constrained","contentSize":"700px"}} -->

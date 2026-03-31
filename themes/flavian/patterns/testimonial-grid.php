@@ -6,7 +6,10 @@
  * Keywords: testimonials, grid, reviews, customers, social proof
  * Description: A three-column grid of customer testimonials with quotes and attributions.
  * Viewport Width: 1200
+ *
+ * @package Flavian
  */
+
 ?>
 <!-- wp:group {"backgroundColor":"white","align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-white-background-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)"><!-- wp:heading {"textAlign":"center","fontSize":"2x-large"} -->

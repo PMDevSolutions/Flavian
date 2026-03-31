@@ -6,7 +6,10 @@
  * Keywords: hero, split, image, two column, banner
  * Description: A two-column hero section with content on the left and an image on the right.
  * Viewport Width: 1200
+ *
+ * @package Flavian
  */
+
 ?>
 <!-- wp:group {"backgroundColor":"light","align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-light-background-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)"><!-- wp:columns {"align":"wide"} -->

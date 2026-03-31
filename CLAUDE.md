@@ -522,6 +522,12 @@ gh auth status                # Check authentication
 ./scripts/wordpress/check-performance.sh [path]
 ```
 
+**Agent Config Validation:**
+```bash
+./scripts/validate-agent-configs.sh              # Validate all .claude/ configs
+./scripts/validate-agent-configs-ci.sh            # CI dry-run (exits non-zero on error)
+```
+
 **Security Audit:**
 ```bash
 ./scripts/security-audit/scan-dependencies.sh [path]   # Scan dependencies for CVEs

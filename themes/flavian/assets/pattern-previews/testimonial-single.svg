@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <rect width="1200" height="400" fill="#fafafa"/>
+  <!-- Quote block with left border -->
+  <rect x="200" y="60" width="800" height="240" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="200" y="60" width="6" height="240" rx="3" fill="#e8491d"/>
+  <!-- Large quote mark -->
+  <text x="240" y="120" font-family="Georgia, serif" font-size="60" fill="#1a3f6f" opacity="0.3">"</text>
+  <!-- Quote text lines -->
+  <rect x="240" y="130" width="700" height="12" rx="3" fill="#1d1d1f"/>
+  <rect x="240" y="152" width="680" height="12" rx="3" fill="#1d1d1f"/>
+  <rect x="240" y="174" width="620" height="12" rx="3" fill="#1d1d1f"/>
+  <!-- Author -->
+  <circle cx="270" cy="240" r="20" fill="#1a3f6f" opacity="0.2"/>
+  <rect x="300" y="232" width="140" height="14" rx="3" fill="#1d1d1f"/>
+  <rect x="300" y="252" width="100" height="10" rx="2" fill="#6b7280"/>
+  <!-- Label -->
+  <rect x="0" y="360" width="1200" height="40" fill="#1d1d1f"/>
+  <text x="600" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#ffffff">Testimonial Single</text>
+</svg>

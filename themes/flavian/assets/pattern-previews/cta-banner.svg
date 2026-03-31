@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <rect width="1200" height="400" fill="#e8491d"/>
+  <!-- Centered heading -->
+  <rect x="350" y="100" width="500" height="28" rx="4" fill="#ffffff"/>
+  <!-- Subtitle -->
+  <rect x="380" y="150" width="440" height="12" rx="3" fill="rgba(255,255,255,0.6)"/>
+  <rect x="420" y="172" width="360" height="12" rx="3" fill="rgba(255,255,255,0.6)"/>
+  <!-- CTA Button -->
+  <rect x="480" y="220" width="240" height="50" rx="6" fill="#ffffff"/>
+  <rect x="530" y="238" width="140" height="14" rx="3" fill="#e8491d"/>
+  <!-- Label -->
+  <rect x="0" y="360" width="1200" height="40" fill="rgba(0,0,0,0.3)"/>
+  <text x="600" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#ffffff">CTA Banner</text>
+</svg>

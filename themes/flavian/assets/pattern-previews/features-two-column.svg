@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <rect width="1200" height="400" fill="#ffffff"/>
+  <!-- Section heading -->
+  <rect x="400" y="30" width="400" height="24" rx="4" fill="#1d1d1f"/>
+  <rect x="450" y="64" width="300" height="12" rx="3" fill="#6b7280"/>
+  <!-- Column 1: Image -->
+  <rect x="60" y="100" width="520" height="240" rx="8" fill="#1a3f6f" opacity="0.12"/>
+  <line x1="60" y1="100" x2="580" y2="340" stroke="#1a3f6f" stroke-width="1" opacity="0.15"/>
+  <line x1="580" y1="100" x2="60" y2="340" stroke="#1a3f6f" stroke-width="1" opacity="0.15"/>
+  <circle cx="320" cy="220" r="30" fill="#1a3f6f" opacity="0.15"/>
+  <!-- Column 2: Text -->
+  <rect x="640" y="120" width="360" height="22" rx="4" fill="#1d1d1f"/>
+  <rect x="640" y="158" width="480" height="10" rx="2" fill="#6b7280"/>
+  <rect x="640" y="178" width="450" height="10" rx="2" fill="#6b7280"/>
+  <rect x="640" y="198" width="420" height="10" rx="2" fill="#6b7280"/>
+  <rect x="640" y="218" width="460" height="10" rx="2" fill="#6b7280"/>
+  <!-- Button -->
+  <rect x="640" y="260" width="150" height="40" rx="6" fill="#e8491d"/>
+  <rect x="670" y="274" width="90" height="12" rx="3" fill="#ffffff"/>
+  <!-- Label -->
+  <rect x="0" y="360" width="1200" height="40" fill="#1d1d1f"/>
+  <text x="600" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#ffffff">Features Two Column</text>
+</svg>

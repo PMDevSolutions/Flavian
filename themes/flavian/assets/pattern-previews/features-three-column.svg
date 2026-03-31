@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <rect width="1200" height="400" fill="#ffffff"/>
+  <!-- Section heading -->
+  <rect x="400" y="30" width="400" height="24" rx="4" fill="#1d1d1f"/>
+  <rect x="450" y="64" width="300" height="12" rx="3" fill="#6b7280"/>
+  <!-- Column 1 -->
+  <rect x="60" y="110" width="340" height="220" rx="8" fill="#fafafa" stroke="#e5e7eb" stroke-width="1"/>
+  <circle cx="230" cy="160" r="24" fill="#1a3f6f" opacity="0.2"/>
+  <rect x="150" y="200" width="160" height="16" rx="3" fill="#1d1d1f"/>
+  <rect x="110" y="230" width="240" height="10" rx="2" fill="#6b7280"/>
+  <rect x="130" y="248" width="200" height="10" rx="2" fill="#6b7280"/>
+  <!-- Column 2 -->
+  <rect x="430" y="110" width="340" height="220" rx="8" fill="#fafafa" stroke="#e5e7eb" stroke-width="1"/>
+  <circle cx="600" cy="160" r="24" fill="#1a3f6f" opacity="0.2"/>
+  <rect x="520" y="200" width="160" height="16" rx="3" fill="#1d1d1f"/>
+  <rect x="480" y="230" width="240" height="10" rx="2" fill="#6b7280"/>
+  <rect x="500" y="248" width="200" height="10" rx="2" fill="#6b7280"/>
+  <!-- Column 3 -->
+  <rect x="800" y="110" width="340" height="220" rx="8" fill="#fafafa" stroke="#e5e7eb" stroke-width="1"/>
+  <circle cx="970" cy="160" r="24" fill="#1a3f6f" opacity="0.2"/>
+  <rect x="890" y="200" width="160" height="16" rx="3" fill="#1d1d1f"/>
+  <rect x="850" y="230" width="240" height="10" rx="2" fill="#6b7280"/>
+  <rect x="870" y="248" width="200" height="10" rx="2" fill="#6b7280"/>
+  <!-- Label -->
+  <rect x="0" y="360" width="1200" height="40" fill="#1d1d1f"/>
+  <text x="600" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#ffffff">Features Three Column</text>
+</svg>

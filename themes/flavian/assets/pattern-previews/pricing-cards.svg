@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <rect width="1200" height="400" fill="#fafafa"/>
+  <!-- Card 1 -->
+  <rect x="120" y="20" width="440" height="330" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="260" y="45" width="160" height="18" rx="4" fill="#1d1d1f"/>
+  <rect x="280" y="78" width="120" height="30" rx="4" fill="#1a3f6f"/>
+  <rect x="300" y="86" width="80" height="14" rx="3" fill="#ffffff"/>
+  <!-- Feature list -->
+  <circle cx="195" cy="135" r="5" fill="#e8491d"/>
+  <rect x="212" y="130" width="260" height="10" rx="2" fill="#6b7280"/>
+  <circle cx="195" cy="160" r="5" fill="#e8491d"/>
+  <rect x="212" y="155" width="240" height="10" rx="2" fill="#6b7280"/>
+  <circle cx="195" cy="185" r="5" fill="#e8491d"/>
+  <rect x="212" y="180" width="280" height="10" rx="2" fill="#6b7280"/>
+  <circle cx="195" cy="210" r="5" fill="#e8491d"/>
+  <rect x="212" y="205" width="220" height="10" rx="2" fill="#6b7280"/>
+  <!-- Button -->
+  <rect x="220" y="250" width="240" height="44" rx="6" fill="#e8491d"/>
+  <rect x="280" y="265" width="120" height="14" rx="3" fill="#ffffff"/>
+  <!-- Card 2 -->
+  <rect x="640" y="20" width="440" height="330" rx="10" fill="#ffffff" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="780" y="45" width="160" height="18" rx="4" fill="#1d1d1f"/>
+  <rect x="800" y="78" width="120" height="30" rx="4" fill="#1a3f6f"/>
+  <rect x="820" y="86" width="80" height="14" rx="3" fill="#ffffff"/>
+  <!-- Feature list -->
+  <circle cx="715" cy="135" r="5" fill="#e8491d"/>
+  <rect x="732" y="130" width="260" height="10" rx="2" fill="#6b7280"/>
+  <circle cx="715" cy="160" r="5" fill="#e8491d"/>
+  <rect x="732" y="155" width="240" height="10" rx="2" fill="#6b7280"/>
+  <circle cx="715" cy="185" r="5" fill="#e8491d"/>
+  <rect x="732" y="180" width="280" height="10" rx="2" fill="#6b7280"/>
+  <circle cx="715" cy="210" r="5" fill="#e8491d"/>
+  <rect x="732" y="205" width="220" height="10" rx="2" fill="#6b7280"/>
+  <!-- Button -->
+  <rect x="740" y="250" width="240" height="44" rx="6" fill="transparent" stroke="#1a3f6f" stroke-width="2"/>
+  <rect x="800" y="265" width="120" height="14" rx="3" fill="#1a3f6f"/>
+  <!-- Label -->
+  <rect x="0" y="360" width="1200" height="40" fill="#1d1d1f"/>
+  <text x="600" y="385" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#ffffff">Pricing Cards</text>
+</svg>

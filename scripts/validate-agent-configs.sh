@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+
 ERRORS=0
 WARNINGS=0
 
@@ -98,7 +101,7 @@ validate_agent() {
       if [[ "$cmd" == ./* ]]; then
         check_path="${cmd#./}"
       fi
-      if [[ ! -f "$check_path" ]]; then
+      if [[ ! -f "$PROJECT_ROOT/$check_path" ]]; then
         error "$filename" "hook script not found: $cmd"
         local_errors=$((local_errors + 1))
       fi
@@ -162,7 +165,7 @@ validate_settings() {
 
   # Iterate over hook type keys
   local hook_types
-  hook_types=$(jq -r '.hooks // {} | keys[]' "$file" 2>/dev/null)
+  hook_types=$(jq -r '.hooks // {} | keys[]' "$file" 2>/dev/null | tr -d '\r')
 
   while IFS= read -r hook_type; do
     [[ -z "$hook_type" ]] && continue
@@ -181,10 +184,10 @@ validate_settings() {
 
     # Check each entry has a matcher field
     local count
-    count=$(jq -r ".hooks.\"$hook_type\" | length" "$file" 2>/dev/null)
+    count=$(jq -r ".hooks.\"$hook_type\" | length" "$file" 2>/dev/null | tr -d '\r')
     for ((i = 0; i < count; i++)); do
       local matcher
-      matcher=$(jq -r ".hooks.\"$hook_type\"[$i].matcher // empty" "$file" 2>/dev/null)
+      matcher=$(jq -r ".hooks.\"$hook_type\"[$i].matcher // empty" "$file" 2>/dev/null | tr -d '\r')
       if [[ -z "$matcher" ]]; then
         error "$filename" "missing required field: matcher in hooks.$hook_type[$i]"
         local_errors=$((local_errors + 1))
@@ -217,6 +220,20 @@ SETTINGS_FILE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --help|-h)
+      echo "Usage: $(basename "$0") [OPTIONS]"
+      echo ""
+      echo "Validate .claude/ agent, skill, and settings configurations."
+      echo ""
+      echo "Options:"
+      echo "  --agents-dir DIR   Validate a single agent (requires --file)"
+      echo "  --skills-dir DIR   Validate a single skill (requires --file)"
+      echo "  --file FILE        Target file within --agents-dir or --skills-dir"
+      echo "  --settings FILE    Validate a settings JSON file"
+      echo "  --dry-run          Run full project validation (same as default)"
+      echo "  -h, --help         Show this help message and exit"
+      exit 0
+      ;;
     --agents-dir)
       MODE="agent"
       AGENTS_DIR="$2"
@@ -281,10 +298,10 @@ case "$MODE" in
     echo ""
 
     # Validate all agents
-    if [[ -d .claude/agents ]]; then
+    if [[ -d "$PROJECT_ROOT/.claude/agents" ]]; then
       echo "--- Agents ---"
       declare -A agent_names
-      for f in .claude/agents/*.md; do
+      for f in "$PROJECT_ROOT/.claude/agents"/*.md; do
         [[ -f "$f" ]] || continue
         validate_agent "$f" || true
 
@@ -303,9 +320,9 @@ case "$MODE" in
     fi
 
     # Validate all skills (SKILL.md or skill.md)
-    if [[ -d .claude/skills ]]; then
+    if [[ -d "$PROJECT_ROOT/.claude/skills" ]]; then
       echo "--- Skills ---"
-      for f in .claude/skills/*/SKILL.md .claude/skills/*/skill.md; do
+      for f in "$PROJECT_ROOT/.claude/skills"/*/SKILL.md "$PROJECT_ROOT/.claude/skills"/*/skill.md; do
         [[ -f "$f" ]] || continue
         validate_skill "$f" || true
       done
@@ -314,7 +331,7 @@ case "$MODE" in
 
     # Validate settings files
     echo "--- Settings ---"
-    for f in .claude/settings.json .claude/settings.local.json; do
+    for f in "$PROJECT_ROOT/.claude/settings.json" "$PROJECT_ROOT/.claude/settings.local.json"; do
       if [[ -f "$f" ]]; then
         validate_settings "$f" || true
       fi

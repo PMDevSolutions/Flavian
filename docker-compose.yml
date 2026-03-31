@@ -1,8 +1,14 @@
-version: '3.8'
-
 services:
   wordpress:
-    image: wordpress:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${DOCKER_TARGET:-production}
+      cache_from:
+        - flavian-wordpress:latest
+      args:
+        - WP_CLI_VERSION=2.10.0
+    image: flavian-wordpress:latest
     container_name: flavian-wp
     ports:
       - "8080:80"
@@ -21,8 +27,15 @@ services:
       # Persist WordPress files (core, uploads, etc.)
       - wordpress_data:/var/www/html
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   db:
     image: mysql:8.0
@@ -35,6 +48,12 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # Optional: phpMyAdmin for database management
   phpmyadmin:

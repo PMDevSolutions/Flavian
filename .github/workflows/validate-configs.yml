@@ -1,0 +1,23 @@
+name: Validate Agent Configs
+
+on:
+  push:
+    paths:
+      - '.claude/**'
+  pull_request:
+    paths:
+      - '.claude/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Validate agent configurations
+        run: ./scripts/validate-agent-configs-ci.sh

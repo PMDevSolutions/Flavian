@@ -7,6 +7,7 @@
  * Description: A two-column hero section with content on the left and an image on the right.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

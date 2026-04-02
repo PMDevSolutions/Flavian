@@ -7,6 +7,7 @@
  * Description: A two-column layout with images and descriptions for highlighting key features.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

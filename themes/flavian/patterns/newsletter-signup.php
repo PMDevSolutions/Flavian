@@ -7,6 +7,7 @@
  * Description: A newsletter signup section with heading, description, and subscribe button.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

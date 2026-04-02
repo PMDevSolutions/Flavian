@@ -6,7 +6,7 @@ set -e
 # --- Helpers ---
 
 die() {
-    echo "Error: $1" >&2
+    echo "Error [parse-canva-export.sh]: $1" >&2
     exit 1
 }
 

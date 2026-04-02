@@ -7,6 +7,7 @@
  * Description: A full-width call-to-action banner with heading, description, and button.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

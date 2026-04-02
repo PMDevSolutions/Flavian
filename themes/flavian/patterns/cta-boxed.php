@@ -7,6 +7,7 @@
  * Description: A centered boxed call-to-action section with accent background and dual buttons.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

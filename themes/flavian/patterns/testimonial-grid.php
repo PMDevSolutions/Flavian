@@ -7,6 +7,7 @@
  * Description: A three-column grid of customer testimonials with quotes and attributions.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

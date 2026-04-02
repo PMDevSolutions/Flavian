@@ -7,6 +7,7 @@
  * Description: A three-tier pricing table with Basic, Pro, and Enterprise plans.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

@@ -7,6 +7,7 @@
  * Description: A full-width hero section with heading, description, and call-to-action button.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

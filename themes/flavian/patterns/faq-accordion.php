@@ -7,6 +7,7 @@
  * Description: A frequently asked questions section with expandable details blocks.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

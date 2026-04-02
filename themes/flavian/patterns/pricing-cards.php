@@ -7,6 +7,7 @@
  * Description: A simple two-card pricing layout for comparing plans.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

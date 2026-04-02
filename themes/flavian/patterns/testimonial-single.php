@@ -7,6 +7,7 @@
  * Description: A single testimonial with a prominent quote and attribution.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

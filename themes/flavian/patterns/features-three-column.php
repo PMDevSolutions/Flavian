@@ -7,6 +7,7 @@
  * Description: A three-column feature grid with headings and descriptions for showcasing services or benefits.
  * Viewport Width: 1200
  *
+ * @since 1.0.0
  * @package Flavian
  */
 

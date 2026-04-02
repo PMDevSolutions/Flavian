@@ -50,7 +50,9 @@ add_action( 'init', 'flavian_register_pattern_categories' );
 
 /**
  * Enqueue Google Fonts (Inter and Playfair Display).
+ * Loads Inter and Playfair Display fonts from Google Fonts CDN.
  *
+ * @since 1.0.0
  * @return void
  */
 function flavian_enqueue_fonts(): void {

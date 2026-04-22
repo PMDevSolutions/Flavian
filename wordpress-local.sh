@@ -256,6 +256,14 @@ activate_theme() {
         exit 1
     fi
 
+    if [ ! -d "themes/$theme_slug" ]; then
+        print_error "Theme not found: themes/$theme_slug"
+        echo ""
+        echo "Available themes:"
+        ls -1 themes/
+        exit 1
+    fi
+
     print_header "Activating Theme: $theme_slug"
 
     docker-compose exec wordpress wp theme activate "$theme_slug" --allow-root

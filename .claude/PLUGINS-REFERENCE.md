@@ -506,37 +506,49 @@ This template includes custom WordPress development skills that complement the p
 
 ### Installed Skills
 
-1. **fse-block-theme-development**
+1. **figma-to-fse-autonomous-workflow**
+   - Orchestrator for Figma-to-FSE conversion pipeline
+   - Triggers: "convert Figma", "Figma to WordPress", "FSE conversion"
+
+2. **canva-to-fse-autonomous-workflow**
+   - Orchestrator for Canva-to-FSE conversion pipeline
+   - Triggers: "convert Canva", "Canva to WordPress", "Canva HTML export"
+
+3. **fse-block-theme-development**
    - FSE block theme creation with theme.json-first approach
    - Triggers: "create block theme", "theme.json", "FSE"
 
-2. **block-pattern-creation**
+4. **fse-pattern-first-architecture**
+   - Enforces PHP patterns for images in FSE templates (not inline HTML)
+   - Triggers: auto-triggered when creating FSE templates with images
+
+5. **block-pattern-creation**
    - Reusable block pattern registration and best practices
    - Triggers: "create pattern", "register pattern", "block pattern"
 
-3. **wordpress-security-hardening**
+6. **visual-qa-verification**
+   - Post-conversion QA: screenshots, responsive, Lighthouse, accessibility
+   - Triggers: "verify theme", "visual QA", "compare to Figma"
+
+7. **wordpress-security-hardening**
    - Security best practices: sanitize input, escape output, nonces
    - Triggers: "security review", "sanitize", "escape", "nonce"
 
-4. **wp-cli-workflows**
-   - WP-CLI automation with safe workflows and backups
-   - Triggers: "scaffold theme", "wp command", "database export"
-
-5. **wordpress-testing-workflows**
+8. **wordpress-testing-workflows**
    - PHPUnit testing for WordPress with test fixtures
    - Triggers: "write tests", "PHPUnit", "test coverage"
 
-6. **wordpress-deployment-automation**
-   - CI/CD pipelines with GitHub Actions
-   - Triggers: "deploy to production", "CI/CD", "GitHub Actions"
-
-7. **wordpress-internationalization**
+9. **wordpress-internationalization**
    - i18n/l10n implementation with POT file generation
    - Triggers: "translate", "i18n", "localization", "POT file"
 
-8. **wordpress-hook-integration**
-   - Claude Code agent hooks for WordPress automation
-   - Triggers: "agent hook", "create hook", "automate"
+10. **wordpress-hook-integration**
+    - Claude Code agent hooks for WordPress automation
+    - Triggers: "agent hook", "create hook", "automate"
+
+11. **wp-cli-workflows**
+    - WP-CLI automation with safe workflows and backups
+    - Triggers: "scaffold theme", "wp command", "database export"
 
 ### Skills vs Plugins
 

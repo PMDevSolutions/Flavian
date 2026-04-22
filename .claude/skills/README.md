@@ -59,6 +59,11 @@ This directory contains custom WordPress development skills for Claude Code, opt
     - Triggers: "write tests", "run phpunit", "test coverage", "integration tests"
     - Complements: test-writer-fixer agent
 
+11. **canva-to-fse-autonomous-workflow**
+    - Orchestrator for the Canva-to-FSE conversion pipeline (parallel entry point to Figma)
+    - Triggers: "convert Canva", "Canva to WordPress", "Canva HTML export"
+    - Role: Alternate entry point when design source is Canva rather than Figma
+
 ## Pipeline Flow
 
 ```
@@ -93,7 +98,7 @@ Verified Theme Ready for WordPress
 
 ## Integration with Custom Agents
 
-Each skill works with the 19 custom agents in this template:
+Each skill works with the 49 custom agents in this template:
 
 - **figma-fse-converter** + figma-to-fse-autonomous-workflow + fse-pattern-first-architecture
 - **frontend-developer** + fse-block-theme-development
@@ -130,4 +135,4 @@ Skills are version-controlled and updated when:
 ---
 
 **Last Updated:** 2026-03-06
-**Total Skills:** 10 (removed wordpress-deployment-automation, added visual-qa-verification)
+**Total Skills:** 11

@@ -340,4 +340,4 @@ These agents are research/audit-only and don't need automated hooks:
 
 ---
 
-**Architecture Assessment:** 45 custom agents provide comprehensive development coverage — 20 WordPress-specific agents for visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, and SEO, plus 25 generic cross-domain agents for business, marketing, engineering, and meta/ops tasks.
+**Architecture Assessment:** 49 custom agents provide comprehensive development coverage — 24 WordPress-specific agents for visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, and SEO, plus 25 generic cross-domain agents for business, marketing, engineering, and meta/ops tasks.

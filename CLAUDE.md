@@ -265,16 +265,15 @@ define( 'SCRIPT_DEBUG', true );
 
 ## Claude Code Architecture & Configuration
 
-### Installed Plugins (5 Total)
+### Installed Plugins (6 Total)
 
-This project uses a lean, WordPress-optimized plugin configuration with 5 plugins:
+This project uses a lean, WordPress-optimized plugin configuration with 6 plugins (5 user + 1 local):
 - **episodic-memory** - Conversation search and memory
 - **commit-commands** - Git workflow automation
+- **github** - GitHub integration (PRs, issues, repos)
 - **php-lsp** - PHP language server
 - **superpowers** - Advanced development workflows
 - **ai-taskmaster** - Task management (local)
-
-**Note:** GitHub integration via `gh` CLI (not a plugin)
 
 **Full documentation:** `.claude/PLUGINS-REFERENCE.md`
 
@@ -305,13 +304,17 @@ Use this guide to select the right one:
 
 ---
 
-### Custom WordPress Skills (9 Total)
+### Custom WordPress Skills (11 Total)
 
-9 WordPress-specific skills provide systematic workflows:
+11 WordPress-specific skills provide systematic workflows:
 
-**Core:** FSE block theme development, block pattern creation, security hardening, WP-CLI workflows
+**Pipeline orchestrators:** figma-to-fse-autonomous-workflow, canva-to-fse-autonomous-workflow
 
-**Advanced:** Testing, deployment automation, internationalization, hook integration
+**Theme authoring:** fse-block-theme-development, fse-pattern-first-architecture, block-pattern-creation
+
+**Quality & security:** visual-qa-verification, wordpress-security-hardening, wordpress-testing-workflows
+
+**Operations:** wordpress-internationalization, wordpress-hook-integration, wp-cli-workflows
 
 Skills auto-trigger based on keywords (e.g., "FSE", "security review", "deploy").
 
@@ -454,14 +457,13 @@ Result: themes/[theme-name]/ ready for WordPress
 ### Architecture Notes
 
 **Plugin Philosophy:**
-- Lean configuration (5 plugins total)
+- Lean configuration (6 plugins total: 5 user + 1 local)
 - WordPress-specific focus (php-lsp, not 9+ language servers)
 - No redundant or duplicate plugins
 - All plugins serve WordPress development
-- GitHub integration via `gh` CLI (not a plugin)
 
 **Agent Philosophy:**
-- 46 custom agents available (21 WordPress-focused + 25 generic cross-domain)
+- 49 custom agents available (24 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -561,4 +563,4 @@ gh auth status                # Check authentication
 ---
 
 **Last Updated:** 2026-03-25
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (5 plugins + gh CLI + 49 agents)
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 49 agents)

@@ -1,58 +1,80 @@
 # Flavian
 
-A clean `wp-content` directory structure for modern WordPress development, enhanced with Claude Code integration and WordPress-specific development tools.
+**Figma designs to working WordPress sites, automatically.**
 
-## What This Template Provides
+Flavian is a Claude Code-powered pipeline that converts a Figma design (or a Canva HTML/CSS export) into a complete WordPress FSE block theme running on a local Docker WordPress instance — with a minimum of questions asked. Hand it a design, get back a theme with `theme.json`, templates, block patterns, and images already wired up.
 
-- **Clean Directory Structure**: Empty `wp-content` structure ready for theme and plugin development
-- **WordPress Development Scripts**: Security scanning, performance checking, coding standards validation
-- **Git Configuration**: Comprehensive `.gitignore` for WordPress development
-- **Claude Code Integration**: WordPress-specific guidance in `CLAUDE.md` for AI-assisted development
+## How It Works
+
+1. **You provide a design.** A Figma URL (Dev Mode enabled) or a Canva HTML export directory.
+2. **Claude Code converts it.** Design tokens (colors, typography, spacing) are extracted and a full FSE block theme is generated in `themes/[theme-name]/`.
+3. **You activate and iterate.** The theme runs against the included Docker WordPress environment. Edit, refresh, done.
+
+Typical runtime: 5–30 minutes. No manual `theme.json` authoring.
+
+**What you get:**
+- Complete FSE block theme — `theme.json`, templates, block patterns, template parts
+- Design tokens extracted directly from the source (no hardcoded colors, fonts, or spacing)
+- Images wired up via pattern-first architecture (no broken `src=""` in HTML templates)
+- Automatic validation against WordPress coding standards and security best practices
+- A running local WordPress site at http://localhost:8080
 
 ## Prerequisites
 
-You need these installed before using this template:
-
-| Requirement | What For | Install |
-|-------------|----------|---------|
-| **[Claude Code](https://claude.ai/code)** | AI-assisted development (the core tool) | `npm install -g @anthropic-ai/claude-code` |
-| **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** | Local WordPress environment | [docker.com/download](https://www.docker.com/products/docker-desktop/) |
-| **[Node.js](https://nodejs.org/) 18+** | Playwright MCP (browser testing) | [nodejs.org](https://nodejs.org/) |
+| Requirement | What for | Install |
+|---|---|---|
+| **[Claude Code](https://claude.ai/code)** | The conversion engine | `npm install -g @anthropic-ai/claude-code` |
+| **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** | Local WordPress (WordPress + MySQL + phpMyAdmin) | [docker.com/download](https://www.docker.com/products/docker-desktop/) |
+| **[Node.js](https://nodejs.org/) 18+** | Playwright MCP for visual QA | [nodejs.org](https://nodejs.org/) |
 | **[Git](https://git-scm.com/)** | Version control | [git-scm.com](https://git-scm.com/) |
+| **[Figma Professional+](https://www.figma.com/pricing/)** | Dev Mode — required to extract design tokens (skip if using Canva input only) | [figma.com](https://www.figma.com/) |
 
-**For Figma-to-WordPress conversion (optional):**
-| Requirement | What For |
-|-------------|----------|
-| **[Figma](https://www.figma.com/) Professional+** | Design token extraction via Dev Mode |
+**Auto-check:** `./scripts/check-prerequisites.sh` · **Full details:** [docs/PREREQUISITES.md](docs/PREREQUISITES.md)
 
-**Full details:** [docs/PREREQUISITES.md](docs/PREREQUISITES.md) | **Auto-check:** `./scripts/check-prerequisites.sh`
-
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
-# 1. Clone and enter the project
+# 1. Clone and enter
 git clone <repository-url>
 cd Flavian
 
-# 2. Start local WordPress (Docker must be running)
+# 2. Boot local WordPress (Docker must be running)
+cp .env.example .env            # edit values before continuing
+./wordpress-local.sh build      # first time only
 ./wordpress-local.sh start
-./wordpress-local.sh install
+./wordpress-local.sh install    # first time only
 
-# 3. Open Claude Code and start building
+# 3. Open Claude Code and hand it your design
 claude
+> Convert this Figma design to WordPress: <your-figma-url>
 ```
 
-WordPress will be at http://localhost:8080 (admin: admin/admin).
+Claude generates the theme in `themes/[theme-name]/`. Activate it:
 
-**Detailed guide:** [docs/QUICK-START.md](docs/QUICK-START.md) | **Docker issues?** [docs/docker-troubleshooting.md](docs/docker-troubleshooting.md)
+```bash
+./wordpress-local.sh activate-theme [theme-name]
+```
 
-### Alternative: Use as wp-content Directory
+Site at http://localhost:8080 · Admin at /wp-admin · Database UI at :8081.
+
+**Supported inputs:**
+- **Figma URL** — requires Professional plan (Dev Mode). See [docs/figma-to-wordpress/README.md](docs/figma-to-wordpress/README.md).
+- **Canva HTML/CSS export directory** — no account tier required. See [docs/canva-to-wordpress/README.md](docs/canva-to-wordpress/README.md).
+
+**More docs:** [docs/QUICK-START.md](docs/QUICK-START.md) · [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) · [docs/docker-troubleshooting.md](docs/docker-troubleshooting.md)
+
+<details>
+<summary>Alternative: use as a wp-content directory in an existing WordPress install</summary>
+
+If you already run WordPress outside Docker and just want Flavian's scripts and Claude Code integration:
+
 ```bash
 git clone <repository-url> wp-content
 cd .. && wp core download --skip-content
 wp config create --dbname=your_db --dbuser=root --dbpass=password
 wp core install --url=example.test --title="Your Site" --admin_user=admin --admin_password=password --admin_email=you@example.com
 ```
+</details>
 
 ## Directory Structure
 
@@ -126,42 +148,47 @@ See `CLAUDE.md` for comprehensive WP-CLI command reference for:
 This template is optimized for WordPress development with Claude Code, featuring:
 
 ### **Architecture Overview**
-- **Lean Plugin Setup**: 5 WordPress-focused plugins + 1 local task manager
-- **Custom Agents**: 24 specialized agents (8 WordPress-relevant, 16 general-purpose)
+- **Lean Plugin Setup**: 6 Claude Code plugins (5 user + 1 local)
+- **Custom Agents**: 49 specialized agents (24 WordPress-focused + 25 generic cross-domain)
+- **Custom Skills**: 11 workflows covering the Figma/Canva-to-FSE pipeline, security, testing, and i18n
 - **Documentation Hub**: Comprehensive guides in `.claude/` directory
 
 ### **Installed Plugins**
 ```
 ✅ episodic-memory     # Semantic search and persistent memory
 ✅ commit-commands     # Structured git workflows (/commit, /commit-push-pr)
-✅ github              # GitHub integration (gh CLI)
+✅ github              # GitHub integration (PRs, issues, repos)
 ✅ php-lsp             # PHP code intelligence (autocomplete, go-to-definition)
 ✅ superpowers         # Advanced development workflows and skills
 ✅ ai-taskmaster       # Task management (local plugin)
 ```
 
-### **WordPress-Relevant Custom Agents**
+### **WordPress-Relevant Custom Agents** (highlights)
+Full catalog of 49 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-AGENTS-GUIDE.md). Key WordPress-specific ones:
 ```
+✅ figma-fse-converter      # Figma-to-FSE theme conversion
+✅ canva-fse-converter      # Canva-to-FSE theme conversion
 ✅ frontend-developer       # JS/CSS implementation for FSE themes
 ✅ test-writer-fixer        # PHP unit testing
 ✅ ui-designer              # Block pattern design
-✅ ux-researcher            # Theme usability testing
-✅ performance-benchmarker  # Performance optimization
-✅ api-tester              # REST API testing
-✅ analytics-reporter      # Performance metrics
-✅ workflow-optimizer      # Development process improvement
+✅ visual-qa-agent          # Visual regression and design comparison
+✅ accessibility-auditor    # WCAG 2.1 AA compliance checks
+✅ security-audit-agent     # Dependency/CVE scanning + WPCS enforcement
 ```
 
-### **WordPress Development Skills (NEW! ✨)**
+### **WordPress Development Skills**
 ```
-✅ fse-block-theme-development      # FSE block theme creation workflows
-✅ block-pattern-creation           # Reusable block pattern registration
-✅ wordpress-security-hardening     # Security best practices (sanitize, escape, nonces)
-✅ wp-cli-workflows                 # WP-CLI automation with safe workflows
-✅ wordpress-testing-workflows      # PHPUnit testing for WordPress
-✅ wordpress-deployment-automation  # CI/CD pipelines with GitHub Actions
-✅ wordpress-internationalization   # i18n/l10n implementation
-✅ wordpress-hook-integration       # Claude Code agent hooks for WordPress
+✅ figma-to-fse-autonomous-workflow  # Orchestrator for Figma-to-FSE conversion
+✅ canva-to-fse-autonomous-workflow  # Orchestrator for Canva-to-FSE conversion
+✅ fse-block-theme-development       # theme.json, templates, FSE structure
+✅ fse-pattern-first-architecture    # PHP patterns for images (enforced)
+✅ block-pattern-creation            # Pattern registration and reuse
+✅ visual-qa-verification            # Post-conversion screenshot + Lighthouse QA
+✅ wordpress-security-hardening      # Sanitize, escape, nonces, capabilities
+✅ wordpress-internationalization    # i18n/l10n wrappers and POT generation
+✅ wordpress-hook-integration        # Claude Code agent hooks for WordPress
+✅ wp-cli-workflows                  # WP-CLI automation (theme activation, DB, content)
+✅ wordpress-testing-workflows       # PHPUnit test creation and execution
 ```
 
 **What Skills Provide:**

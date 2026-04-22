@@ -209,7 +209,7 @@ This skill enables:
 - **Per-template validation** via figma-fse-post-template.sh
 - **Conversion completion reports** via figma-fse-completion.sh
 
-Works with all 19 custom agents in this template.
+Works with all 49 custom agents in this template.
 
 ---
 

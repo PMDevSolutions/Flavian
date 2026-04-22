@@ -278,7 +278,7 @@ git pull
 - [x] GitHub integration installed
 - [x] Git workflows automated
 - [x] WordPress CLI available
-- [x] Custom agents configured (24 agents)
+- [x] Custom agents configured (49 agents)
 - [x] Custom commands available (test, lint, create-blog-article)
 - [x] Permissions properly scoped
 

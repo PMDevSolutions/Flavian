@@ -1,7 +1,7 @@
 # Custom Agents Reference Guide
 
-**Last Updated:** 2026-03-25
-**Total Custom Agents:** 49
+**Last Updated:** 2026-05-06
+**Total Custom Agents:** 50
 **Location:** `.claude/agents/`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.
@@ -87,6 +87,12 @@ These agents directly support WordPress block theme development:
 - **Purpose:** WordPress plugin development
 - **Use for:** Custom post types, REST API endpoints, admin pages, Gutenberg blocks, plugin architecture
 - **WordPress relevance:** High - full plugin development lifecycle
+
+### **deployment-agent** (NEW)
+- **Purpose:** Remote deployment of themes and plugins to staging and production
+- **Use for:** SSH/SFTP atomic releases, Git push-to-deploy, remote WP-CLI orchestration, pre-deployment validation, rollback, multi-environment configuration, deploy notifications
+- **WordPress relevance:** Critical - production-grade release workflow with rollback safety
+- **Backed by:** `scripts/remote-deployment/` and `.claude/config/deployment/`
 
 ---
 

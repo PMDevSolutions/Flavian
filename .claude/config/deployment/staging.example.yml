@@ -1,0 +1,58 @@
+# Example staging deployment configuration.
+#
+# Copy this file to `staging.yml` and fill in real values. The file is then
+# read by `scripts/remote-deployment/deploy.sh --env staging`.
+#
+# Every key is parsed into DEPLOY_CFG_<UPPER_PATH> at runtime, e.g.
+#   ssh.host  →  DEPLOY_CFG_SSH_HOST
+#   notify.slack_webhook  →  DEPLOY_CFG_NOTIFY_SLACK_WEBHOOK
+
+# Primary deployment method: ssh, git, or wpcli.
+method: ssh
+
+# Production-only safety. Leave false on staging.
+allow_dirty: true
+
+# Optional. Activated automatically after a successful SSH/Git deploy when
+# WP-CLI credentials below are configured.
+activate_theme: my-fse-theme
+# activate_plugins: my-plugin,another-plugin
+
+# How many releases to keep on the remote host (SSH method only).
+keep_releases: 5
+
+# ─── SSH / SFTP ────────────────────────────────────────────────────────────
+ssh:
+  host: staging.example.com
+  user: deploy
+  port: 22
+  # Optional. Falls back to ~/.ssh/id_rsa via the agent if blank.
+  key: ~/.ssh/staging_deploy_ed25519
+
+# Absolute paths on the remote host.
+remote_root: /var/www/staging.example.com/deploy
+wp_content_path: /var/www/staging.example.com/htdocs/wp-content
+
+# ─── Git-based deployment ──────────────────────────────────────────────────
+# Used only when method: git. The remote URL points at a bare repo on the
+# host, with a post-receive hook that updates the working tree.
+git:
+  remote_url: ssh://deploy@staging.example.com/var/git/site.git
+  remote_branch: staging
+  remote_name: deploy-staging
+
+# ─── Remote WP-CLI orchestration ───────────────────────────────────────────
+# Triggered after SSH/Git deploys when set. Uses WP-CLI's --ssh alias format:
+#   user@host[:port][/path]
+wp_cli:
+  ssh: deploy@staging.example.com:22/var/www/staging.example.com/htdocs
+  path: /var/www/staging.example.com/htdocs
+
+# ─── Notifications ─────────────────────────────────────────────────────────
+# Each channel is optional. Empty/missing values are skipped.
+notify:
+  slack_webhook: ""
+  discord_webhook: ""
+  webhook_url: ""
+  email_to: ""
+  email_from: ""

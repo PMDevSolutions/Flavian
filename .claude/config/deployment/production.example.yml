@@ -1,0 +1,46 @@
+# Example production deployment configuration.
+#
+# Copy this file to `production.yml`. Production has stricter defaults than
+# staging — auto-rollback is recommended and dirty worktrees are refused
+# unless allow_dirty is explicitly true.
+
+method: ssh
+
+# Production refuses to deploy from a dirty worktree by default. Override only
+# if you accept that what's deployed may not match any committed ref.
+allow_dirty: false
+
+activate_theme: my-fse-theme
+
+# Larger production sites usually want a longer rollback window.
+keep_releases: 10
+
+# ─── SSH / SFTP ────────────────────────────────────────────────────────────
+ssh:
+  host: example.com
+  user: deploy
+  port: 22
+  key: ~/.ssh/production_deploy_ed25519
+
+remote_root: /var/www/example.com/deploy
+wp_content_path: /var/www/example.com/htdocs/wp-content
+
+# ─── Git-based deployment ──────────────────────────────────────────────────
+git:
+  remote_url: ssh://deploy@example.com/var/git/site.git
+  remote_branch: production
+  remote_name: deploy-production
+
+# ─── Remote WP-CLI orchestration ───────────────────────────────────────────
+wp_cli:
+  ssh: deploy@example.com:22/var/www/example.com/htdocs
+  path: /var/www/example.com/htdocs
+
+# ─── Notifications ─────────────────────────────────────────────────────────
+# Production deploys should be visible. Wire at least one alert channel.
+notify:
+  slack_webhook: ""
+  discord_webhook: ""
+  webhook_url: ""
+  email_to: ""
+  email_from: ""

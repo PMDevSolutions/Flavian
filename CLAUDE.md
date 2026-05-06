@@ -279,9 +279,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 6 plugin
 
 ---
 
-### Custom Agents (49 Total)
+### Custom Agents (50 Total)
 
-49 specialized agents: 24 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+50 specialized agents: 25 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`, `deployment-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -463,7 +463,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - All plugins serve WordPress development
 
 **Agent Philosophy:**
-- 49 custom agents available (24 WordPress-focused + 25 generic cross-domain)
+- 50 custom agents available (25 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -537,6 +537,17 @@ gh auth status                # Check authentication
 ./scripts/security-audit/create-issues.sh               # Create GitHub issues for critical findings (stdin)
 ```
 
+**Remote Deployment:**
+```bash
+./scripts/remote-deployment/deploy.sh --env staging --dry-run            # Plan a deploy
+./scripts/remote-deployment/deploy.sh --env staging                      # Deploy to staging
+./scripts/remote-deployment/deploy.sh --env production --auto-rollback   # Production with safety net
+./scripts/remote-deployment/pre-deploy-checks.sh --target all            # Run validation gate only
+./scripts/remote-deployment/rollback.sh --env <env> --list               # List rollback targets
+./scripts/remote-deployment/rollback.sh --env <env> --to <release-id>    # Roll back
+```
+Configs live in `.claude/config/deployment/<env>.yml` (gitignored). Templates: `*.example.yml`.
+
 **Visual QA & Quality Scripts:**
 ```bash
 ./scripts/visual-diff.js [actual] [expected]     # Pixel-level screenshot comparison
@@ -562,5 +573,5 @@ gh auth status                # Check authentication
 
 ---
 
-**Last Updated:** 2026-03-25
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 49 agents)
+**Last Updated:** 2026-05-06
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 50 agents)

@@ -6,8 +6,16 @@
 !.claude/commands/
 !.claude/hooks/
 !.claude/validation/
+!.claude/config/
 !.claude/*.md
 !.claude/settings.json
+
+# Deployment configs: example templates are tracked; real env files are not.
+.claude/config/deployment/*.yml
+.claude/config/deployment/*.yaml
+!.claude/config/deployment/*.example.yml
+!.claude/config/deployment/*.example.yaml
+!.claude/config/deployment/README.md
 
 # Claude Code temporary/user-specific files (explicitly ignored)
 .claude/logs/

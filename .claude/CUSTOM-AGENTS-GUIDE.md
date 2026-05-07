@@ -1,7 +1,7 @@
 # Custom Agents Reference Guide
 
 **Last Updated:** 2026-05-06
-**Total Custom Agents:** 50
+**Total Custom Agents:** 51
 **Location:** `.claude/agents/`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.
@@ -93,6 +93,12 @@ These agents directly support WordPress block theme development:
 - **Use for:** SSH/SFTP atomic releases, Git push-to-deploy, remote WP-CLI orchestration, pre-deployment validation, rollback, multi-environment configuration, deploy notifications
 - **WordPress relevance:** Critical - production-grade release workflow with rollback safety
 - **Backed by:** `scripts/remote-deployment/` and `.claude/config/deployment/`
+
+### **woocommerce-agent** (NEW)
+- **Purpose:** WooCommerce store setup and FSE-template work
+- **Use for:** Installing and configuring WooCommerce, importing products, wiring shop/cart/checkout/my-account pages to FSE templates, customising the bundled `flavian-shop` starter theme, scaffolding shipping zones, taxes, and payment gateways
+- **WordPress relevance:** Critical - turns the scaffold into an e-commerce-ready store
+- **Backed by:** `themes/flavian-shop/` and `scripts/wordpress-install/setup-woocommerce.sh`
 
 ---
 

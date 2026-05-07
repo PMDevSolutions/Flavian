@@ -1,0 +1,25 @@
+<!-- wp:template-part {"slug":"header","tagName":"header"} /-->
+
+<!-- wp:group {"tagName":"main","style":{"spacing":{"padding":{"top":"var:preset|spacing|60","bottom":"var:preset|spacing|60"}}},"layout":{"type":"constrained"}} -->
+<main class="wp-block-group" style="padding-top:var(--wp--preset--spacing--60);padding-bottom:var(--wp--preset--spacing--60)">
+  <!-- wp:heading {"textAlign":"center","level":1,"fontSize":"display"} -->
+  <h1 class="wp-block-heading has-text-align-center has-display-font-size">Not found</h1>
+  <!-- /wp:heading -->
+
+  <!-- wp:paragraph {"align":"center","textColor":"muted"} -->
+  <p class="has-text-align-center has-muted-color has-text-color">The page you were looking for doesn't exist. Try the search below or head back to the shop.</p>
+  <!-- /wp:paragraph -->
+
+  <!-- wp:search {"label":"","showLabel":false,"placeholder":"Search products…","buttonText":"Search","buttonPosition":"button-inside","query":{"post_type":"product"}} /-->
+
+  <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+  <div class="wp-block-buttons">
+    <!-- wp:button -->
+    <div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/shop">Browse all products</a></div>
+    <!-- /wp:button -->
+  </div>
+  <!-- /wp:buttons -->
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"footer"} /-->

@@ -279,9 +279,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 6 plugin
 
 ---
 
-### Custom Agents (50 Total)
+### Custom Agents (51 Total)
 
-50 specialized agents: 25 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`, `deployment-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+51 specialized agents: 26 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -463,7 +463,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - All plugins serve WordPress development
 
 **Agent Philosophy:**
-- 50 custom agents available (25 WordPress-focused + 25 generic cross-domain)
+- 51 custom agents available (26 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -548,6 +548,19 @@ gh auth status                # Check authentication
 ```
 Configs live in `.claude/config/deployment/<env>.yml` (gitignored). Templates: `*.example.yml`.
 
+**WooCommerce (e-commerce scaffold):**
+```bash
+# One-shot install via compose profile
+docker compose --profile woocommerce up woocommerce-installer
+
+# Or run the installer script directly against the running container
+./scripts/wordpress-install/setup-woocommerce.sh                  # full install + sample products
+./scripts/wordpress-install/setup-woocommerce.sh --no-sample      # install without sample data
+./scripts/wordpress-install/setup-woocommerce.sh --currency GBP   # configure currency / country
+```
+Bundled WooCommerce-ready FSE theme: `themes/flavian-shop/`.
+Defaults configurable via `.env`: `WC_INSTALL_SAMPLE_DATA`, `WC_DEFAULT_THEME`, `WC_DEFAULT_CURRENCY`, `WC_DEFAULT_COUNTRY`.
+
 **Visual QA & Quality Scripts:**
 ```bash
 ./scripts/visual-diff.js [actual] [expected]     # Pixel-level screenshot comparison
@@ -574,4 +587,4 @@ Configs live in `.claude/config/deployment/<env>.yml` (gitignored). Templates: `
 ---
 
 **Last Updated:** 2026-05-06
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 50 agents)
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 51 agents)

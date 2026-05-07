@@ -55,6 +55,43 @@ services:
       retries: 5
       start_period: 30s
 
+  # One-shot WooCommerce installer.
+  #
+  # Run with the 'woocommerce' compose profile to bootstrap a fresh store
+  # with the cart/checkout/my-account pages and (optionally) sample products:
+  #
+  #   docker compose --profile woocommerce up woocommerce-installer
+  #
+  # The container exits as soon as the install script completes. Re-running it
+  # is safe — every step is idempotent.
+  woocommerce-installer:
+    image: docker:cli
+    container_name: flavian-wc-installer
+    profiles: ["woocommerce"]
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/wordpress-install:/scripts:ro
+    working_dir: /scripts
+    environment:
+      WC_INSTALL_SAMPLE_DATA: ${WC_INSTALL_SAMPLE_DATA:-true}
+      WC_DEFAULT_THEME:        ${WC_DEFAULT_THEME:-flavian-shop}
+      WC_DEFAULT_CURRENCY:     ${WC_DEFAULT_CURRENCY:-USD}
+      WC_DEFAULT_COUNTRY:      ${WC_DEFAULT_COUNTRY:-US:CA}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        apk add --no-cache bash docker-cli-compose >/dev/null
+        ARGS=""
+        [ "$$WC_INSTALL_SAMPLE_DATA" = "false" ] && ARGS="$$ARGS --no-sample"
+        [ -n "$$WC_DEFAULT_THEME"    ] && ARGS="$$ARGS --theme $$WC_DEFAULT_THEME"
+        [ -n "$$WC_DEFAULT_CURRENCY" ] && ARGS="$$ARGS --currency $$WC_DEFAULT_CURRENCY"
+        [ -n "$$WC_DEFAULT_COUNTRY"  ] && ARGS="$$ARGS --country $$WC_DEFAULT_COUNTRY"
+        bash /scripts/setup-woocommerce.sh $$ARGS
+
   # Optional: phpMyAdmin for database management
   phpmyadmin:
     image: phpmyadmin:latest

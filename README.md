@@ -149,7 +149,7 @@ This template is optimized for WordPress development with Claude Code, featuring
 
 ### **Architecture Overview**
 - **Lean Plugin Setup**: 6 Claude Code plugins (5 user + 1 local)
-- **Custom Agents**: 49 specialized agents (24 WordPress-focused + 25 generic cross-domain)
+- **Custom Agents**: 51 specialized agents
 - **Custom Skills**: 11 workflows covering the Figma/Canva-to-FSE pipeline, security, testing, and i18n
 - **Documentation Hub**: Comprehensive guides in `.claude/` directory
 
@@ -164,7 +164,7 @@ This template is optimized for WordPress development with Claude Code, featuring
 ```
 
 ### **WordPress-Relevant Custom Agents** (highlights)
-Full catalog of 49 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-AGENTS-GUIDE.md). Key WordPress-specific ones:
+Full catalog of 51 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-AGENTS-GUIDE.md). Key WordPress-specific ones:
 ```
 ✅ figma-fse-converter      # Figma-to-FSE theme conversion
 ✅ canva-fse-converter      # Canva-to-FSE theme conversion

@@ -28,17 +28,20 @@ function flavian_shop_setup() {
 	add_theme_support( 'html5', array( 'search-form', 'gallery', 'caption', 'style', 'script' ) );
 
 	// WooCommerce — opt in to FSE block-based templates and gallery features.
-	add_theme_support( 'woocommerce', array(
-		'thumbnail_image_width' => 600,
-		'single_image_width'    => 1200,
-		'product_grid'          => array(
-			'default_rows'    => 3,
-			'min_rows'        => 1,
-			'default_columns' => 3,
-			'min_columns'     => 1,
-			'max_columns'     => 6,
-		),
-	) );
+	add_theme_support(
+		'woocommerce',
+		array(
+			'thumbnail_image_width' => 600,
+			'single_image_width'    => 1200,
+			'product_grid'          => array(
+				'default_rows'    => 3,
+				'min_rows'        => 1,
+				'default_columns' => 3,
+				'min_columns'     => 1,
+				'max_columns'     => 6,
+			),
+		)
+	);
 	add_theme_support( 'wc-product-gallery-zoom' );
 	add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );

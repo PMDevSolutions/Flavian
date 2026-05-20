@@ -1,0 +1,9 @@
+/* Flavian Starter — Featured Event editor placeholder */
+
+.flavian-starter-featured-event-placeholder {
+	padding: 1rem;
+	border: 2px dashed #ccc;
+	text-align: center;
+	background: #f6f7f7;
+	color: #50575e;
+}

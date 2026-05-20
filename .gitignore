@@ -7,6 +7,7 @@
 !.claude/hooks/
 !.claude/validation/
 !.claude/config/
+!.claude/templates/
 !.claude/*.md
 !.claude/settings.json
 

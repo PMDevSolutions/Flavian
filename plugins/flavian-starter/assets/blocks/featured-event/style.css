@@ -1,0 +1,17 @@
+/* Flavian Starter — Featured Event front-end styles */
+
+.wp-block-flavian-starter-featured-event {
+	padding: 1.5rem;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.wp-block-flavian-starter-featured-event .flavian-starter-featured-event__title {
+	margin-top: 0;
+}
+
+.wp-block-flavian-starter-featured-event .flavian-starter-featured-event__link {
+	display: inline-block;
+	margin-top: 0.75rem;
+}

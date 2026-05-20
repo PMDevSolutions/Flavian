@@ -1,0 +1,28 @@
+<?php
+/**
+ * PHPUnit bootstrap.
+ *
+ * Brain Monkey stands in for the WordPress runtime — no MySQL or
+ * wp-tests-lib install required. Tests against real WordPress should live in
+ * a separate tests/integration/ directory with its own bootstrap.
+ *
+ * @package {{PLUGIN_NS}}\Tests
+ */
+
+declare( strict_types=1 );
+
+defined( 'ABSPATH' ) || define( 'ABSPATH', '/tmp/wordpress/' );
+
+if ( ! defined( '{{PLUGIN_CONST}}_VERSION' ) ) {
+	define( '{{PLUGIN_CONST}}_VERSION', '0.0.0-test' );
+	define( '{{PLUGIN_CONST}}_FILE',    dirname( __DIR__ ) . '/{{PLUGIN_SLUG}}.php' );
+	define( '{{PLUGIN_CONST}}_PATH',    dirname( __DIR__ ) . '/' );
+	define( '{{PLUGIN_CONST}}_URL',     'http://example.test/wp-content/plugins/{{PLUGIN_SLUG}}/' );
+}
+
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if ( ! file_exists( $autoload ) ) {
+	fwrite( STDERR, "\nRun `composer install` inside this plugin before running tests.\n" );
+	exit( 1 );
+}
+require_once $autoload;

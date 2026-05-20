@@ -1,0 +1,29 @@
+<?php
+/**
+ * Tests the bootstrap singleton.
+ *
+ * @package {{PLUGIN_NS}}\Tests
+ */
+
+declare( strict_types=1 );
+
+namespace {{PLUGIN_NS}}\Tests;
+
+use {{PLUGIN_NS}}\Plugin;
+
+/**
+ * @covers \{{PLUGIN_NS}}\Plugin
+ */
+final class PluginTest extends TestCase {
+
+	/**
+	 * Plugin::instance() should return the same object across calls.
+	 *
+	 * @return void
+	 */
+	public function test_instance_returns_singleton(): void {
+		$a = Plugin::instance();
+		$b = Plugin::instance();
+		$this->assertSame( $a, $b );
+	}
+}

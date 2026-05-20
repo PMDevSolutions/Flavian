@@ -115,6 +115,44 @@ Before submitting your changes:
 - Ensure there are no PHP errors or warnings
 - Run any relevant linting or PHPCS checks
 
+### Creating a new plugin
+
+Don't hand-write plugin boilerplate. Use the scaffold:
+
+```bash
+bash scripts/scaffold-plugin.sh my-plugin \
+  --name "My Plugin" \
+  --description "What it does" \
+  --author "Your Name"
+```
+
+The script generates `plugins/my-plugin/` from `.claude/templates/plugin/`
+with PSR-4 autoloading (`Flavian\Plugins\MyPlugin`), Composer config,
+PHPUnit + Brain Monkey, PHPCS (`WordPress-Extra`), a Settings API page, a
+CPT + taxonomy pair, and a server-rendered block. Feature flags:
+`--no-cpt`, `--no-taxonomy`, `--no-settings`, `--no-block`, or `--minimal`
+for headers + activation hooks only.
+
+After scaffolding:
+
+```bash
+cd plugins/my-plugin
+composer install
+composer test    # PHPUnit (Brain Monkey — no MySQL needed)
+composer lint    # PHPCS WordPress-Extra
+```
+
+The reference plugin `plugins/flavian-starter/` is the canonical example
+of scaffold output. CI's `plugin-validation` workflow regenerates it from
+templates and fails if it diverges, so:
+
+- **Changing a template?** Regenerate `flavian-starter` in the same PR
+  (`bash scripts/scaffold-plugin.sh flavian-starter ... --force`) and
+  commit both.
+- **Adding a new first-party plugin?** Place it under `plugins/flavian-*/`
+  — the validation workflow's plugin matrix auto-discovers any directory
+  matching that glob.
+
 ### Visual regression
 
 PRs that touch `themes/**` automatically run the visual regression suite,

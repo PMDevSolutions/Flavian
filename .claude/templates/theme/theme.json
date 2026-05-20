@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "title": "{{THEME_NAME}}",
+  "settings": {
+    "appearanceTools": true,
+    "color": {
+      "palette": [
+        { "slug": "primary", "name": "Primary", "color": "#111827" },
+        { "slug": "accent", "name": "Accent", "color": "#2563eb" },
+        { "slug": "surface", "name": "Surface", "color": "#ffffff" }
+      ]
+    },
+    "typography": {
+      "fontFamilies": [
+        {
+          "slug": "system",
+          "name": "System",
+          "fontFamily": "system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+        }
+      ]
+    },
+    "layout": {
+      "contentSize": "720px",
+      "wideSize": "1200px"
+    }
+  },
+  "styles": {
+    "color": { "background": "var(--wp--preset--color--surface)", "text": "var(--wp--preset--color--primary)" },
+    "typography": { "fontFamily": "var(--wp--preset--font-family--system)", "lineHeight": "1.6" }
+  },
+  "templateParts": [
+    { "name": "header", "title": "Header", "area": "header" },
+    { "name": "footer", "title": "Footer", "area": "footer" }
+  ]
+}

@@ -162,6 +162,85 @@ docker compose exec wordpress wp option update show_on_front page --allow-root
 docker compose exec wordpress wp option update page_on_front [page_id] --allow-root
 ```
 
+### 8. Multisite Network Operations
+
+The repo ships a one-shot installer that converts a working single-site install into a subdirectory network. **Subdomain mode is intentionally not wired up** — it needs wildcard DNS that's awkward in generic Docker. Document the manual flip and stop, don't try to hand-roll it.
+
+**First-time setup** (idempotent — re-runs harmlessly):
+
+```bash
+# Compose profile (preferred)
+docker compose --profile multisite up multisite-installer
+
+# Or run the script directly on the host
+./scripts/wordpress-install/setup-multisite.sh \
+  --network-title "Flavian Network" \
+  --second-site-slug site2 \
+  --second-site-title "Site Two"
+```
+
+What it does:
+1. Adds `WP_ALLOW_MULTISITE=true` to wp-config.php.
+2. Runs `wp core multisite-convert` (subdirectory mode, base `/`).
+3. Writes `MULTISITE`, `SUBDOMAIN_INSTALL=false`, `DOMAIN_CURRENT_SITE`, `PATH_CURRENT_SITE='/'`, `SITE_ID_CURRENT_SITE=1`, `BLOG_ID_CURRENT_SITE=1` via `wp config set`.
+4. Replaces `.htaccess` with the multisite rewrite block.
+5. Creates a sample second site (skip with `--no-second-site`).
+6. Promotes the WP admin (user 1) to super admin.
+
+**Site management:**
+
+```bash
+# List sites
+docker compose exec wordpress wp site list --allow-root
+
+# Create a new site (subdirectory)
+docker compose exec wordpress wp site create \
+  --slug=marketing --title="Marketing" --email=admin@localhost --allow-root
+
+# Archive / deactivate / delete
+docker compose exec wordpress wp site archive 2 --allow-root
+docker compose exec wordpress wp site deactivate 2 --allow-root
+docker compose exec wordpress wp site delete 2 --yes --allow-root
+
+# Inspect a single site (every wp command supports --url=)
+docker compose exec wordpress wp post list --url=http://localhost:8080/site2/ --allow-root
+```
+
+**Super admin management:**
+
+```bash
+docker compose exec wordpress wp super-admin list --allow-root
+docker compose exec wordpress wp super-admin add jdoe --allow-root
+docker compose exec wordpress wp super-admin remove jdoe --allow-root
+```
+
+**Network-wide plugin/theme activation** — required for code to be available on every sub-site:
+
+```bash
+docker compose exec wordpress wp plugin activate woocommerce --network --allow-root
+docker compose exec wordpress wp theme enable flavian-shop --network --allow-root
+```
+
+`--network` activates a plugin for every site; `theme enable --network` only makes a theme available — sub-sites still have to switch to it individually.
+
+**Multisite-aware code patterns** to recommend when reviewing themes or plugins:
+
+- Guard cross-site logic with `if ( is_multisite() ) { ... }`.
+- When iterating sites, use `get_sites()` (not the deprecated `wp_get_sites()`) and always pair `switch_to_blog( $id )` with `restore_current_blog()`.
+- Cache cross-site queries with `set_site_transient()` — `mu-plugins/flavian-multisite.php` already does this for the network site list under the `flavian_multisite_sites` key.
+- For URLs that should resolve on the right site, prefer `network_home_url()` / `get_admin_url( $blog_id )` over hand-built strings.
+
+**Mu-plugin helpers shipped in this repo** (`mu-plugins/flavian-multisite.php`):
+
+| Helper | Purpose |
+|---|---|
+| `Flavian\\Multisite\\get_network_sites_cached()` | `get_sites()` with a 5-minute transient cache. Auto-invalidated on `wp_initialize_site`, `wp_delete_site`, `wp_update_site`. |
+| Network admin dashboard widget | Lists every site with links into each one's admin. |
+| Per-site dashboard notice | Surfaces the network admin link to super admins viewing a single site. |
+| `[flavian_network_sites]` shortcode | Lists sister sites; `exclude_current="false"` to include the current site. |
+
+The mu-plugin is gated on `is_multisite()` and is a no-op on single-site deployments — safe to leave in place.
+
 ## Workflow: Full Environment Setup
 
 ```
@@ -177,6 +256,20 @@ docker compose exec wordpress wp option update page_on_front [page_id] --allow-r
 10. Upload site logo (if provided)
 11. Verify all pages accessible
 12. Report environment status
+```
+
+## Workflow: First-Time Multisite Setup
+
+```
+1. Verify WordPress is installed (single-site) and reachable on localhost:8080.
+2. docker compose --profile multisite up multisite-installer
+3. Visit http://localhost:8080/wp-admin/network/ and confirm the network
+   dashboard renders.
+4. Confirm sub-site loads: http://localhost:8080/site2/
+5. wp site list — should return at least 2 rows.
+6. wp super-admin list — should include the WP admin.
+7. If a theme or plugin needs to be available everywhere, activate it with
+   --network.
 ```
 
 ## Workflow: Theme Testing Setup
@@ -225,3 +318,8 @@ docker compose exec wordpress wp option update page_on_front [page_id] --allow-r
 - Theme activation fails → Check style.css header, check for PHP errors
 - Database error → Check DB container logs, verify credentials in wp-config.php
 - Permission errors → Check volume mount permissions, use `--allow-root`
+- Multisite: `wp_initialize_site` errors during site create → DB tables didn't exist; re-run `wp core multisite-convert` (idempotent) or run the installer
+- Multisite: sub-site returns 404 → `.htaccess` missing the multisite rewrite block; re-run the installer or use `--skip-htaccess` and write it by hand
+- Multisite: "Sorry, you are not allowed to access this page" on `/wp-admin/network/` → user 1 isn't a super admin; `wp super-admin add <login>`
+- Multisite: plugin works on main site but not on sub-sites → wasn't network-activated; `wp plugin activate <slug> --network`
+- Multisite: subdomain mode requested → DO NOT silently switch; explain that subdomain mode needs wildcard DNS (`*.localhost`, dnsmasq, or hosts entries) and that this repo ships subdirectory mode only

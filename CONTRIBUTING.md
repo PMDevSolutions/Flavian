@@ -31,8 +31,65 @@ cd Flavian
     - docs/update-docs
 3. **Make your changes** following the coding standards below
 4. **Test** your changes with the local Docker environment (`./wordpress-local.sh start`)
-5. **Commit** with a descriptive message using conventional commits (e.g., `feat:`, `fix:`, `docs:`)
+5. **Commit** with a [Conventional Commits](#commit-message-format) message (e.g., `feat:`, `fix:`, `docs:`)
 6. **Push** Push your branch and open a Pull Request against `main`
+
+## Commit Message Format
+
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+to drive automated versioning and changelog generation. Every commit that lands
+on `main` (including squash-merge subjects) must follow:
+
+```
+<type>(<optional scope>): <short summary>
+
+<optional body>
+
+<optional footer(s)>
+```
+
+### Allowed types
+
+| Type       | Use for                                              | Triggers release? |
+| ---------- | ---------------------------------------------------- | ----------------- |
+| `feat`     | A new feature                                        | Minor bump        |
+| `fix`      | A bug fix                                            | Patch bump        |
+| `perf`     | Performance improvement                              | Patch bump        |
+| `docs`     | Documentation only changes                           | No                |
+| `refactor` | Code change that isn't a feature or fix              | No                |
+| `test`     | Adding or fixing tests                               | No                |
+| `build`    | Build system / external dependency changes           | No                |
+| `ci`       | CI configuration changes                             | No                |
+| `chore`    | Other changes that don't modify src or test files    | No                |
+| `style`    | Formatting, whitespace, etc.                         | No                |
+| `revert`   | Reverts a previous commit                            | No                |
+
+### Breaking changes
+
+Add `!` after the type/scope **or** include a `BREAKING CHANGE:` footer to
+trigger a major version bump:
+
+```
+feat(theme)!: drop support for WordPress 6.4
+
+BREAKING CHANGE: The minimum supported WordPress version is now 6.5.
+```
+
+### Examples
+
+```
+feat(figma-pipeline): add multi-page export support
+fix(deploy): validate ssh key before pushing release
+docs: link RELEASING.md from README
+chore(deps): bump composer dev dependencies
+```
+
+PR commits are linted in CI by
+[commitlint](https://commitlint.js.org/) using the `config-conventional` ruleset.
+PRs with invalid commit messages will fail the `commitlint` check.
+
+See [docs/RELEASING.md](docs/RELEASING.md) for how these commits become tagged
+releases.
 
 ## Coding Standards
 

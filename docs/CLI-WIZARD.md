@@ -1,0 +1,117 @@
+# Interactive CLI Setup Wizard
+
+`scripts/init.mjs` bootstraps a Flavian project — it scaffolds a theme, writes `.env`,
+optionally stages WooCommerce, and creates an initial git commit. Run it once after
+cloning the template (or after `composer create-project`).
+
+## Running the wizard
+
+```bash
+# From a fresh clone:
+pnpm install
+pnpm run init                  # interactive
+pnpm run init -- --yes         # non-interactive, all defaults
+```
+
+Or directly:
+
+```bash
+node scripts/init.mjs
+```
+
+## Prompts
+
+| Prompt | Default | Notes |
+|---|---|---|
+| Project / theme slug | directory basename, slugified | Kebab-case, 2–40 chars, starts with a letter |
+| Site title | Title-cased slug | Human-readable, used in `.env` and `theme.json` |
+| Theme starter | (you pick) | See below |
+| WooCommerce support | `no` | Hidden when starter = `flavian-shop` (auto-enabled) |
+| Local dev port | `8080` | 1024–65535 |
+| Admin email | `git config user.email` | Falls back to `admin@example.com` |
+
+### Theme starters
+
+| Value | What you get |
+|---|---|
+| `blank` | Minimal FSE theme copied from `.claude/templates/theme/` with your slug/title substituted |
+| `flavian-shop` | The bundled WooCommerce-ready theme, copied and renamed to your slug |
+| `figma` | No theme generated. Writes `docs/NEXT-STEPS.md` pointing at the `figma-to-fse-autonomous-workflow` skill |
+| `indesign` | Placeholder only — the InDesign-to-FSE pipeline is not yet implemented |
+
+## Non-interactive flags
+
+```
+--yes                Skip prompts, use defaults / flag values
+--name <slug>        Project slug
+--theme <starter>    blank | flavian-shop | figma | indesign
+--woo                Enable WooCommerce (auto-true for flavian-shop)
+--port <n>           Local dev port (default 8080)
+--email <addr>       Admin email
+--no-git             Skip git init
+--help               Show usage
+```
+
+Examples:
+
+```bash
+# Smallest possible run — accept all defaults
+node scripts/init.mjs --yes
+
+# Build a WooCommerce-ready shop
+node scripts/init.mjs --yes --name=acme-shop --theme=flavian-shop
+
+# Stage a Figma-driven project
+node scripts/init.mjs --yes --name=marketing-site --theme=figma
+```
+
+## What gets written
+
+A successful run produces:
+
+```
+<project>/
+├── .env                  ← from .env.example, with your values
+├── themes/<slug>/        ← scaffolded theme (skipped for figma/indesign)
+├── docs/NEXT-STEPS.md    ← only for figma/indesign starters
+└── .git/                 ← fresh repo, one commit (unless --no-git)
+```
+
+The initial scaffold commit is made with `git commit --no-verify`. The freshly
+generated project has no commit hooks installed yet, so the flag is purely
+belt-and-braces — it has no effect on the commits *you* make afterward.
+
+## What gets validated
+
+After the apply phase, the wizard runs static checks:
+
+1. `.env` exists and is non-empty
+2. `themes/<slug>/theme.json` parses as valid JSON
+3. `themes/<slug>/style.css` exists
+4. `themes/<slug>/templates/index.html` exists
+
+Steps 2–4 are skipped for `figma` and `indesign` starters since they don't
+generate a theme directly.
+
+A verification failure leaves the scaffold in place so you can fix and re-run.
+
+## Testing the wizard
+
+```bash
+pnpm run test:init
+```
+
+Runs all unit tests under `tests/init/unit/` plus integration smoke tests under
+`tests/init/integration/`. The CI job (`.github/workflows/init-wizard.yml`)
+runs this on every push/PR that touches the wizard code.
+
+## Known limitations
+
+- The InDesign starter is a placeholder; no pipeline ships yet.
+- Re-running the wizard against an existing `themes/<slug>/` directory fails
+  cleanly — there's no in-place upgrade path.
+- Verification is static-only. Docker isn't booted; if Docker is missing or
+  misconfigured, you'll find out when you run `docker compose up`.
+- `--yes` mode does not invoke `@clack/prompts`, so the wizard can run in
+  CI/test environments without it installed. The interactive mode does require
+  `pnpm install` to have run first.

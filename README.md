@@ -38,13 +38,24 @@ Typical runtime: 5–30 minutes. No manual `theme.json` authoring.
 git clone <repository-url>
 cd Flavian
 
-# 2. Boot local WordPress (Docker must be running)
-cp .env.example .env            # edit values before continuing
+# 2. Install deps and run the interactive setup wizard
+pnpm install
+pnpm run init                   # interactive
+# or non-interactive:
+pnpm run init -- --yes --name=my-site --theme=blank
+```
+
+The wizard writes `.env`, scaffolds a starter theme, optionally stages
+WooCommerce, and makes an initial git commit. See
+[docs/CLI-WIZARD.md](docs/CLI-WIZARD.md) for all flags and prompts.
+
+```bash
+# 3. Boot local WordPress (Docker must be running)
 ./wordpress-local.sh build      # first time only
 ./wordpress-local.sh start
 ./wordpress-local.sh install    # first time only
 
-# 3. Open Claude Code and hand it your design
+# 4. Open Claude Code and hand it your design
 claude
 > Convert this Figma design to WordPress: <your-figma-url>
 ```

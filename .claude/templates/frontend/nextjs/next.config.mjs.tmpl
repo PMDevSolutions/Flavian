@@ -1,0 +1,18 @@
+/** @type {import('next').NextConfig} */
+const wpHost = (() => {
+  try {
+    return new URL(process.env.WORDPRESS_URL ?? 'http://localhost:8080').hostname;
+  } catch {
+    return 'localhost';
+  }
+})();
+
+export default {
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      { protocol: 'http', hostname: wpHost },
+      { protocol: 'https', hostname: wpHost },
+    ],
+  },
+};

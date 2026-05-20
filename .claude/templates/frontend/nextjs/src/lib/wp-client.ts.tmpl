@@ -1,0 +1,32 @@
+import { draftMode } from 'next/headers';
+
+const endpoint = process.env.WORDPRESS_GRAPHQL_URL ?? 'http://localhost:8080/graphql';
+
+type GraphQLResponse<T> = { data?: T; errors?: Array<{ message: string }> };
+
+export async function wpQuery<T>(
+  query: string,
+  variables: Record<string, unknown> = {},
+): Promise<T> {
+  const { isEnabled: isDraft } = draftMode();
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables }),
+    next: isDraft ? { revalidate: 0 } : { revalidate: 60 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`WPGraphQL ${res.status}: ${await res.text()}`);
+  }
+
+  const json = (await res.json()) as GraphQLResponse<T>;
+  if (json.errors?.length) {
+    throw new Error(json.errors.map(e => e.message).join('; '));
+  }
+  if (!json.data) {
+    throw new Error('WPGraphQL response had no data field');
+  }
+  return json.data;
+}

@@ -92,6 +92,40 @@ services:
         [ -n "$$WC_DEFAULT_COUNTRY"  ] && ARGS="$$ARGS --country $$WC_DEFAULT_COUNTRY"
         bash /scripts/setup-woocommerce.sh $$ARGS
 
+  # One-shot headless WordPress installer.
+  #
+  # Run with the 'headless' compose profile to install WPGraphQL, configure
+  # CORS + preview routing, and print the env values your frontend needs:
+  #
+  #   docker compose --profile headless up headless-installer
+  #
+  # The container exits when setup-headless.sh completes. Re-running is safe —
+  # every step is idempotent.
+  headless-installer:
+    image: docker:cli
+    container_name: flavian-headless-installer
+    profiles: ["headless"]
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/wordpress-install:/scripts:ro
+    working_dir: /scripts
+    environment:
+      HEADLESS_FRONTEND_URL: ${HEADLESS_FRONTEND_URL:-http://localhost:3000}
+      HEADLESS_INSTALL_JWT:  ${HEADLESS_INSTALL_JWT:-true}
+      HEADLESS_INSTALL_BLOCKS: ${HEADLESS_INSTALL_BLOCKS:-true}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        apk add --no-cache bash docker-cli-compose >/dev/null
+        ARGS="--frontend-url $$HEADLESS_FRONTEND_URL"
+        [ "$$HEADLESS_INSTALL_JWT"    = "false" ] && ARGS="$$ARGS --no-jwt"
+        [ "$$HEADLESS_INSTALL_BLOCKS" = "false" ] && ARGS="$$ARGS --no-blocks"
+        bash /scripts/setup-headless.sh $$ARGS
+
   # Optional: phpMyAdmin for database management
   phpmyadmin:
     image: phpmyadmin:latest

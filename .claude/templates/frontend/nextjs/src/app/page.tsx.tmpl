@@ -1,0 +1,36 @@
+import Link from 'next/link';
+import { wpQuery } from '@/lib/wp-client';
+import { POSTS_LIST_QUERY } from '@/lib/queries';
+
+type PostsListResponse = {
+  posts: {
+    nodes: Array<{
+      id: string;
+      title: string;
+      slug: string;
+      date: string;
+      excerpt: string;
+    }>;
+  };
+};
+
+export default async function HomePage() {
+  const data = await wpQuery<PostsListResponse>(POSTS_LIST_QUERY);
+
+  return (
+    <>
+      <h1>{{APP_NAME}}</h1>
+      <ul className="post-list">
+        {data.posts.nodes.map(post => (
+          <li key={post.id}>
+            <Link href={`/posts/${post.slug}`}>
+              <h2>{post.title}</h2>
+            </Link>
+            <time dateTime={post.date}>{new Date(post.date).toLocaleDateString()}</time>
+            <div dangerouslySetInnerHTML={{ __html: post.excerpt }} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}

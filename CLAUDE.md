@@ -279,9 +279,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 6 plugin
 
 ---
 
-### Custom Agents (51 Total)
+### Custom Agents (52 Total)
 
-51 specialized agents: 26 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+52 specialized agents: 27 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`, `headless-developer`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -463,7 +463,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - All plugins serve WordPress development
 
 **Agent Philosophy:**
-- 51 custom agents available (26 WordPress-focused + 25 generic cross-domain)
+- 52 custom agents available (27 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -548,6 +548,18 @@ gh auth status                # Check authentication
 ```
 Configs live in `.claude/config/deployment/<env>.yml` (gitignored). Templates: `*.example.yml`.
 
+**Headless WordPress (decoupled frontends):**
+```bash
+# One-shot install: WPGraphQL + CORS + preview secret
+docker compose --profile headless up headless-installer
+
+# Scaffold a Next.js 14 frontend under frontend/<slug>/
+bash scripts/scaffold-frontend.sh my-app --name "My Site"
+```
+Mu-plugin: `mu-plugins/flavian-headless.php` (toggled by `flavian_headless_mode` option).
+Frontend templates: `.claude/templates/frontend/nextjs/`.
+Full guide: `docs/headless-wordpress/README.md`.
+
 **WooCommerce (e-commerce scaffold):**
 ```bash
 # One-shot install via compose profile
@@ -587,4 +599,4 @@ Defaults configurable via `.env`: `WC_INSTALL_SAMPLE_DATA`, `WC_DEFAULT_THEME`, 
 ---
 
 **Last Updated:** 2026-05-06
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 51 agents)
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 52 agents)

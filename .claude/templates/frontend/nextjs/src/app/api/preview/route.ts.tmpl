@@ -1,0 +1,41 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { draftMode } from 'next/headers';
+import { wpQuery } from '@/lib/wp-client';
+import { POST_BY_ID_QUERY } from '@/lib/queries';
+
+/**
+ * GET /api/preview?secret=...&id=...
+ *
+ * Called by WordPress when an editor clicks "Preview" on a draft. Validates
+ * the shared secret, enables Next.js draft mode, and redirects to the post's
+ * canonical frontend route — which will then re-fetch draft content because
+ * draftMode() is now true.
+ */
+export async function GET(req: NextRequest) {
+  const secret = req.nextUrl.searchParams.get('secret');
+  const id = req.nextUrl.searchParams.get('id');
+  const slugParam = req.nextUrl.searchParams.get('slug');
+
+  if (secret !== process.env.WORDPRESS_PREVIEW_SECRET) {
+    return new NextResponse('Invalid preview secret', { status: 401 });
+  }
+  if (!id) {
+    return new NextResponse('Missing id parameter', { status: 400 });
+  }
+
+  // Confirm the post actually exists before enabling draft mode — protects
+  // against /api/preview?secret=...&id=999999 enabling draft mode for free.
+  let slug = slugParam ?? '';
+  try {
+    const data = await wpQuery<{ post: { slug: string } | null }>(POST_BY_ID_QUERY, { id });
+    if (!data.post) {
+      return new NextResponse('Post not found', { status: 404 });
+    }
+    slug = data.post.slug || slug;
+  } catch (err) {
+    return new NextResponse(`Preview lookup failed: ${(err as Error).message}`, { status: 500 });
+  }
+
+  draftMode().enable();
+  return NextResponse.redirect(new URL(`/posts/${slug}`, req.nextUrl.origin));
+}

@@ -1,0 +1,37 @@
+{
+  "name": "flavian",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Claude Code-integrated WordPress development template. Source of truth for the repository version is git tags + .release-please-manifest.json, not this file.",
+  "license": "MIT",
+  "homepage": "https://github.com/PMDevSolutions/Flavian",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PMDevSolutions/Flavian.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PMDevSolutions/Flavian/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "type": "module",
+  "scripts": {
+    "visual:capture": "node tests/visual/capture.mjs",
+    "visual:diff": "node scripts/visual-diff.js --batch tests/visual/actual tests/visual/baselines --output-dir tests/visual/diffs --threshold 0.005 --json > tests/visual/report.json && node tests/visual/print-report.mjs tests/visual/report.json",
+    "visual:update": "bash scripts/visual-update-baselines.sh",
+    "visual:seed": "bash tests/visual/seed.sh",
+    "lint:commits": "commitlint --from=$(git merge-base origin/main HEAD) --to=HEAD",
+    "lint:commits:last": "commitlint --from=HEAD~1 --to=HEAD",
+    "test:visual": "pnpm visual:diff",
+    "playwright:install": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "pixelmatch": "^7.1.0",
+    "playwright": "1.60.0",
+    "pngjs": "^7.0.0"
+  }
+}

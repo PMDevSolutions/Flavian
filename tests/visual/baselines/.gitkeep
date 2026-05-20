@@ -1,0 +1,3 @@
+# This file keeps tests/visual/baselines/ in version control before any
+# baseline PNGs have been captured. Once the first run of the visual
+# regression workflow commits baselines, this file can be deleted.

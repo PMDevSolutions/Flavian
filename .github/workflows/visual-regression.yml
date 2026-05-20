@@ -1,0 +1,148 @@
+name: visual-regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "themes/**"
+      - "tests/visual/**"
+      - "scripts/visual-*"
+      - "scripts/visual-diff.js"
+      - ".github/workflows/visual-regression.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "themes/**"
+      - "tests/visual/**"
+  workflow_dispatch:
+    inputs:
+      bootstrap:
+        description: "Capture baselines and commit them to this branch (use after merging a UI change). Requires write access."
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: visual-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-regression:
+    name: Capture + diff
+    runs-on: ubuntu-latest
+    # Soft-fail for two weeks while baselines stabilize. Flip to `false` on or after 2026-06-02.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Use a PAT or the default token; defaults are fine for read-only check runs.
+          # For the bootstrap path we need a push-capable token.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "9.15.0"
+          run_install: false
+
+      - name: Restore pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install Node deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare .env for docker compose
+        run: cp .env.example .env
+
+      - name: Boot WordPress stack
+        run: |
+          docker compose up -d wordpress db
+          for i in $(seq 1 90); do
+            if curl --silent --fail --max-time 2 http://localhost:8080/ >/dev/null 2>&1; then
+              echo "WordPress responding."
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Install WooCommerce (no sample data)
+        env:
+          WC_INSTALL_SAMPLE_DATA: "false"
+        run: docker compose --profile woocommerce up --exit-code-from woocommerce-installer woocommerce-installer
+
+      - name: Seed deterministic content
+        run: bash tests/visual/seed.sh
+
+      - name: Capture screenshots
+        run: pnpm visual:capture -- --out tests/visual/actual
+
+      - name: Detect missing baselines
+        id: baselines
+        run: |
+          shopt -s nullglob
+          baseline_count=$(ls tests/visual/baselines/*.png 2>/dev/null | wc -l)
+          actual_count=$(ls tests/visual/actual/*.png 2>/dev/null | wc -l)
+          echo "baseline_count=$baseline_count" >> "$GITHUB_OUTPUT"
+          echo "actual_count=$actual_count"     >> "$GITHUB_OUTPUT"
+          if [ "$baseline_count" -eq 0 ]; then
+            echo "::warning title=No baselines committed::tests/visual/baselines/ is empty. Run the 'visual-regression' workflow with bootstrap=true to populate it, or run scripts/visual-update-baselines.sh locally."
+          fi
+
+      - name: Diff vs baselines
+        if: steps.baselines.outputs.baseline_count != '0' && github.event.inputs.bootstrap != 'true'
+        run: pnpm visual:diff
+
+      - name: Upload artifacts (actual, diffs, report)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-${{ github.run_id }}
+          path: |
+            tests/visual/actual/
+            tests/visual/diffs/
+            tests/visual/report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # --- Bootstrap path: commit fresh baselines back to the branch ---
+      - name: Promote actuals to baselines (bootstrap)
+        if: github.event.inputs.bootstrap == 'true'
+        run: |
+          rm -f tests/visual/baselines/*.png
+          cp tests/visual/actual/*.png tests/visual/baselines/
+          ls -la tests/visual/baselines/
+
+      - name: Commit baselines (bootstrap)
+        if: github.event.inputs.bootstrap == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/baselines/
+          if git diff --cached --quiet; then
+            echo "No baseline changes to commit."
+          else
+            git commit -m "test(visual): bootstrap baselines [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi

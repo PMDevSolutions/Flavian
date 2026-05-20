@@ -1,0 +1,5 @@
+# Visual regression scratch directories — never committed.
+# Baselines live in baselines/ and ARE tracked.
+actual/
+diffs/
+report.json

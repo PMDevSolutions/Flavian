@@ -1,0 +1,9 @@
+{
+  "$comment": "Per-URL threshold overrides (mismatch ratio, e.g. 0.005 = 0.5%). The 'default' key applies to any URL not explicitly listed. Tighten thresholds once baselines have proven stable for ~2 weeks.",
+  "default": 0.005,
+  "perPath": {
+    "/cart/": 0.01,
+    "/checkout/": 0.015,
+    "/my-account/": 0.01
+  }
+}

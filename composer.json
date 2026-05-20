@@ -18,6 +18,9 @@
 		"phpcs": "phpcs --standard=WordPress",
 		"phpcbf": "phpcbf --standard=WordPress",
 		"security-scan": "./scripts/wordpress/security-scan.sh",
-		"check-standards": "./scripts/wordpress/check-coding-standards.sh"
+		"check-standards": "./scripts/wordpress/check-coding-standards.sh",
+		"post-create-project-cmd": [
+			"@php -r \"if (!is_dir('node_modules')) { echo \\\"Run 'pnpm install' then 'node scripts/init.mjs' to finish setup.\\\\n\\\"; exit(0); } passthru('node scripts/init.mjs');\""
+		]
 	}
 }

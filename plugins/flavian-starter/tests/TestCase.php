@@ -1,6 +1,6 @@
 <?php
 /**
- * Base test case wiring Brain Monkey setUp/tearDown.
+ * Base test case wiring Brain Monkey + Mockery into PHPUnit.
  *
  * @package Flavian\Plugins\FlavianStarter\Tests
  */
@@ -10,15 +10,38 @@ declare( strict_types=1 );
 namespace Flavian\Plugins\FlavianStarter\Tests;
 
 use Brain\Monkey;
+use Brain\Monkey\Functions;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
+/**
+ * Shared base. MockeryPHPUnitIntegration bridges Mockery expectations
+ * (used by Brain Monkey's Actions/Functions verifiers) into PHPUnit's
+ * assertion counter so verified expectations don't trip "risky test".
+ */
 abstract class TestCase extends BaseTestCase {
 
+	use MockeryPHPUnitIntegration;
+
+	/**
+	 * Initialise Brain Monkey and stub WordPress i18n + escape helpers so
+	 * namespaced code can call __(), esc_html(), etc. without hitting
+	 * "undefined function" errors.
+	 *
+	 * @return void
+	 */
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		Functions\stubTranslationFunctions();
+		Functions\stubEscapeFunctions();
 	}
 
+	/**
+	 * Tear down Brain Monkey (which closes Mockery for us).
+	 *
+	 * @return void
+	 */
 	protected function tearDown(): void {
 		Monkey\tearDown();
 		parent::tearDown();

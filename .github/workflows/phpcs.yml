@@ -38,11 +38,13 @@ jobs:
 
       - name: Run PHPCS on plugins
         if: hashFiles('plugins/**/*.php') != ''
+        # First-party plugins (plugins/flavian-*) carry their own .phpcs.xml.dist
+        # and are linted by .github/workflows/plugin-validation.yml — skip them here.
         run: >
           ./vendor/bin/phpcs
           --standard=WordPress-Extra,WordPress-Docs
           --extensions=php
-          --ignore=*/index.php,plugins/akismet/*,plugins/hello.php
+          --ignore=*/index.php,plugins/akismet/*,plugins/hello.php,plugins/flavian-*/*
           --report=checkstyle
           plugins/
           | cs2pr

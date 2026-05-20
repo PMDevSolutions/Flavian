@@ -9,8 +9,13 @@
     <arg name="extensions" value="php"/>
     <arg name="colors"/>
     <arg value="ps"/>
+    <arg name="basepath" value="."/>
 
-    <rule ref="WordPress-Extra"/>
+    <!-- Skip WordPress's classic class-foo-bar.php file naming convention.
+         PSR-4 autoloading uses PascalCase filenames matching the class name. -->
+    <rule ref="WordPress-Extra">
+        <exclude name="WordPress.Files.FileName"/>
+    </rule>
     <rule ref="WordPress-Docs"/>
 
     <config name="minimum_supported_wp_version" value="6.5"/>
@@ -22,10 +27,5 @@
                 <element value="{{TEXT_DOMAIN}}"/>
             </property>
         </properties>
-    </rule>
-
-    <rule ref="WordPress.Files.FileName">
-        <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
-        <exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
     </rule>
 </ruleset>

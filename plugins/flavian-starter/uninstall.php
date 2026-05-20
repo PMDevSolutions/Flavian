@@ -11,14 +11,14 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 delete_option( 'flavian-starter_options' );
 
-$post_ids = get_posts(
-	[
+$flavian_post_ids = get_posts(
+	array(
 		'post_type'   => 'flavian-starter_event',
 		'numberposts' => -1,
 		'fields'      => 'ids',
 		'post_status' => 'any',
-	]
+	)
 );
-foreach ( $post_ids as $post_id ) {
-	wp_delete_post( (int) $post_id, true );
+foreach ( $flavian_post_ids as $flavian_pid ) {
+	wp_delete_post( (int) $flavian_pid, true );
 }

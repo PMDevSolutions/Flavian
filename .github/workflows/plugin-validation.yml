@@ -110,4 +110,5 @@ jobs:
         run: composer install --prefer-dist --no-interaction --no-progress
       - name: PHPCS
         working-directory: plugins/${{ matrix.plugin }}
-        run: vendor/bin/phpcs --report=checkstyle | cs2pr
+        # -q suppresses the progress bar so cs2pr only sees the checkstyle XML.
+        run: vendor/bin/phpcs -q --report=checkstyle | cs2pr

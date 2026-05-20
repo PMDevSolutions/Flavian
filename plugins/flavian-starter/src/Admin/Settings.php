@@ -11,6 +11,9 @@ namespace Flavian\Plugins\FlavianStarter\Admin;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Registers an options page under Settings → Flavian Starter.
+ */
 final class Settings {
 
 	public const OPTION_GROUP = 'flavian-starter_settings';
@@ -19,14 +22,18 @@ final class Settings {
 
 	/**
 	 * Hook menu and Settings API registration.
+	 *
+	 * @return void
 	 */
 	public function register(): void {
-		add_action( 'admin_menu', [ $this, 'add_menu' ] );
-		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_menu', array( $this, 'add_menu' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
 	/**
 	 * Add the page under Settings.
+	 *
+	 * @return void
 	 */
 	public function add_menu(): void {
 		add_options_page(
@@ -34,23 +41,25 @@ final class Settings {
 			__( 'Flavian Starter', 'flavian-starter' ),
 			'manage_options',
 			self::PAGE_SLUG,
-			[ $this, 'render_page' ]
+			array( $this, 'render_page' )
 		);
 	}
 
 	/**
 	 * Register option group, section and field.
+	 *
+	 * @return void
 	 */
 	public function register_settings(): void {
 		register_setting(
 			self::OPTION_GROUP,
 			self::OPTION_NAME,
-			[
+			array(
 				'type'              => 'array',
-				'sanitize_callback' => [ $this, 'sanitize' ],
-				'default'           => [ 'greeting' => '' ],
+				'sanitize_callback' => array( $this, 'sanitize' ),
+				'default'           => array( 'greeting' => '' ),
 				'show_in_rest'      => false,
-			]
+			)
 		);
 
 		add_settings_section(
@@ -63,7 +72,7 @@ final class Settings {
 		add_settings_field(
 			'flavian-starter_greeting',
 			__( 'Greeting', 'flavian-starter' ),
-			[ $this, 'render_greeting_field' ],
+			array( $this, 'render_greeting_field' ),
 			self::PAGE_SLUG,
 			'flavian-starter_general'
 		);
@@ -76,17 +85,19 @@ final class Settings {
 	 * @return array<string, string>
 	 */
 	public function sanitize( $input ): array {
-		$input = is_array( $input ) ? $input : [];
-		return [
+		$input = is_array( $input ) ? $input : array();
+		return array(
 			'greeting' => isset( $input['greeting'] ) ? sanitize_text_field( (string) $input['greeting'] ) : '',
-		];
+		);
 	}
 
 	/**
 	 * Render the single text-input field.
+	 *
+	 * @return void
 	 */
 	public function render_greeting_field(): void {
-		$options  = get_option( self::OPTION_NAME, [ 'greeting' => '' ] );
+		$options  = get_option( self::OPTION_NAME, array( 'greeting' => '' ) );
 		$greeting = isset( $options['greeting'] ) ? (string) $options['greeting'] : '';
 		printf(
 			'<input type="text" name="%1$s[greeting]" value="%2$s" class="regular-text" />',
@@ -97,6 +108,8 @@ final class Settings {
 
 	/**
 	 * Render the page wrapper.
+	 *
+	 * @return void
 	 */
 	public function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {

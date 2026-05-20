@@ -11,11 +11,16 @@ namespace Flavian\Plugins\FlavianStarter;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Runs once when the plugin is activated.
+ */
 final class Activator {
 
 	/**
-	 * Runs once when the plugin is activated. Registers types eagerly so
-	 * rewrite rules can be flushed against the final permalink structure.
+	 * Register types eagerly so rewrite rules can be flushed against the
+	 * final permalink structure.
+	 *
+	 * @return void
 	 */
 	public static function activate(): void {
 		if ( class_exists( PostTypes\Event::class ) ) {

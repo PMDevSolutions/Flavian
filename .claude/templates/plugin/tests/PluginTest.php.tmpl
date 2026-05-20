@@ -16,6 +16,11 @@ use {{PLUGIN_NS}}\Plugin;
  */
 final class PluginTest extends TestCase {
 
+	/**
+	 * Plugin::instance() should return the same object across calls.
+	 *
+	 * @return void
+	 */
 	public function test_instance_returns_singleton(): void {
 		$a = Plugin::instance();
 		$b = Plugin::instance();

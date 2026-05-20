@@ -18,32 +18,40 @@ use Flavian\Plugins\FlavianStarter\PostTypes\Event;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Registers and server-renders the Featured Event block.
+ */
 final class FeaturedEvent {
 
 	/**
 	 * Hook block registration to `init` (required by register_block_type).
+	 *
+	 * @return void
 	 */
 	public function register(): void {
-		add_action( 'init', [ $this, 'register_block' ] );
+		add_action( 'init', array( $this, 'register_block' ) );
 	}
 
 	/**
 	 * Register the block by pointing register_block_type at the block.json.
+	 *
+	 * @return void
 	 */
 	public function register_block(): void {
 		register_block_type(
 			FLAVIAN_STARTER_PATH . 'assets/blocks/featured-event',
-			[
-				'render_callback' => [ $this, 'render' ],
-			]
+			array(
+				'render_callback' => array( $this, 'render' ),
+			)
 		);
 	}
 
 	/**
 	 * Server-side render: pulls the most recent published event.
 	 *
-	 * @param array<string, mixed> $attributes Block attributes (unused here).
-	 * @param string               $content    Inner content (unused here).
+	 * @param array<string, mixed> $attributes Block attributes (unused).
+	 * @param string               $content    Inner content (unused).
+	 * @return string
 	 */
 	public function render( array $attributes, string $content ): string {
 		unset( $attributes, $content );
@@ -51,12 +59,12 @@ final class FeaturedEvent {
 		$post_type = class_exists( Event::class ) ? Event::POST_TYPE : 'flavian-starter_event';
 
 		$events = get_posts(
-			[
+			array(
 				'post_type'      => $post_type,
 				'posts_per_page' => 1,
 				'post_status'    => 'publish',
 				'no_found_rows'  => true,
-			]
+			)
 		);
 
 		if ( empty( $events ) ) {

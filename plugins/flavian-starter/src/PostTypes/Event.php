@@ -11,25 +11,32 @@ namespace Flavian\Plugins\FlavianStarter\PostTypes;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Registers the Event custom post type.
+ */
 final class Event {
 
 	public const POST_TYPE = 'flavian-starter_event';
 
 	/**
 	 * Hook the registration onto `init`.
+	 *
+	 * @return void
 	 */
 	public function register(): void {
-		add_action( 'init', [ $this, 'register_post_type' ] );
+		add_action( 'init', array( $this, 'register_post_type' ) );
 	}
 
 	/**
 	 * Register the post type. Public, REST-enabled, with archive at /events/.
+	 *
+	 * @return void
 	 */
 	public function register_post_type(): void {
 		register_post_type(
 			self::POST_TYPE,
-			[
-				'labels'       => [
+			array(
+				'labels'       => array(
 					'name'               => __( 'Events', 'flavian-starter' ),
 					'singular_name'      => __( 'Event', 'flavian-starter' ),
 					'add_new_item'       => __( 'Add New Event', 'flavian-starter' ),
@@ -39,14 +46,14 @@ final class Event {
 					'search_items'       => __( 'Search Events', 'flavian-starter' ),
 					'not_found'          => __( 'No events found.', 'flavian-starter' ),
 					'not_found_in_trash' => __( 'No events found in Trash.', 'flavian-starter' ),
-				],
+				),
 				'public'       => true,
 				'show_in_rest' => true,
 				'has_archive'  => true,
 				'menu_icon'    => 'dashicons-calendar-alt',
-				'supports'     => [ 'title', 'editor', 'thumbnail', 'excerpt' ],
-				'rewrite'      => [ 'slug' => 'events' ],
-			]
+				'supports'     => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
+				'rewrite'      => array( 'slug' => 'events' ),
+			)
 		);
 	}
 }

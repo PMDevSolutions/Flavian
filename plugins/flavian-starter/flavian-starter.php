@@ -22,12 +22,12 @@ namespace Flavian\Plugins\FlavianStarter;
 defined( 'ABSPATH' ) || exit;
 
 define( 'FLAVIAN_STARTER_VERSION', '0.1.0' );
-define( 'FLAVIAN_STARTER_FILE',    __FILE__ );
-define( 'FLAVIAN_STARTER_PATH',    plugin_dir_path( __FILE__ ) );
-define( 'FLAVIAN_STARTER_URL',     plugin_dir_url( __FILE__ ) );
+define( 'FLAVIAN_STARTER_FILE', __FILE__ );
+define( 'FLAVIAN_STARTER_PATH', plugin_dir_path( __FILE__ ) );
+define( 'FLAVIAN_STARTER_URL', plugin_dir_url( __FILE__ ) );
 
-$autoload = FLAVIAN_STARTER_PATH . 'vendor/autoload.php';
-if ( ! file_exists( $autoload ) ) {
+$flavian_autoload = FLAVIAN_STARTER_PATH . 'vendor/autoload.php';
+if ( ! file_exists( $flavian_autoload ) ) {
 	add_action(
 		'admin_notices',
 		static function (): void {
@@ -41,10 +41,10 @@ if ( ! file_exists( $autoload ) ) {
 	);
 	return;
 }
-require_once $autoload;
+require_once $flavian_autoload;
 
-register_activation_hook(   __FILE__, [ Activator::class,   'activate'   ] );
-register_deactivation_hook( __FILE__, [ Deactivator::class, 'deactivate' ] );
+register_activation_hook( __FILE__, array( Activator::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( Deactivator::class, 'deactivate' ) );
 
 add_action(
 	'plugins_loaded',

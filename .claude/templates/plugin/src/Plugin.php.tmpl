@@ -27,6 +27,8 @@ final class Plugin {
 
 	/**
 	 * Accessor for the singleton instance.
+	 *
+	 * @return self
 	 */
 	public static function instance(): self {
 		if ( null === self::$instance ) {
@@ -42,6 +44,8 @@ final class Plugin {
 
 	/**
 	 * Wire feature classes into WordPress.
+	 *
+	 * @return void
 	 */
 	public function boot(): void {
 		if ( class_exists( PostTypes\Event::class ) ) {
@@ -57,12 +61,14 @@ final class Plugin {
 			( new Blocks\FeaturedEvent() )->register();
 		}
 
-		add_action( 'init', [ $this, 'load_textdomain' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+		add_action( 'init', array( $this, 'load_textdomain' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 	}
 
 	/**
 	 * Load the plugin's text domain.
+	 *
+	 * @return void
 	 */
 	public function load_textdomain(): void {
 		load_plugin_textdomain(
@@ -76,6 +82,7 @@ final class Plugin {
 	 * Enqueue admin-only assets.
 	 *
 	 * @param string $hook Current admin page hook suffix.
+	 * @return void
 	 */
 	public function enqueue_admin_assets( string $hook ): void {
 		if ( 'settings_page_{{PLUGIN_SLUG}}' !== $hook ) {
@@ -84,13 +91,13 @@ final class Plugin {
 		wp_enqueue_style(
 			'{{PLUGIN_SLUG}}-admin',
 			{{PLUGIN_CONST}}_URL . 'assets/css/admin.css',
-			[],
+			array(),
 			{{PLUGIN_CONST}}_VERSION
 		);
 		wp_enqueue_script(
 			'{{PLUGIN_SLUG}}-admin',
 			{{PLUGIN_CONST}}_URL . 'assets/js/admin.js',
-			[],
+			array(),
 			{{PLUGIN_CONST}}_VERSION,
 			true
 		);

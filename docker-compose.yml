@@ -126,6 +126,39 @@ services:
         [ "$$HEADLESS_INSTALL_BLOCKS" = "false" ] && ARGS="$$ARGS --no-blocks"
         bash /scripts/setup-headless.sh $$ARGS
 
+  # One-shot multisite installer.
+  #
+  # Converts the install into a subdirectory multisite network and creates
+  # a sample sub-site so the network admin has something to look at:
+  #
+  #   docker compose --profile multisite up multisite-installer
+  #
+  # Re-running is safe — every step is idempotent.
+  multisite-installer:
+    image: docker:cli
+    container_name: flavian-multisite-installer
+    profiles: ["multisite"]
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/wordpress-install:/scripts:ro
+    working_dir: /scripts
+    environment:
+      MS_NETWORK_TITLE:      ${MS_NETWORK_TITLE:-Flavian Network}
+      MS_SECOND_SITE_SLUG:   ${MS_SECOND_SITE_SLUG:-site2}
+      MS_SECOND_SITE_TITLE:  ${MS_SECOND_SITE_TITLE:-Site Two}
+      MS_CREATE_SECOND_SITE: ${MS_CREATE_SECOND_SITE:-true}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        apk add --no-cache bash docker-cli-compose >/dev/null
+        ARGS="--network-title \"$$MS_NETWORK_TITLE\" --second-site-slug $$MS_SECOND_SITE_SLUG --second-site-title \"$$MS_SECOND_SITE_TITLE\""
+        [ "$$MS_CREATE_SECOND_SITE" = "false" ] && ARGS="--network-title \"$$MS_NETWORK_TITLE\" --no-second-site"
+        eval bash /scripts/setup-multisite.sh $$ARGS
+
   # Optional: phpMyAdmin for database management
   phpmyadmin:
     image: phpmyadmin:latest

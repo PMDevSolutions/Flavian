@@ -548,6 +548,18 @@ gh auth status                # Check authentication
 ```
 Configs live in `.claude/config/deployment/<env>.yml` (gitignored). Templates: `*.example.yml`.
 
+**Multisite network (subdirectory mode):**
+```bash
+# Convert the single-site install into a subdirectory network + sample sub-site
+docker compose --profile multisite up multisite-installer
+
+# Or run the script directly
+./scripts/wordpress-install/setup-multisite.sh --network-title "My Network"
+```
+Mu-plugin: `mu-plugins/flavian-multisite.php` (no-op on single-site installs).
+Agent: `wp-environment-manager` § 8 covers site CRUD, super admins, and network activation.
+Full guide: `docs/multisite/README.md`.
+
 **Headless WordPress (decoupled frontends):**
 ```bash
 # One-shot install: WPGraphQL + CORS + preview secret

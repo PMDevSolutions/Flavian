@@ -1,0 +1,21 @@
+{
+  "$comment": "Per-URL list of CSS selectors that Playwright will mask (overlay with a solid color) before screenshotting. The '*' key applies to every URL. Add new selectors here when a screenshot diff is caused by deterministic-but-time-sensitive content rather than a real UI change.",
+  "*": [
+    "time",
+    "[datetime]",
+    ".wp-block-latest-comments__comment-date",
+    ".wp-block-post-date"
+  ],
+  "/cart/": [
+    ".cart_totals",
+    ".wc-block-mini-cart__quantity"
+  ],
+  "/checkout/": [
+    ".wc-block-checkout__totals",
+    ".woocommerce-order-summary"
+  ],
+  "/my-account/": [
+    ".woocommerce-orders-table",
+    ".woocommerce-MyAccount-content time"
+  ]
+}

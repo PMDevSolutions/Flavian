@@ -115,6 +115,24 @@ Before submitting your changes:
 - Ensure there are no PHP errors or warnings
 - Run any relevant linting or PHPCS checks
 
+### Visual regression
+
+PRs that touch `themes/**` automatically run the visual regression suite,
+which screenshots the seeded WP site at four breakpoints and diffs against
+committed baselines in `tests/visual/baselines/`. If you intentionally
+changed the UI, regenerate baselines locally and commit them alongside the
+code change:
+
+```bash
+bash scripts/visual-update-baselines.sh
+git add tests/visual/baselines
+git commit -m "test(visual): update baselines for <feature>"
+```
+
+The script captures inside the same Playwright Docker image used by CI to
+keep baselines portable. See [tests/visual/README.md](tests/visual/README.md)
+for the full workflow and debugging tips.
+
 ## Pull Requests
 
 To help your PR get reviewed and merged quickly:

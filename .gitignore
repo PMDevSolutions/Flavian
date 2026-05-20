@@ -121,7 +121,12 @@ pnpm-debug.log*
 .pnpm-debug.log
 package-lock.json
 yarn.lock
-pnpm-lock.yaml
+# pnpm-lock.yaml is tracked — required for reproducible CI installs.
+
+# Visual regression scratch (baselines/ is tracked; actual/, diffs/, report are not)
+tests/visual/actual/
+tests/visual/diffs/
+tests/visual/report.json
 composer.lock
 
 # Environment & Config Files

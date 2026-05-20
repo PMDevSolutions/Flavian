@@ -1,0 +1,23 @@
+{
+  "$schema": "./urls.schema.json",
+  "$comment": "Map of template name (informational) to URL on the seeded local WP instance. Used by capture.mjs. Slug is the filename prefix for captured PNGs.",
+  "baseUrl": "http://localhost:8080",
+  "breakpoints": {
+    "mobile": 375,
+    "tablet": 768,
+    "desktop": 1440,
+    "wide": 1920
+  },
+  "pages": [
+    { "slug": "home",              "template": "index.html",                "path": "/" },
+    { "slug": "page",              "template": "page.html",                 "path": "/sample-page/" },
+    { "slug": "404",               "template": "404.html",                  "path": "/__definitely-not-a-real-page__/" },
+    { "slug": "shop",              "template": "page-shop.html",            "path": "/shop/" },
+    { "slug": "cart",              "template": "page-cart.html",            "path": "/cart/" },
+    { "slug": "checkout",          "template": "page-checkout.html",        "path": "/checkout/" },
+    { "slug": "my-account",        "template": "page-myaccount.html",       "path": "/my-account/" },
+    { "slug": "archive-product",   "template": "archive-product.html",      "path": "/shop/?orderby=date" },
+    { "slug": "single-product",    "template": "single-product.html",       "path": "/product/test-hoodie/" },
+    { "slug": "product-category",  "template": "taxonomy-product_cat.html", "path": "/product-category/apparel/" }
+  ]
+}

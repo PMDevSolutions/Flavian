@@ -22,14 +22,20 @@
     "visual:diff": "node scripts/visual-diff.js --batch tests/visual/actual tests/visual/baselines --output-dir tests/visual/diffs --threshold 0.005 --json > tests/visual/report.json && node tests/visual/print-report.mjs tests/visual/report.json",
     "visual:update": "bash scripts/visual-update-baselines.sh",
     "visual:seed": "bash tests/visual/seed.sh",
+    "lighthouse:run": "lhci autorun --config=./lighthouserc.json",
+    "lighthouse:collect": "lhci collect --config=./lighthouserc.json",
+    "lighthouse:assert": "lhci assert --config=./lighthouserc.json",
+    "lighthouse:open": "lhci open",
     "lint:commits": "commitlint --from=$(git merge-base origin/main HEAD) --to=HEAD",
     "lint:commits:last": "commitlint --from=HEAD~1 --to=HEAD",
     "test:visual": "pnpm visual:diff",
+    "test:lighthouse": "pnpm lighthouse:run",
     "playwright:install": "playwright install --with-deps chromium"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "@lhci/cli": "^0.14.0",
     "pixelmatch": "^7.1.0",
     "playwright": "1.60.0",
     "pngjs": "^7.0.0"

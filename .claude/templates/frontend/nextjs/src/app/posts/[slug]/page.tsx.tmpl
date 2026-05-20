@@ -1,0 +1,34 @@
+import { notFound } from 'next/navigation';
+import { draftMode } from 'next/headers';
+import { wpQuery } from '@/lib/wp-client';
+import { POST_BY_SLUG_QUERY } from '@/lib/queries';
+
+type PostResponse = {
+  post: {
+    title: string;
+    date: string;
+    content: string;
+  } | null;
+};
+
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const { isEnabled: isDraft } = draftMode();
+  const data = await wpQuery<PostResponse>(POST_BY_SLUG_QUERY, {
+    slug: params.slug,
+    asPreview: isDraft,
+  });
+
+  if (!data.post) {
+    notFound();
+  }
+
+  return (
+    <article>
+      <h1>{data.post.title}</h1>
+      <time dateTime={data.post.date}>
+        {new Date(data.post.date).toLocaleDateString()}
+      </time>
+      <div dangerouslySetInnerHTML={{ __html: data.post.content }} />
+    </article>
+  );
+}

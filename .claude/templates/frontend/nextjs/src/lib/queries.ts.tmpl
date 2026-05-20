@@ -1,0 +1,48 @@
+export const POSTS_LIST_QUERY = /* GraphQL */ `
+  query PostsList {
+    posts(first: 10, where: { status: PUBLISH }) {
+      nodes {
+        id
+        databaseId
+        title
+        slug
+        date
+        excerpt
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const POST_BY_SLUG_QUERY = /* GraphQL */ `
+  query PostBySlug($slug: ID!, $asPreview: Boolean = false) {
+    post(id: $slug, idType: SLUG, asPreview: $asPreview) {
+      id
+      databaseId
+      title
+      slug
+      date
+      content
+      featuredImage {
+        node {
+          sourceUrl
+          altText
+        }
+      }
+    }
+  }
+`;
+
+export const POST_BY_ID_QUERY = /* GraphQL */ `
+  query PostById($id: ID!) {
+    post(id: $id, idType: DATABASE_ID, asPreview: true) {
+      slug
+      status
+    }
+  }
+`;

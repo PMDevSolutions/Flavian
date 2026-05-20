@@ -1,0 +1,32 @@
+{
+  "$comment": "Lighthouse CI config. See https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md. Mobile preset is the Lighthouse default — keeping it implicit. Resource budgets live in tests/lighthouse/budgets.json so they can be tuned without touching CI config.",
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:8080/",
+        "http://localhost:8080/shop/",
+        "http://localhost:8080/product/test-hoodie/",
+        "http://localhost:8080/cart/"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "budgetsPath": "./tests/lighthouse/budgets.json",
+        "skipAudits": ["uses-http2"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "performance-budget": ["error", { "maxLength": 0 }],
+        "timing-budget":      ["error", { "maxLength": 0 }],
+        "categories:performance":    ["error", { "minScore": 0.70 }],
+        "categories:accessibility":  ["error", { "minScore": 0.90 }],
+        "categories:best-practices": ["warn",  { "minScore": 0.90 }],
+        "categories:seo":            ["warn",  { "minScore": 0.90 }],
+        "cumulative-layout-shift":   ["error", { "maxNumericValue": 0.1 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

@@ -1,0 +1,96 @@
+name: lighthouse-ci
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "themes/**"
+      - "tests/lighthouse/**"
+      - "lighthouserc.json"
+      - ".github/workflows/lighthouse-ci.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "themes/**"
+      - "tests/lighthouse/**"
+      - "lighthouserc.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: lighthouse-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    name: Budgets + Core Web Vitals
+    runs-on: ubuntu-latest
+    # Soft-fail while baselines settle. Flip to `false` once the suite has
+    # produced stable results for ~2 weeks against `main`. The numbers in
+    # lighthouserc.json + tests/lighthouse/budgets.json are intentionally
+    # lenient at first — tighten them before flipping.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "9.15.0"
+          run_install: false
+
+      - name: Restore pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install Node deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare .env for docker compose
+        run: cp .env.example .env
+
+      - name: Boot WordPress stack
+        run: |
+          docker compose up -d wordpress db
+          for i in $(seq 1 90); do
+            if curl --silent --fail --max-time 2 http://localhost:8080/ >/dev/null 2>&1; then
+              echo "WordPress responding."
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Install WooCommerce (no sample data)
+        env:
+          WC_INSTALL_SAMPLE_DATA: "false"
+        run: docker compose --profile woocommerce up --exit-code-from woocommerce-installer woocommerce-installer
+
+      - name: Seed deterministic content
+        run: bash tests/visual/seed.sh
+
+      - name: Run Lighthouse CI
+        id: lhci
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Annotate failing budgets
+        if: always()
+        run: node tests/lighthouse/annotate-report.mjs .lighthouseci/

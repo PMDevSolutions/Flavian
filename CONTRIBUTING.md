@@ -153,6 +153,27 @@ templates and fails if it diverges, so:
   — the validation workflow's plugin matrix auto-discovers any directory
   matching that glob.
 
+### Performance budgets
+
+PRs that touch `themes/**` are checked by Lighthouse CI against resource,
+timing, and category-score budgets defined in
+[`tests/lighthouse/budgets.json`](tests/lighthouse/budgets.json) and
+[`lighthouserc.json`](lighthouserc.json). Failures appear as native PR
+check annotations.
+
+To debug locally:
+
+```bash
+pnpm lighthouse:run   # boots Lighthouse, asserts against budgets
+pnpm lighthouse:open  # opens the HTML reports
+```
+
+If your change is intentionally heavier (e.g. you added a justified new
+script or font), update the budget in the same PR and explain the bump in
+the commit body. See
+[tests/lighthouse/README.md](tests/lighthouse/README.md) for the full
+workflow.
+
 ### Visual regression
 
 PRs that touch `themes/**` automatically run the visual regression suite,

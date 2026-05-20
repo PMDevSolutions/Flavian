@@ -1,0 +1,23 @@
+<?php
+/**
+ * Plugin deactivation handler.
+ *
+ * @package {{PLUGIN_NS}}
+ */
+
+declare( strict_types=1 );
+
+namespace {{PLUGIN_NS}};
+
+defined( 'ABSPATH' ) || exit;
+
+final class Deactivator {
+
+	/**
+	 * Runs once when the plugin is deactivated. Flushes rewrite rules so the
+	 * custom post type's permalink rules disappear cleanly.
+	 */
+	public static function deactivate(): void {
+		flush_rewrite_rules();
+	}
+}

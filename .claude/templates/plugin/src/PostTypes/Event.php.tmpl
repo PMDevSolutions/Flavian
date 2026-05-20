@@ -1,0 +1,52 @@
+<?php
+/**
+ * Example custom post type.
+ *
+ * @package {{PLUGIN_NS}}
+ */
+
+declare( strict_types=1 );
+
+namespace {{PLUGIN_NS}}\PostTypes;
+
+defined( 'ABSPATH' ) || exit;
+
+final class Event {
+
+	public const POST_TYPE = '{{PLUGIN_SLUG}}_event';
+
+	/**
+	 * Hook the registration onto `init`.
+	 */
+	public function register(): void {
+		add_action( 'init', [ $this, 'register_post_type' ] );
+	}
+
+	/**
+	 * Register the post type. Public, REST-enabled, with archive at /events/.
+	 */
+	public function register_post_type(): void {
+		register_post_type(
+			self::POST_TYPE,
+			[
+				'labels'       => [
+					'name'               => __( 'Events', '{{TEXT_DOMAIN}}' ),
+					'singular_name'      => __( 'Event', '{{TEXT_DOMAIN}}' ),
+					'add_new_item'       => __( 'Add New Event', '{{TEXT_DOMAIN}}' ),
+					'edit_item'          => __( 'Edit Event', '{{TEXT_DOMAIN}}' ),
+					'new_item'           => __( 'New Event', '{{TEXT_DOMAIN}}' ),
+					'view_item'          => __( 'View Event', '{{TEXT_DOMAIN}}' ),
+					'search_items'       => __( 'Search Events', '{{TEXT_DOMAIN}}' ),
+					'not_found'          => __( 'No events found.', '{{TEXT_DOMAIN}}' ),
+					'not_found_in_trash' => __( 'No events found in Trash.', '{{TEXT_DOMAIN}}' ),
+				],
+				'public'       => true,
+				'show_in_rest' => true,
+				'has_archive'  => true,
+				'menu_icon'    => 'dashicons-calendar-alt',
+				'supports'     => [ 'title', 'editor', 'thumbnail', 'excerpt' ],
+				'rewrite'      => [ 'slug' => 'events' ],
+			]
+		);
+	}
+}

@@ -1,0 +1,54 @@
+<?php
+/**
+ * Plugin Name:       {{PLUGIN_NAME}}
+ * Plugin URI:        https://github.com/PMDevSolutions/Flavian
+ * Description:       {{PLUGIN_DESC}}
+ * Version:           {{VERSION}}
+ * Requires at least: 6.5
+ * Requires PHP:      8.0
+ * Author:            {{AUTHOR}}
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       {{TEXT_DOMAIN}}
+ * Domain Path:       /languages
+ *
+ * @package {{PLUGIN_NS}}
+ */
+
+declare( strict_types=1 );
+
+namespace {{PLUGIN_NS}};
+
+defined( 'ABSPATH' ) || exit;
+
+define( '{{PLUGIN_CONST}}_VERSION', '{{VERSION}}' );
+define( '{{PLUGIN_CONST}}_FILE',    __FILE__ );
+define( '{{PLUGIN_CONST}}_PATH',    plugin_dir_path( __FILE__ ) );
+define( '{{PLUGIN_CONST}}_URL',     plugin_dir_url( __FILE__ ) );
+
+$autoload = {{PLUGIN_CONST}}_PATH . 'vendor/autoload.php';
+if ( ! file_exists( $autoload ) ) {
+	add_action(
+		'admin_notices',
+		static function (): void {
+			echo '<div class="notice notice-error"><p>';
+			esc_html_e(
+				'{{PLUGIN_NAME}}: vendor/autoload.php not found. Run "composer install" inside the plugin directory.',
+				'{{TEXT_DOMAIN}}'
+			);
+			echo '</p></div>';
+		}
+	);
+	return;
+}
+require_once $autoload;
+
+register_activation_hook(   __FILE__, [ Activator::class,   'activate'   ] );
+register_deactivation_hook( __FILE__, [ Deactivator::class, 'deactivate' ] );
+
+add_action(
+	'plugins_loaded',
+	static function (): void {
+		Plugin::instance()->boot();
+	}
+);

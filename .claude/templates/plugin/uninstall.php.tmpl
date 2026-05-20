@@ -1,0 +1,24 @@
+<?php
+/**
+ * Fires when {{PLUGIN_NAME}} is deleted via the Plugins screen (not deactivated).
+ *
+ * @package {{PLUGIN_NS}}
+ */
+
+declare( strict_types=1 );
+
+defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
+
+delete_option( '{{PLUGIN_SLUG}}_options' );
+
+$post_ids = get_posts(
+	[
+		'post_type'   => '{{PLUGIN_SLUG}}_event',
+		'numberposts' => -1,
+		'fields'      => 'ids',
+		'post_status' => 'any',
+	]
+);
+foreach ( $post_ids as $post_id ) {
+	wp_delete_post( (int) $post_id, true );
+}

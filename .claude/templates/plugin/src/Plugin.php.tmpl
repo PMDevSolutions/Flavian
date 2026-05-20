@@ -1,0 +1,98 @@
+<?php
+/**
+ * Bootstrap class for {{PLUGIN_NAME}}.
+ *
+ * @package {{PLUGIN_NS}}
+ */
+
+declare( strict_types=1 );
+
+namespace {{PLUGIN_NS}};
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Singleton bootstrap. Conditionally wires each feature based on which classes
+ * the autoloader can resolve — so removing a feature directory does not break
+ * the rest of the plugin.
+ */
+final class Plugin {
+
+	/**
+	 * Singleton instance.
+	 *
+	 * @var self|null
+	 */
+	private static ?self $instance = null;
+
+	/**
+	 * Accessor for the singleton instance.
+	 */
+	public static function instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Private constructor — use {@see self::instance()}.
+	 */
+	private function __construct() {}
+
+	/**
+	 * Wire feature classes into WordPress.
+	 */
+	public function boot(): void {
+		if ( class_exists( PostTypes\Event::class ) ) {
+			( new PostTypes\Event() )->register();
+		}
+		if ( class_exists( Taxonomies\EventCategory::class ) ) {
+			( new Taxonomies\EventCategory() )->register();
+		}
+		if ( class_exists( Admin\Settings::class ) ) {
+			( new Admin\Settings() )->register();
+		}
+		if ( class_exists( Blocks\FeaturedEvent::class ) ) {
+			( new Blocks\FeaturedEvent() )->register();
+		}
+
+		add_action( 'init', [ $this, 'load_textdomain' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+	}
+
+	/**
+	 * Load the plugin's text domain.
+	 */
+	public function load_textdomain(): void {
+		load_plugin_textdomain(
+			'{{TEXT_DOMAIN}}',
+			false,
+			dirname( plugin_basename( {{PLUGIN_CONST}}_FILE ) ) . '/languages'
+		);
+	}
+
+	/**
+	 * Enqueue admin-only assets.
+	 *
+	 * @param string $hook Current admin page hook suffix.
+	 */
+	public function enqueue_admin_assets( string $hook ): void {
+		if ( 'settings_page_{{PLUGIN_SLUG}}' !== $hook ) {
+			return;
+		}
+		wp_enqueue_style(
+			'{{PLUGIN_SLUG}}-admin',
+			{{PLUGIN_CONST}}_URL . 'assets/css/admin.css',
+			[],
+			{{PLUGIN_CONST}}_VERSION
+		);
+		wp_enqueue_script(
+			'{{PLUGIN_SLUG}}-admin',
+			{{PLUGIN_CONST}}_URL . 'assets/js/admin.js',
+			[],
+			{{PLUGIN_CONST}}_VERSION,
+			true
+		);
+	}
+}

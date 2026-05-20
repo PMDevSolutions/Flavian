@@ -1,0 +1,48 @@
+<?php
+/**
+ * Example custom taxonomy.
+ *
+ * @package {{PLUGIN_NS}}
+ */
+
+declare( strict_types=1 );
+
+namespace {{PLUGIN_NS}}\Taxonomies;
+
+use {{PLUGIN_NS}}\PostTypes\Event;
+
+defined( 'ABSPATH' ) || exit;
+
+final class EventCategory {
+
+	public const TAXONOMY = '{{PLUGIN_SLUG}}_event_category';
+
+	/**
+	 * Hook the registration onto `init`.
+	 */
+	public function register(): void {
+		add_action( 'init', [ $this, 'register_taxonomy' ] );
+	}
+
+	/**
+	 * Register the taxonomy against the Event post type.
+	 */
+	public function register_taxonomy(): void {
+		$object_type = class_exists( Event::class ) ? Event::POST_TYPE : '{{PLUGIN_SLUG}}_event';
+
+		register_taxonomy(
+			self::TAXONOMY,
+			[ $object_type ],
+			[
+				'labels'            => [
+					'name'          => __( 'Event Categories', '{{TEXT_DOMAIN}}' ),
+					'singular_name' => __( 'Event Category', '{{TEXT_DOMAIN}}' ),
+				],
+				'hierarchical'      => true,
+				'show_in_rest'      => true,
+				'show_admin_column' => true,
+				'rewrite'           => [ 'slug' => 'event-category' ],
+			]
+		);
+	}
+}

@@ -1,0 +1,113 @@
+name: plugin-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "plugins/flavian-*/**"
+      - ".claude/templates/plugin/**"
+      - "scripts/scaffold-plugin.sh"
+      - ".github/workflows/plugin-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "plugins/flavian-*/**"
+      - ".claude/templates/plugin/**"
+      - "scripts/scaffold-plugin.sh"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plugin-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Catch template / reference-plugin drift. If the scaffold output of
+  # `flavian-starter` diverges from the committed copy, the templates were
+  # changed without regenerating the reference plugin (or vice versa).
+  scaffold-drift:
+    name: Scaffold drift check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regenerate flavian-starter from templates
+        run: |
+          rm -rf plugins/flavian-starter
+          bash scripts/scaffold-plugin.sh flavian-starter \
+            --name "Flavian Starter" \
+            --description "Starter plugin for Flavian-based projects. Demonstrates CPT, taxonomy, settings, and a server-rendered block." \
+            --author "PMDevSolutions" \
+            --force
+      - name: Diff regenerated vs committed
+        run: |
+          if ! git diff --exit-code plugins/flavian-starter; then
+            echo "::error title=Scaffold drift::plugins/flavian-starter/ differs from regenerated output."
+            echo "Run: bash scripts/scaffold-plugin.sh flavian-starter --name \"Flavian Starter\" --description \"...\" --author \"PMDevSolutions\" --force"
+            exit 1
+          fi
+
+  # 2. Build a matrix of all first-party plugins (plugins/flavian-*/) so adding
+  # a new one only requires the directory — no workflow edit needed.
+  discover:
+    name: Discover plugins
+    runs-on: ubuntu-latest
+    outputs:
+      plugins: ${{ steps.list.outputs.plugins }}
+      count: ${{ steps.list.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          plugins=$(find plugins -mindepth 1 -maxdepth 1 -type d -name 'flavian-*' -printf '%f\n' \
+            | LC_ALL=C sort \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          count=$(echo "$plugins" | jq 'length')
+          echo "plugins=$plugins" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Found $count first-party plugin(s): $plugins"
+
+  phpunit:
+    name: PHPUnit · ${{ matrix.plugin }}
+    needs: discover
+    if: needs.discover.outputs.count != '0'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: ${{ fromJSON(needs.discover.outputs.plugins) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer
+          coverage: none
+      - name: Composer install
+        working-directory: plugins/${{ matrix.plugin }}
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: PHPUnit
+        working-directory: plugins/${{ matrix.plugin }}
+        run: vendor/bin/phpunit --no-coverage
+
+  phpcs:
+    name: PHPCS · ${{ matrix.plugin }}
+    needs: discover
+    if: needs.discover.outputs.count != '0'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: ${{ fromJSON(needs.discover.outputs.plugins) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer, cs2pr
+      - name: Composer install
+        working-directory: plugins/${{ matrix.plugin }}
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: PHPCS
+        working-directory: plugins/${{ matrix.plugin }}
+        run: vendor/bin/phpcs --report=checkstyle | cs2pr

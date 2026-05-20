@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "flavian-starter/featured-event",
+    "version": "0.1.0",
+    "title": "Featured Event",
+    "category": "widgets",
+    "icon": "calendar-alt",
+    "description": "Displays the most recent published event.",
+    "keywords": ["event", "featured"],
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "textdomain": "flavian-starter",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./editor.css",
+    "style": "file:./style.css"
+}

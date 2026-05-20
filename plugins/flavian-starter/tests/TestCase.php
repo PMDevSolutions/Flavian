@@ -1,0 +1,26 @@
+<?php
+/**
+ * Base test case wiring Brain Monkey setUp/tearDown.
+ *
+ * @package Flavian\Plugins\FlavianStarter\Tests
+ */
+
+declare( strict_types=1 );
+
+namespace Flavian\Plugins\FlavianStarter\Tests;
+
+use Brain\Monkey;
+use PHPUnit\Framework\TestCase as BaseTestCase;
+
+abstract class TestCase extends BaseTestCase {
+
+	protected function setUp(): void {
+		parent::setUp();
+		Monkey\setUp();
+	}
+
+	protected function tearDown(): void {
+		Monkey\tearDown();
+		parent::tearDown();
+	}
+}

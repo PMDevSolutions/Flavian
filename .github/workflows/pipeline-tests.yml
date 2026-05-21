@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should-test: ${{ steps.filter.outputs.scripts || steps.filter.outputs.tests }}
+      should-test-pipeline-pkg: ${{ steps.filter.outputs.pipeline-pkg }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -21,6 +22,9 @@ jobs:
               - 'scripts/canva-fse/**'
             tests:
               - 'tests/**'
+            pipeline-pkg:
+              - 'packages/pipeline/**'
+              - 'pnpm-workspace.yaml'
 
   test:
     needs: check-paths
@@ -49,21 +53,48 @@ jobs:
       - name: Run Canva-to-FSE pipeline tests
         run: ./tests/libs/bats-core/bin/bats tests/canva-fse/
 
+  test-indesign-pkg:
+    needs: check-paths
+    if: needs.check-paths.outputs.should-test-pipeline-pkg == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run @flavian/pipeline tests
+        run: pnpm --filter @flavian/pipeline test
+
   test-status:
     runs-on: ubuntu-latest
-    needs: [check-paths, test]
+    needs: [check-paths, test, test-indesign-pkg]
     if: always()
     name: Pipeline Tests Status
     steps:
       - name: Report status
         run: |
-          if [ "${{ needs.check-paths.outputs.should-test }}" != "true" ]; then
+          if [ "${{ needs.check-paths.outputs.should-test }}" != "true" ] && [ "${{ needs.check-paths.outputs.should-test-pipeline-pkg }}" != "true" ]; then
             echo "No pipeline/test changes detected — skipping tests"
             exit 0
           fi
-          if [ "${{ needs.test.result }}" = "success" ]; then
-            echo "Pipeline tests passed"
-            exit 0
+          fail=0
+          if [ "${{ needs.check-paths.outputs.should-test }}" = "true" ] && [ "${{ needs.test.result }}" != "success" ]; then
+            echo "bats pipeline tests failed"
+            fail=1
           fi
-          echo "Pipeline tests failed"
-          exit 1
+          if [ "${{ needs.check-paths.outputs.should-test-pipeline-pkg }}" = "true" ] && [ "${{ needs.test-indesign-pkg.result }}" != "success" ]; then
+            echo "@flavian/pipeline tests failed"
+            fail=1
+          fi
+          exit $fail

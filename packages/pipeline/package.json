@@ -15,7 +15,7 @@
     "test": "node --test \"tests/**/*.test.mjs\""
   },
   "dependencies": {
-    "fast-xml-parser": "^4.5.0",
+    "fast-xml-parser": "^5.7.0",
     "fflate": "^0.8.2",
     "zod": "^3.23.8"
   },

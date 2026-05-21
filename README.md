@@ -255,6 +255,16 @@ Full catalog of 51 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-A
 - [WP-CLI Documentation](https://wp-cli.org/)
 - [Block Editor Handbook](https://developer.wordpress.org/block-editor/)
 
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [AI SEO Copilot (Chrome)](https://github.com/die-Manufaktur/AISEOC-Chrome-Extension) | Free Chrome extension for SEO analysis. Works on any site including WordPress. Use it to verify the SEO output of sites built with Flavian. [Install from Chrome Web Store](https://chromewebstore.google.com/detail/ai-seo-copilot/anhpobnkbmgjhcgbohkddjjpcbbdllhl) |
+| [AI SEO Copilot (Webflow)](https://github.com/die-Manufaktur/AI-SEO-Copilot-for-Webflow) | The original Webflow app with ~20,000 installs |
+| [Aurelius](https://github.com/PMDevSolutions/Aurelius) | Claude Code-integrated React app development framework with Figma-to-React pipelines |
+| [Nerva](https://github.com/PMDevSolutions/Nerva) | Claude Code-integrated API and backend development framework with Hono, Cloudflare Workers, and Drizzle ORM |
+| [Claudius](https://github.com/PMDevSolutions/Claudius) | Embeddable AI chat widget powered by Claude. React + TypeScript + Cloudflare Workers |
+
 ## License
 
 This template is licensed under the [MIT License](LICENSE). WordPress itself is licensed under GPL v2 or later.

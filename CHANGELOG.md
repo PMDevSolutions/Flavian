@@ -28,6 +28,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Theme validation workflow now passes on PRs that don't touch themes/plugins
 
+## [1.1.0] - 2026-05-07
+
+### Added
+
+- Canva-to-WordPress conversion pipeline: Canva FSE converter agent, autonomous Canva-to-FSE workflow skill, HTML-to-block converter, CSS export parser with design token extraction, and shared validation scripts (#8, #33)
+- Agent configuration validation: validation script, CI dry-run wrapper, GitHub Actions workflow, and bats-core test framework (#13, #37, #38)
+- Block pattern library with starter templates: hero sections, feature grids, testimonials, CTAs, pricing tiers, and bonus patterns (newsletter signup, FAQ accordion), plus FSE templates/parts and SVG previews (#12, #36)
+- Security audit agent with dependency vulnerability scanning, severity-rated report generator, and auto GitHub issue creation for critical findings (#10, #34)
+- Optimized Docker image build time with layer caching (#11, #35)
+- PHPCS CI workflow with inline PR annotations (#6, #31)
+- Automated test coverage for the Figma-to-WordPress pipeline (90 BATS tests) (#7)
+- FSE theme structure validation tests for required files (#45, #58)
+- Unit tests for `rgb_to_hex()` color conversion in `parse-canva-export.sh` (#44, #57)
+- Environment variable validation script that warns about default passwords (#46, #50)
+- WooCommerce support in the block-theme scaffold (#60)
+- Remote deployment agent for staging and production (#59)
+- Contributor Covenant Code of Conduct, pull request template, and issue template config with discussions link
+- Expanded `CONTRIBUTING.md` with development setup and PR guidelines (#47, #48)
+
+### Changed
+
+- Improved error messages in `parse-canva-export.sh` with script identification (#40, #53)
+- Reconciled agent, skill, and plugin counts across documentation
+- Added `@since` version tags to all block pattern file headers (#42, #52)
+- Added PHPDoc comment block to `flavian_enqueue_fonts()` (#39, #49)
+
+### Fixed
+
+- Theme existence validation in `activate_theme()` in `wordpress-local.sh` (#43, #56)
+- Env-validation script no longer blocks startup if `.env` is missing
+
 ## [1.0.0] - 2026-03-16
 
 ### Added
@@ -123,5 +154,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-browser testing support via Playwright MCP
 - Docker-based local WordPress development environment (`LOCAL-DEVELOPMENT.md`)
 
-[Unreleased]: https://github.com/PMDevSolutions/Flavian/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/PMDevSolutions/Flavian/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/PMDevSolutions/Flavian/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/PMDevSolutions/Flavian/releases/tag/v1.0.0

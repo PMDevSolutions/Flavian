@@ -126,7 +126,7 @@ export async function parsePdfBuffer(bytes, options = {}) {
 		} else {
 			const id = `pdf-color-${sample.hex.slice(1)}`;
 			hexToSwatchId.set(sample.hex, id);
-			swatches.push({ id, name: sample.hex.toUpperCase(), color: { hex: sample.hex, space: 'RGB' } });
+			swatches.push({ id, name: sample.hex.toUpperCase(), color: { hex: sample.hex, space: sample.space ?? 'RGB', components: sample.components } });
 		}
 	}
 

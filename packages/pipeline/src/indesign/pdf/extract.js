@@ -75,7 +75,7 @@ function getImageObject(page, name) {
  *   heightPt: number,
  *   textItems: Array<{ text: string, x: number, baseline: number, width: number, fontSize: number, fontKey: string }>,
  *   fonts: Map<string, { name: string, family: string, style: string, embedded: boolean, type: string }>,
- *   colorSamples: Array<{ fontSizePt: number, hex: string, glyphs: number }>,
+ *   colorSamples: Array<{ fontSizePt: number, hex: string, space: string, components: number[], glyphs: number }>,
  *   images: Array<{ x: number, y: number, width: number, height: number, image: object | null, failed: boolean }>,
  *   hasVector: boolean,
  * }>}
@@ -93,6 +93,9 @@ export async function extractPage(page, pdfjs) {
 	let ctm = [1, 0, 0, 1, 0, 0];
 	const ctmStack = [];
 	let fillHex = '#000000';
+	// Raw fill color alongside the hex, in the IR's component ranges (RGB 0..255,
+	// CMYK 0..100), so synthesized swatches can carry components like IDML does.
+	let fillColor = { space: 'RGB', components: [0, 0, 0] };
 	let currentSize = 0;
 	let hasVector = false;
 	const colorSamples = [];
@@ -116,12 +119,16 @@ export async function extractPage(page, pdfjs) {
 				break;
 			case OPS.setFillRGBColor:
 				fillHex = rgbToHex([args[0], args[1], args[2]]);
+				fillColor = { space: 'RGB', components: [args[0], args[1], args[2]] };
 				break;
 			case OPS.setFillGray:
 				fillHex = grayToHex(args[0]);
+				fillColor = { space: 'RGB', components: [args[0], args[0], args[0]] };
 				break;
 			case OPS.setFillCMYKColor:
 				fillHex = cmykToHex([args[0], args[1], args[2], args[3]]);
+				// pdfjs gives CMYK in 0..1; store 0..100 to match the IR range.
+				fillColor = { space: 'CMYK', components: [args[0] * 100, args[1] * 100, args[2] * 100, args[3] * 100] };
 				break;
 			case OPS.setFont:
 				currentSize = Math.abs(args[1]);
@@ -130,7 +137,7 @@ export async function extractPage(page, pdfjs) {
 			case OPS.showSpacedText: {
 				const glyphs = countGlyphs(args[0]);
 				if (glyphs > 0 && currentSize > 0) {
-					colorSamples.push({ fontSizePt: currentSize, hex: fillHex, glyphs });
+					colorSamples.push({ fontSizePt: currentSize, hex: fillHex, space: fillColor.space, components: fillColor.components, glyphs });
 				}
 				break;
 			}

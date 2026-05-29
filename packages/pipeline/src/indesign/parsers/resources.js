@@ -7,6 +7,7 @@
 
 import { parseXml, asArray } from './xml.js';
 import { lengthToPx, roundPx } from '../units.js';
+import { rgbToSrgbHex, cmykToSrgb, labToSrgb } from '../color.js';
 
 /**
  * @param {string|Uint8Array} input
@@ -48,11 +49,25 @@ export function parseGraphic(input, warnings) {
  */
 function toIrColor(spaceRaw, values, warnings, id) {
 	const space = normalizeColorSpace(spaceRaw);
+	// Raw components are kept in the IR so the mapper can re-derive sRGB with
+	// documented math; the hex here is a usable preview. IDML ranges: RGB 0-255,
+	// CMYK 0-100, LAB L 0-100 / a,b -128..127.
 	if (space === 'RGB' && values.length === 3) {
-		return { hex: rgbToHex(values), space };
+		return { hex: rgbToSrgbHex(values), space, components: values };
 	}
 	if (space === 'CMYK' && values.length === 4) {
-		return { hex: cmykToHexApprox(values), space };
+		return { hex: cmykToSrgb(values).hex, space, components: values };
+	}
+	if (space === 'LAB' && values.length === 3) {
+		const { hex, outOfGamut } = labToSrgb(values);
+		if (outOfGamut) {
+			warnings.add(
+				'color-out-of-gamut',
+				`Swatch ${id} LAB color is outside the sRGB gamut; clamped to the nearest in-gamut color`,
+				{ file: 'Resources/Graphic.xml', id },
+			);
+		}
+		return { hex, space, components: values };
 	}
 	warnings.add(
 		'color-fallback',
@@ -66,21 +81,6 @@ function normalizeColorSpace(raw) {
 	const v = raw.trim();
 	if (v === 'RGB' || v === 'CMYK' || v === 'LAB' || v === 'Spot') return v;
 	return 'Unknown';
-}
-
-function rgbToHex([r, g, b]) {
-	// IDML RGB is in 0-255 already.
-	return '#' + [r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0')).join('');
-}
-
-function cmykToHexApprox([c, m, y, k]) {
-	// IDML CMYK is in 0-100. Naive conversion; a real ICC profile pass is
-	// the mapper's job. This is enough to produce a recognisable preview.
-	const cv = c / 100, mv = m / 100, yv = y / 100, kv = k / 100;
-	const r = Math.round(255 * (1 - cv) * (1 - kv));
-	const g = Math.round(255 * (1 - mv) * (1 - kv));
-	const b = Math.round(255 * (1 - yv) * (1 - kv));
-	return rgbToHex([r, g, b]);
 }
 
 /**

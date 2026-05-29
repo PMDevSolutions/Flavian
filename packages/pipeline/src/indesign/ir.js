@@ -17,10 +17,19 @@ import { z } from 'zod';
 export const IdmlId = z.string().min(1);
 
 export const Color = z.object({
-	// "#RRGGBB" once normalized; CMYK values are converted in the mapper.
+	// "#RRGGBB" — the parse-time value (naive for CMYK; legacy black for LAB
+	// when no components were captured). The mapper re-derives from `components`.
 	hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
 	// Source color space as declared by IDML, kept for the mapper to flag.
 	space: z.enum(['RGB', 'CMYK', 'LAB', 'Spot', 'Unknown']),
+	// Raw channel values in the source space's documented range, so the mapper
+	// can do a proper, documented conversion to sRGB:
+	//   RGB  [r,g,b]   0..255
+	//   CMYK [c,m,y,k] 0..100
+	//   LAB  [L,a,b]   L 0..100, a/b -128..127
+	//   Gray [v]       0..255 (stored as an RGB triple)
+	// Optional so older IRs still validate; the mapper falls back to `hex`.
+	components: z.array(z.number()).optional(),
 });
 
 export const Swatch = z.object({
@@ -166,6 +175,7 @@ export const Document = z.object({
  * @typedef {z.infer<typeof Story>} StoryIR
  * @typedef {z.infer<typeof Style>} StyleIR
  * @typedef {z.infer<typeof Swatch>} SwatchIR
+ * @typedef {z.infer<typeof Color>} ColorIR
  * @typedef {z.infer<typeof Font>} FontIR
  * @typedef {z.infer<typeof MasterSpread>} MasterSpreadIR
  * @typedef {z.infer<typeof ParseWarning>} ParseWarningIR

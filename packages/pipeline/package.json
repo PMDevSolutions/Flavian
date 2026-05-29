@@ -9,7 +9,8 @@
     "./indesign": "./src/indesign/index.js"
   },
   "bin": {
-    "flavian-parse-idml": "./bin/parse-idml.mjs"
+    "flavian-parse-idml": "./bin/parse-idml.mjs",
+    "flavian-parse-pdf": "./bin/parse-pdf.mjs"
   },
   "scripts": {
     "test": "node --test \"tests/**/*.test.mjs\""
@@ -17,6 +18,7 @@
   "dependencies": {
     "fast-xml-parser": "^5.7.0",
     "fflate": "^0.8.2",
+    "pdfjs-dist": "^4.10.38",
     "zod": "^3.23.8"
   },
   "engines": {

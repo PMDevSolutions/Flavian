@@ -97,6 +97,7 @@ export function mapTypography(styles, options = {}) {
 	const {
 		baseFontSizes = [],
 		swatchToSlug = {},
+		fontToSlug = {},
 		tolerancePx = DEFAULT_TOLERANCE_PX,
 		fluid = false,
 		fluidThresholdPx = DEFAULT_FLUID_THRESHOLD_PX,
@@ -145,22 +146,29 @@ export function mapTypography(styles, options = {}) {
 		for (const s of cluster.styles) styleToSlug[s.id] = slug;
 	}
 
-	const elements = buildElements(paragraphs, clusters, styleToSlug, swatchToSlug);
-	return { fontSizes, elements, styleToSlug };
+	const { elements, blocks } = buildElements(paragraphs, clusters, styleToSlug, swatchToSlug, fontToSlug);
+	return { fontSizes, elements, blocks, styleToSlug };
 }
 
 /**
- * Build styles.elements presets for recognized style names, with a fallback
- * that maps the most-used size to the body paragraph element.
+ * Build style presets for recognized style names. Headings (h1–h6) and captions
+ * map to styles.elements; the body paragraph maps to styles.blocks['core/paragraph']
+ * (theme.json has no <p> element). Falls back to the most-used size for the body.
+ *
+ * @returns {{ elements: Record<string, object>, blocks: Record<string, object> }}
  */
-function buildElements(paragraphs, clusters, styleToSlug, swatchToSlug) {
+function buildElements(paragraphs, clusters, styleToSlug, swatchToSlug, fontToSlug = {}) {
 	/** @type {Record<string, object>} */
 	const elements = {};
+	/** @type {Record<string, object>} */
+	const blocks = {};
 
 	const makeEntry = (style) => {
 		const slug = styleToSlug[style.id];
 		/** @type {Record<string, string>} */
 		const typography = { fontSize: `var(--wp--preset--font-size--${slug})` };
+		const familySlug = style.fontRef ? fontToSlug[style.fontRef] : undefined;
+		if (familySlug) typography.fontFamily = `var(--wp--preset--font-family--${familySlug})`;
 		if (style.leading && style.fontSize) {
 			typography.lineHeight = String(round(style.leading / style.fontSize, 2));
 		}
@@ -174,7 +182,7 @@ function buildElements(paragraphs, clusters, styleToSlug, swatchToSlug) {
 		return entry;
 	};
 
-	let pAssigned = false;
+	let bodyAssigned = false;
 	for (const style of paragraphs) {
 		const name = String(style.name ?? '').trim();
 		const h = HEADING_RE.exec(name);
@@ -182,9 +190,9 @@ function buildElements(paragraphs, clusters, styleToSlug, swatchToSlug) {
 			elements[`h${h[1]}`] = makeEntry(style);
 			continue;
 		}
-		if (BODY_RE.test(name) && !elements.p) {
-			elements.p = makeEntry(style);
-			pAssigned = true;
+		if (BODY_RE.test(name) && !blocks['core/paragraph']) {
+			blocks['core/paragraph'] = makeEntry(style);
+			bodyAssigned = true;
 			continue;
 		}
 		if (CAPTION_RE.test(name) && !elements.caption) {
@@ -192,11 +200,12 @@ function buildElements(paragraphs, clusters, styleToSlug, swatchToSlug) {
 		}
 	}
 
-	// Fallback: bind the most-used size to <p> if no body style was recognized.
-	if (!pAssigned && clusters.length) {
+	// Fallback: bind the most-used size to the paragraph block if no body style
+	// was recognized by name.
+	if (!bodyAssigned && clusters.length) {
 		const bodyCluster = clusters.reduce((a, b) => (b.styles.length > a.styles.length ? b : a), clusters[0]);
-		if (bodyCluster && !elements.p) elements.p = makeEntry(bodyCluster.styles[0]);
+		if (bodyCluster && !blocks['core/paragraph']) blocks['core/paragraph'] = makeEntry(bodyCluster.styles[0]);
 	}
 
-	return elements;
+	return { elements, blocks };
 }

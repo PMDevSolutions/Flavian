@@ -28,7 +28,8 @@ const validateAgainstWpSchema = ajv.compile(wpSchema);
  * @param {Array<object>} [groups.fontSizes]
  * @param {Array<object>} [groups.fontFamilies]
  * @param {Array<object>} [groups.spacingSizes]
- * @param {Record<string, object>} [groups.elements]
+ * @param {Record<string, object>} [groups.elements]  styles.elements (h1–h6, caption…)
+ * @param {Record<string, object>} [groups.blocks]    styles.blocks (e.g. core/paragraph)
  * @returns {object}
  */
 export function assemblePartial(groups = {}) {
@@ -38,6 +39,7 @@ export function assemblePartial(groups = {}) {
 		fontFamilies = [],
 		spacingSizes = [],
 		elements = {},
+		blocks = {},
 	} = groups;
 
 	const settings = {};
@@ -48,10 +50,14 @@ export function assemblePartial(groups = {}) {
 	if (Object.keys(typography).length) settings.typography = typography;
 	if (spacingSizes.length) settings.spacing = { spacingSizes };
 
+	const styles = {};
+	if (elements && Object.keys(elements).length) styles.elements = elements;
+	if (blocks && Object.keys(blocks).length) styles.blocks = blocks;
+
 	/** @type {{ version: number, settings?: object, styles?: object }} */
 	const partial = { version: 3 };
 	if (Object.keys(settings).length) partial.settings = settings;
-	if (elements && Object.keys(elements).length) partial.styles = { elements };
+	if (Object.keys(styles).length) partial.styles = styles;
 	return partial;
 }
 

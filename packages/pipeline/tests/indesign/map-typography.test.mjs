@@ -41,12 +41,14 @@ test('maps recognized style names to elements with line height and color', () =>
 		{ id: 'p2', name: 'Body', kind: 'paragraph', fontSize: 16, leading: 24 },
 	];
 	const swatchToSlug = { 'col-brand': 'id-brand' };
-	const { elements } = mapTypography(styles, { baseFontSizes, swatchToSlug, tolerancePx: 1 });
+	const { elements, blocks } = mapTypography(styles, { baseFontSizes, swatchToSlug, tolerancePx: 1 });
 	assert.ok(elements.h1, 'h1 element should be present');
 	assert.equal(elements.h1.typography.fontSize, 'var(--wp--preset--font-size--display)');
 	assert.equal(elements.h1.typography.lineHeight, '1.14'); // 64/56
 	assert.equal(elements.h1.typography.letterSpacing, '-0.01em'); // -10/1000
 	assert.equal(elements.h1.color.text, 'var(--wp--preset--color--id-brand)');
-	assert.ok(elements.p, 'p element should be present');
-	assert.equal(elements.p.typography.lineHeight, '1.5'); // 24/16
+	// theme.json has no <p> element; body maps to the core/paragraph block.
+	assert.ok(blocks['core/paragraph'], 'core/paragraph block should be present');
+	assert.equal(blocks['core/paragraph'].typography.lineHeight, '1.5'); // 24/16
+	assert.equal(elements.p, undefined);
 });

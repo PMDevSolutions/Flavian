@@ -111,11 +111,22 @@ test('missing optional resource files produce warnings, not errors', () => {
 
 test('unknown color space falls back to black with a warning', () => {
 	const bytes = buildIdml({
-		colors: [{ id: 'col-weird', name: 'Mystery', space: 'LAB', values: [50, 0, 0] }],
+		colors: [{ id: 'col-weird', name: 'Mystery', space: 'HSB', values: [50, 0, 0] }],
 	});
 	const ir = parseIdmlBuffer(bytes);
 	const swatch = ir.swatches.find((s) => s.id === 'col-weird');
 	assert.equal(swatch.color.hex, '#000000');
 	assert.equal(swatch.color.space, 'Unknown');
 	assert.ok(ir.warnings.some((w) => w.code === 'color-fallback'));
+});
+
+test('LAB color space is converted to sRGB (no longer collapses to black)', () => {
+	const bytes = buildIdml({
+		colors: [{ id: 'col-lab', name: 'Lab Red', space: 'LAB', values: [54, 81, 70] }],
+	});
+	const ir = parseIdmlBuffer(bytes);
+	const swatch = ir.swatches.find((s) => s.id === 'col-lab');
+	assert.equal(swatch.color.space, 'LAB');
+	assert.deepEqual(swatch.color.components, [54, 81, 70]);
+	assert.notEqual(swatch.color.hex, '#000000');
 });

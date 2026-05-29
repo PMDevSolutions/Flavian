@@ -4,7 +4,7 @@ Conversion pipeline for InDesign (and future) sources into WordPress FSE themes.
 
 ## Status
 
-This package ships the **IDML parser** (sub-issue #62) and the **PDF fallback parser** (sub-issue #63) of the InDesign-to-WordPress epic. Both emit the same intermediate representation. Downstream stages — style + token mapper (#64), output generator (#65) — will land as separate PRs. The IR shape produced here is the contract those stages consume.
+This package ships the **IDML parser** (sub-issue #62), the **PDF fallback parser** (sub-issue #63), and the **style + token mapper** (sub-issue #64) of the InDesign-to-WordPress epic. The two parsers emit the same intermediate representation; the mapper turns that IR into WordPress design tokens (a `theme.json` partial, DTCG `design-tokens.json`, and a report). The output generator (#65) will land as a separate PR.
 
 IDML is the primary path (full access to stories, frames, styles, swatches, masters). PDF is a lossy fallback for when only the exported PDF is available, or as a verification source against IDML output — see [`docs/pipeline/indesign-pdf-fidelity.md`](../../docs/pipeline/indesign-pdf-fidelity.md).
 
@@ -14,13 +14,17 @@ IDML is the primary path (full access to stories, frames, styles, swatches, mast
 packages/pipeline/
 ├── bin/
 │   ├── parse-idml.mjs        CLI: IDML → validated IR JSON on stdout
-│   └── parse-pdf.mjs         CLI: PDF → reconstructed IR JSON on stdout
+│   ├── parse-pdf.mjs         CLI: PDF → reconstructed IR JSON on stdout
+│   └── map-tokens.mjs        CLI: IR (or .idml/.pdf) → theme.json + design tokens
+├── config/
+│   └── font-map.json         InDesign family → web/Google font fallback table
 └── src/
     ├── index.js              Re-exports the InDesign surface
     └── indesign/
         ├── ir.js             zod schemas + JSDoc typedefs for the IR
         ├── parse-idml.js     IDML entry: unzips + orchestrates + cross-refs + validates
         ├── parse-pdf.js      PDF entry: extracts + clusters + classifies + validates
+        ├── color.js          Shared color math: RGB/CMYK/LAB → sRGB + gamut, nearest-swatch
         ├── units.js          pt/pc/mm/cm/in → px at configurable DPI
         ├── warnings.js       Non-fatal warning collector
         ├── parsers/          IDML XML decoders
@@ -29,14 +33,25 @@ packages/pipeline/
         │   ├── resources.js  Graphic.xml + Fonts.xml + Styles.xml
         │   ├── stories.js    Stories/Story_*.xml → text runs
         │   └── spreads.js    Spreads/*.xml + MasterSpreads/*.xml
-        └── pdf/              PDF reconstruction modules
-            ├── pdfjs.js      Lazy pdfjs-dist loader (headless, extraction-only)
-            ├── extract.js    Per-page: text runs, fonts, colors, images, vector flag
-            ├── cluster.js    Glyph runs → lines → frames; column detection (pure)
-            ├── classify.js   Font-size buckets → heading/body/caption styles (pure)
-            ├── color.js      RGB/gray/CMYK → hex; nearest-swatch matching (pure)
-            ├── png.js        Decoded pixels → PNG via node:zlib (pure)
-            └── assets.js     Write extracted images to the asset cache
+        ├── pdf/              PDF reconstruction modules
+        │   ├── pdfjs.js      Lazy pdfjs-dist loader (headless, extraction-only)
+        │   ├── extract.js    Per-page: text runs, fonts, colors, images, vector flag
+        │   ├── cluster.js    Glyph runs → lines → frames; column detection (pure)
+        │   ├── classify.js   Font-size buckets → heading/body/caption styles (pure)
+        │   ├── color.js      Re-exports the shared color helpers for the PDF path
+        │   ├── png.js        Decoded pixels → PNG via node:zlib (pure)
+        │   └── assets.js     Write extracted images to the asset cache
+        └── map/             IR → WordPress design tokens (token mapper)
+            ├── index.js      mapTokens orchestrator → { partial, designTokens, merged, report }
+            ├── colors.js     Swatches → color palette (convert, dedupe, reuse base)
+            ├── typography.js Paragraph styles → font-size scale + element/block presets
+            ├── spacing.js    Geometry + paragraph spacing → quantized spacing scale
+            ├── fonts.js      Fonts → font families via config/font-map.json
+            ├── theme-json.js Assemble partial, deep-merge with base, validate
+            ├── design-tokens.js  DTCG / Style Dictionary emitter
+            ├── report.js     Warnings + provenance aggregation
+            ├── slug.js       Namespaced slug helpers
+            └── schema/       Vendored WP theme.json schema + zod subset
 ```
 
 ## Quick start
@@ -80,6 +95,41 @@ node packages/pipeline/bin/parse-pdf.mjs brochure.pdf --asset-dir ./assets > ir.
 
 PDF reconstruction is lossy by design. See [`docs/pipeline/indesign-pdf-fidelity.md`](../../docs/pipeline/indesign-pdf-fidelity.md) for how each IR element is derived, the full list of fidelity-warning codes, and the round-trip tolerances against IDML.
 
+## Token mapper
+
+Map a parsed IR (from either parser) into WordPress design tokens: a `theme.json`
+partial that merges into a base theme, a Style-Dictionary-compatible
+`design-tokens.json`, and a report.
+
+```js
+import { parseIdml, mapTokens } from '@flavian/pipeline';
+
+const ir = await parseIdml('./brochure.idml');
+const { partial, designTokens, merged, report } = mapTokens(ir, {
+  // base,        // base theme object/path (default: themes/flavian-shop/theme.json)
+  // fontMap,     // font map object/path (default: config/font-map.json)
+  // namespace,   // derived-token slug prefix (default: 'id')
+  // tolerance,   // color dedupe/reuse squared distance
+  // gridPx,      // spacing grid (default: 4)
+  // tolerancePx, // typography size clustering tolerance (default: 1)
+});
+
+if (!report.valid) console.error(report.validationErrors);
+for (const msg of report.fontFallbacks) console.warn(msg);
+```
+
+From the command line (composes with the parser CLIs, or parses directly):
+
+```bash
+node packages/pipeline/bin/parse-idml.mjs brochure.idml \
+  | node packages/pipeline/bin/map-tokens.mjs --out-dir ./tokens > theme.partial.json
+
+# or parse + map in one step
+node packages/pipeline/bin/map-tokens.mjs brochure.idml --out-dir ./tokens
+```
+
+See [`docs/pipeline/indesign-token-mapper.md`](../../docs/pipeline/indesign-token-mapper.md) for the conversion math (CMYK/LAB → sRGB), the font-map format, the warning codes, merge semantics, and how the acceptance criteria are met.
+
 ## IR shape
 
 The intermediate representation is described in [`src/indesign/ir.js`](src/indesign/ir.js). At the top level:
@@ -89,7 +139,7 @@ The intermediate representation is described in [`src/indesign/ir.js`](src/indes
   irVersion: 1,
   meta: { idmlVersion: '16.0', name: 'Brochure' },
   dpi: 96,
-  swatches: [{ id, name, color: { hex, space } }],
+  swatches: [{ id, name, color: { hex, space, components } }],
   fonts: [{ id, family, style, postScriptName }],
   styles: [{ id, name, kind, fontSize, leading, tracking, fontRef, fillColorRef, properties }],
   stories: [{ id, source, runs: [{ text, paragraphStyleRef, characterStyleRef }] }],

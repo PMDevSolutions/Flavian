@@ -10,7 +10,9 @@
   },
   "bin": {
     "flavian-parse-idml": "./bin/parse-idml.mjs",
-    "flavian-parse-pdf": "./bin/parse-pdf.mjs"
+    "flavian-parse-pdf": "./bin/parse-pdf.mjs",
+    "flavian-map-tokens": "./bin/map-tokens.mjs",
+    "flavian-generate-theme": "./bin/generate-theme.mjs"
   },
   "scripts": {
     "test": "node --test \"tests/**/*.test.mjs\""

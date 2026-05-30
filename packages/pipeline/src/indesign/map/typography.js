@@ -16,6 +16,23 @@ const HEADING_RE = /^h(?:eading)?\s*([1-6])$/i;
 const BODY_RE = /^(body|paragraph|normal|default|text|copy)\b/i;
 const CAPTION_RE = /^(caption|footnote|cutline|credit)\b/i;
 
+/**
+ * Classify a paragraph style by its InDesign name. The output generator reuses
+ * this so a style that became an `h2` element preset also renders as an
+ * `core/heading` at level 2 — one source of truth for the name → role mapping.
+ *
+ * @param {unknown} name
+ * @returns {{ role: 'heading'|'body'|'caption'|'generic', level?: number }}
+ */
+export function classifyStyleRole(name) {
+	const s = String(name ?? '').trim();
+	const h = HEADING_RE.exec(s);
+	if (h) return { role: 'heading', level: Number(h[1]) };
+	if (BODY_RE.test(s)) return { role: 'body' };
+	if (CAPTION_RE.test(s)) return { role: 'caption' };
+	return { role: 'generic' };
+}
+
 /** @param {number} n @param {number} dp */
 function round(n, dp) {
 	const f = 10 ** dp;

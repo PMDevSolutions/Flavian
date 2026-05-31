@@ -91,6 +91,24 @@ PRs with invalid commit messages will fail the `commitlint` check.
 See [docs/RELEASING.md](docs/RELEASING.md) for how these commits become tagged
 releases.
 
+## Versioning
+
+The `version` field in `package.json` is intentionally pinned to `0.0.0` and is
+**not** the repository version — **do not edit it by hand**. The source of truth
+for the released version is the latest `vX.Y.Z` git tag together with
+[`.release-please-manifest.json`](.release-please-manifest.json).
+
+Versioning is automated by [release-please](https://github.com/googleapis/release-please).
+The [Conventional Commit](#commit-message-format) types above drive the semver
+bump; release-please opens a **Release PR** that updates the manifest and
+`CHANGELOG.md`, and merging that PR creates the `vX.Y.Z` tag and GitHub Release.
+Because the project uses release-please's `simple` release type, the bump is
+recorded in `.release-please-manifest.json` rather than `package.json` — which
+is exactly why `package.json` stays at `0.0.0`.
+
+See [docs/RELEASING.md](docs/RELEASING.md) for the full flow, the version-bump
+rules, and overrides (e.g. the `Release-As:` footer).
+
 ## Coding Standards
 
 - Follow [WordPress PHP Coding Standards](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/)

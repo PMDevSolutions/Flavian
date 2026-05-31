@@ -44,11 +44,9 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: "9.15.0"
-          run_install: false
+      # pnpm via Corepack — pnpm/action-setup isn't on the allowed-actions list.
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
 
       - name: Restore pnpm store
         uses: actions/cache@v4
@@ -83,13 +81,11 @@ jobs:
       - name: Seed deterministic content
         run: bash tests/visual/seed.sh
 
+      # lhci CLI (already a devDependency) instead of the treosh marketplace
+      # action, which isn't on this repo's allowed-actions list.
       - name: Run Lighthouse CI
         id: lhci
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: ./lighthouserc.json
-          uploadArtifacts: true
-          temporaryPublicStorage: true
+        run: pnpm exec lhci autorun --config=./lighthouserc.json --upload.target=temporary-public-storage
 
       - name: Annotate failing budgets
         if: always()

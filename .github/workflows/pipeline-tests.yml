@@ -28,6 +28,7 @@ jobs:
               - 'bin/flavian.mjs'
               - 'scripts/indesign-fse/**'
               - 'tests/fixtures/indesign/**'
+              - '.github/workflows/pipeline-tests.yml'
 
   test:
     needs: check-paths

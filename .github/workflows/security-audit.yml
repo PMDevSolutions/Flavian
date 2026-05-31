@@ -45,10 +45,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      # pnpm via Corepack — pnpm/action-setup isn't on the allowed-actions list.
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --quiet

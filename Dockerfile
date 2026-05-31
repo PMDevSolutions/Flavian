@@ -56,11 +56,14 @@ COPY --from=php-extensions /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 COPY --from=wp-cli-builder /wp-cli.phar /usr/local/bin/wp
 RUN chmod +x /usr/local/bin/wp
 
-# Install runtime dependencies only (smaller than build dependencies)
+# Install runtime dependencies only (smaller than build dependencies).
+# Note: libzip5 (not libzip4) — the libzip soname bumped to .so.5 in Debian 13
+# (trixie), the base of wordpress:php8.3-apache. The other runtime libs kept
+# their names across bookworm→trixie.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     less \
     mariadb-client \
-    libzip4 \
+    libzip5 \
     libpng16-16 \
     libjpeg62-turbo \
     libfreetype6 \

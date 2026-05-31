@@ -15,7 +15,7 @@
     "flavian-generate-theme": "./bin/generate-theme.mjs"
   },
   "scripts": {
-    "test": "node --test \"tests/**/*.test.mjs\""
+    "test": "node --test"
   },
   "dependencies": {
     "fast-xml-parser": "^5.7.0",

@@ -28,6 +28,7 @@ jobs:
               - 'bin/flavian.mjs'
               - 'scripts/indesign-fse/**'
               - 'tests/fixtures/indesign/**'
+              - '.github/workflows/pipeline-tests.yml'
 
   test:
     needs: check-paths
@@ -64,9 +65,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
+      # pnpm via Corepack (bundled with Node) — the pnpm/action-setup
+      # marketplace action isn't on this repo's allowed-actions list.
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
 
       - uses: actions/setup-node@v4
         with:

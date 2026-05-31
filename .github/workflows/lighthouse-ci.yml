@@ -73,6 +73,20 @@ jobs:
             sleep 2
           done
 
+      # A responding container only means the install wizard is up — WordPress
+      # core still has to be installed before WooCommerce can be bootstrapped.
+      - name: Install WordPress core
+        run: |
+          docker compose exec -T wordpress wp core is-installed --allow-root 2>/dev/null \
+            || docker compose exec -T wordpress wp core install \
+                 --url="http://localhost:8080" \
+                 --title="Flavian CI" \
+                 --admin_user=admin \
+                 --admin_password=admin \
+                 --admin_email=admin@example.com \
+                 --skip-email \
+                 --allow-root
+
       - name: Install WooCommerce (no sample data)
         env:
           WC_INSTALL_SAMPLE_DATA: "false"

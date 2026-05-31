@@ -32,7 +32,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22, not 20: the test:init script uses `node --test "<glob>"`, and
+          # test-runner glob support landed in Node 21. (The init wizard has no
+          # Node-20 floor — only the pipeline package pins to 20.)
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies

@@ -75,6 +75,8 @@ Site at http://localhost:8080 · Admin at /wp-admin · Database UI at :8081.
 
 **More docs:** [docs/QUICK-START.md](docs/QUICK-START.md) · [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) · [docs/docker-troubleshooting.md](docs/docker-troubleshooting.md)
 
+> **Versioning:** `package.json` declares `0.0.0` on purpose — the real version lives in git tags + `.release-please-manifest.json`. See [Versioning](CONTRIBUTING.md#versioning) in CONTRIBUTING.md.
+
 <details>
 <summary>Alternative: use as a wp-content directory in an existing WordPress install</summary>
 

@@ -189,6 +189,23 @@ test('report enumerates produced files and unmapped IR nodes', () => {
 	assert.ok(result.report.data.unmapped.some((u) => u.id === 'orphan'));
 });
 
+test('emits a machine-readable JSON report alongside the Markdown one', () => {
+	const ir = parseIdmlBuffer(buildCatalog());
+	const result = generateTheme(ir);
+
+	const json = file(result, 'indesign-pipeline-report.json');
+	assert.ok(json, 'missing indesign-pipeline-report.json');
+	const data = JSON.parse(json.contents);
+
+	assert.equal(data.theme.slug, 'catalog');
+	assert.equal(data.valid, true);
+	assert.equal(data.spreadCount, ir.spreads.length);
+	assert.equal(data.patterns.length, ir.spreads.length);
+	assert.ok(Array.isArray(data.files) && data.files.includes('theme.json'));
+	assert.ok(data.files.includes('indesign-pipeline-report.json'));
+	assert.ok(data.tokens && data.tokens.counts);
+});
+
 test('output is deterministic across runs', () => {
 	const ir = parseIdmlBuffer(buildCatalog());
 	const a = generateTheme(ir);

@@ -68,9 +68,10 @@ Claude generates the theme in `themes/[theme-name]/`. Activate it:
 
 Site at http://localhost:8080 · Admin at /wp-admin · Database UI at :8081.
 
-**Supported inputs:**
+**Supported inputs (pipelines):**
 - **Figma URL** — requires Professional plan (Dev Mode). See [docs/figma-to-wordpress/README.md](docs/figma-to-wordpress/README.md).
 - **Canva HTML/CSS export directory** — no account tier required. See [docs/canva-to-wordpress/README.md](docs/canva-to-wordpress/README.md).
+- **InDesign document** — an exported `.idml` (preferred) or PDF. Run `flavian pipeline indesign <input> --output themes/<slug>`. See [docs/pipelines/indesign.md](docs/pipelines/indesign.md).
 
 **More docs:** [docs/QUICK-START.md](docs/QUICK-START.md) · [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) · [docs/docker-troubleshooting.md](docs/docker-troubleshooting.md)
 
@@ -160,8 +161,8 @@ This template is optimized for WordPress development with Claude Code, featuring
 
 ### **Architecture Overview**
 - **Lean Plugin Setup**: 6 Claude Code plugins (5 user + 1 local)
-- **Custom Agents**: 51 specialized agents
-- **Custom Skills**: 11 workflows covering the Figma/Canva-to-FSE pipeline, security, testing, and i18n
+- **Custom Agents**: 53 specialized agents
+- **Custom Skills**: 12 workflows covering the Figma/Canva/InDesign-to-FSE pipelines, security, testing, and i18n
 - **Documentation Hub**: Comprehensive guides in `.claude/` directory
 
 ### **Installed Plugins**
@@ -175,10 +176,11 @@ This template is optimized for WordPress development with Claude Code, featuring
 ```
 
 ### **WordPress-Relevant Custom Agents** (highlights)
-Full catalog of 51 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-AGENTS-GUIDE.md). Key WordPress-specific ones:
+Full catalog of 53 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-AGENTS-GUIDE.md). Key WordPress-specific ones:
 ```
 ✅ figma-fse-converter      # Figma-to-FSE theme conversion
 ✅ canva-fse-converter      # Canva-to-FSE theme conversion
+✅ indesign-to-wordpress    # InDesign (.idml/PDF) → FSE theme conversion
 ✅ frontend-developer       # JS/CSS implementation for FSE themes
 ✅ test-writer-fixer        # PHP unit testing
 ✅ ui-designer              # Block pattern design
@@ -191,6 +193,7 @@ Full catalog of 51 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-A
 ```
 ✅ figma-to-fse-autonomous-workflow  # Orchestrator for Figma-to-FSE conversion
 ✅ canva-to-fse-autonomous-workflow  # Orchestrator for Canva-to-FSE conversion
+✅ indesign-conversion               # InDesign (.idml/PDF) → FSE conversion
 ✅ fse-block-theme-development       # theme.json, templates, FSE structure
 ✅ fse-pattern-first-architecture    # PHP patterns for images (enforced)
 ✅ block-pattern-creation            # Pattern registration and reuse

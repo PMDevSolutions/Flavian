@@ -279,9 +279,9 @@ This project uses a lean, WordPress-optimized plugin configuration with 6 plugin
 
 ---
 
-### Custom Agents (52 Total)
+### Custom Agents (53 Total)
 
-52 specialized agents: 27 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`, `headless-developer`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+53 specialized agents: 28 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `indesign-to-wordpress`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`, `headless-developer`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
 
 Agents are invoked automatically based on task context.
 
@@ -304,11 +304,11 @@ Use this guide to select the right one:
 
 ---
 
-### Custom WordPress Skills (11 Total)
+### Custom WordPress Skills (12 Total)
 
-11 WordPress-specific skills provide systematic workflows:
+12 WordPress-specific skills provide systematic workflows:
 
-**Pipeline orchestrators:** figma-to-fse-autonomous-workflow, canva-to-fse-autonomous-workflow
+**Pipeline orchestrators:** figma-to-fse-autonomous-workflow, canva-to-fse-autonomous-workflow, indesign-conversion
 
 **Theme authoring:** fse-block-theme-development, fse-pattern-first-architecture, block-pattern-creation
 
@@ -463,7 +463,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - All plugins serve WordPress development
 
 **Agent Philosophy:**
-- 52 custom agents available (27 WordPress-focused + 25 generic cross-domain)
+- 53 custom agents available (28 WordPress-focused + 25 generic cross-domain)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -611,4 +611,4 @@ Defaults configurable via `.env`: `WC_INSTALL_SAMPLE_DATA`, `WC_DEFAULT_THEME`, 
 ---
 
 **Last Updated:** 2026-05-06
-**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 52 agents)
+**Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 53 agents)

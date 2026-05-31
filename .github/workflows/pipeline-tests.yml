@@ -25,6 +25,8 @@ jobs:
             pipeline-pkg:
               - 'packages/pipeline/**'
               - 'pnpm-workspace.yaml'
+              - 'bin/flavian.mjs'
+              - 'scripts/indesign-fse/**'
 
   test:
     needs: check-paths
@@ -75,6 +77,9 @@ jobs:
 
       - name: Run @flavian/pipeline tests
         run: pnpm --filter @flavian/pipeline test
+
+      - name: Run InDesign end-to-end smoke test
+        run: node scripts/indesign-fse/smoke-test.mjs
 
   test-status:
     runs-on: ubuntu-latest

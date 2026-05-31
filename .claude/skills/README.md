@@ -11,6 +11,11 @@ This directory contains custom WordPress development skills for Claude Code, opt
    - Triggers: "convert Figma", "Figma to WordPress", "FSE conversion"
    - Role: Main workflow skill that coordinates all other skills
 
+   **indesign-conversion**
+   - Convert an Adobe InDesign document (`.idml` or PDF) into an FSE block theme
+   - Triggers: "InDesign to WordPress", "IDML", "convert InDesign", "print to web"
+   - Role: Drives the `@flavian/pipeline` InDesign pipeline; pairs with the `indesign-to-wordpress` agent
+
 2. **fse-block-theme-development**
    - theme.json syntax, template hierarchy, and FSE structure
    - Triggers: "create block theme", "add template", "theme.json"

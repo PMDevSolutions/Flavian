@@ -25,6 +25,7 @@ These are proposals only — no GitHub milestones have been edited. Apply via th
 > Major release expanding Flavian beyond the core FSE theme workflow with new conversion pipelines, multi-site support, and headless WordPress starters.
 >
 > - Canva-to-WordPress conversion pipeline
+> - InDesign-to-WordPress conversion pipeline (IDML/PDF → FSE theme)
 > - Multi-site scaffolding and provisioning
 > - Headless WordPress / REST API starter
 > - Gutenberg custom block scaffolding

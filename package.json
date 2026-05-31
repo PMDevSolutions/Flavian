@@ -17,7 +17,11 @@
   },
   "packageManager": "pnpm@9.15.0",
   "type": "module",
+  "bin": {
+    "flavian": "./bin/flavian.mjs"
+  },
   "scripts": {
+    "flavian": "node bin/flavian.mjs",
     "init": "node scripts/init.mjs",
     "test:init": "node --test \"tests/init/**/*.test.mjs\"",
     "test:pipeline": "pnpm --filter @flavian/pipeline test",

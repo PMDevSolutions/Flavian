@@ -20,6 +20,7 @@ import { buildStyleCss, buildFunctionsPhp } from './theme-files.js';
 import { buildGenerationReport } from './report.js';
 
 const REPORT_FILE = 'indesign-pipeline-report.md';
+const REPORT_JSON_FILE = 'indesign-pipeline-report.json';
 
 function indexBy(items, key) {
 	const map = new Map();
@@ -108,10 +109,13 @@ export function generateTheme(ir, options = {}) {
 		files.push({ path: 'bin/seed-content.sh', contents: buildSeedScript(patternMeta), mode: '755' });
 	}
 
+	// The artifact list both reports enumerate (includes the reports themselves).
+	const artifactPaths = [...files.map((f) => f.path), REPORT_FILE, REPORT_JSON_FILE];
+
 	const reportMarkdown = buildGenerationReport({
 		themeName: name,
 		themeSlug: slug,
-		files: [...files.map((f) => f.path), REPORT_FILE],
+		files: artifactPaths,
 		assets,
 		unmapped: ctx.unmapped,
 		tokensReport: tokens.report,
@@ -119,7 +123,28 @@ export function generateTheme(ir, options = {}) {
 		spreadCount: spreads.length,
 		assetsStaged: false,
 	});
+
+	// Machine-readable counterpart to the Markdown report.
+	const reportData = {
+		theme: { slug, name, package: pkg },
+		valid: tokens.report?.valid ?? true,
+		spreadCount: spreads.length,
+		files: artifactPaths,
+		patterns: patternMeta,
+		assets,
+		unmapped: ctx.unmapped,
+		derivedFromMaster: parts.derivedFromMaster,
+		tokens: {
+			counts: tokens.report?.counts ?? {},
+			fontFallbacks: tokens.report?.fontFallbacks ?? [],
+			googleFonts: tokens.report?.googleFonts ?? [],
+			outOfGamut: tokens.report?.outOfGamut ?? [],
+			validationErrors: tokens.report?.validationErrors ?? [],
+		},
+	};
+
 	files.push({ path: REPORT_FILE, contents: `${reportMarkdown}\n` });
+	files.push({ path: REPORT_JSON_FILE, contents: `${JSON.stringify(reportData, null, 2)}\n` });
 
 	return {
 		slug,
@@ -129,14 +154,6 @@ export function generateTheme(ir, options = {}) {
 		assets,
 		themeJson: tokens.merged,
 		tokens,
-		report: {
-			markdown: reportMarkdown,
-			data: {
-				unmapped: ctx.unmapped,
-				patterns: patternMeta,
-				assets,
-				valid: tokens.report?.valid ?? true,
-			},
-		},
+		report: { markdown: reportMarkdown, data: reportData },
 	};
 }

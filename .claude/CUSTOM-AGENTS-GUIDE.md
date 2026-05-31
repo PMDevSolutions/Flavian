@@ -1,7 +1,7 @@
 # Custom Agents Reference Guide
 
 **Last Updated:** 2026-05-06
-**Total Custom Agents:** 51
+**Total Custom Agents:** 53
 **Location:** `.claude/agents/`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.
@@ -99,6 +99,13 @@ These agents directly support WordPress block theme development:
 - **Use for:** Installing and configuring WooCommerce, importing products, wiring shop/cart/checkout/my-account pages to FSE templates, customising the bundled `flavian-shop` starter theme, scaffolding shipping zones, taxes, and payment gateways
 - **WordPress relevance:** Critical - turns the scaffold into an e-commerce-ready store
 - **Backed by:** `themes/flavian-shop/` and `scripts/wordpress-install/setup-woocommerce.sh`
+
+### **indesign-to-wordpress** (NEW)
+- **Purpose:** Convert an Adobe InDesign document (`.idml` or PDF) into a WordPress FSE block theme
+- **Use for:** Orchestrating the `@flavian/pipeline` InDesign stages (parse → map design tokens → generate patterns/templates/parts/theme.json), reviewing the generation report, and proposing concrete follow-ups (unmapped frames, font fallbacks, alt text). Non-destructive — works on a feature branch, never on `main`
+- **WordPress relevance:** Critical - turns print/layout sources into installable FSE themes
+- **Backed by:** `packages/pipeline/` (#62–#65), `bin/flavian.mjs`, and `scripts/indesign-fse/`
+- **Pairs with:** the `indesign-conversion` skill
 
 ---
 

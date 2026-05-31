@@ -27,6 +27,7 @@ jobs:
               - 'pnpm-workspace.yaml'
               - 'bin/flavian.mjs'
               - 'scripts/indesign-fse/**'
+              - 'tests/fixtures/indesign/**'
 
   test:
     needs: check-paths
@@ -80,6 +81,9 @@ jobs:
 
       - name: Run InDesign end-to-end smoke test
         run: node scripts/indesign-fse/smoke-test.mjs
+
+      - name: Run InDesign fixture tests (.idml + PDF → FSE theme)
+        run: node --test tests/fixtures/indesign/fixtures.test.mjs
 
   test-status:
     runs-on: ubuntu-latest

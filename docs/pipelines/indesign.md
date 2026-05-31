@@ -149,16 +149,28 @@ Two conversions are inherent regardless of source:
 | PDF output looks rough | PDF is a lossy fallback — re-export an `.idml` if at all possible. |
 | Frames missing from a pattern | Listed under **Unmapped IR nodes** in the report (e.g. a text frame with no story). Add content manually or fix the source document. |
 
-## Smoke test
+## Sample fixtures
 
-An end-to-end smoke test builds a fixture document in code, runs the real CLI,
-and asserts the theme is valid:
+The canonical sample document — a two-spread **Spring Brochure** — lives under
+[`tests/fixtures/indesign/`](../../tests/fixtures/indesign/) as code (no
+committed binaries). Materialize it to real files to try the pipeline:
 
 ```bash
-node scripts/indesign-fse/smoke-test.mjs
+node tests/fixtures/indesign/emit.mjs /tmp/fix
+flavian pipeline indesign /tmp/fix/brochure.idml --output themes/brochure
+flavian pipeline indesign /tmp/fix/brochure.pdf  --output themes/brochure-pdf
 ```
 
-It runs in CI on any change to the pipeline package or its scripts.
+## Smoke & fixture tests
+
+End-to-end tests build the fixtures in code, run them through the full pipeline,
+and assert a valid theme — for both the `.idml` (primary) and PDF (fallback)
+paths. Both run in CI on any change to the pipeline package or its scripts.
+
+```bash
+node scripts/indesign-fse/smoke-test.mjs                # real CLI, IDML path
+node --test tests/fixtures/indesign/fixtures.test.mjs   # IDML + PDF → theme
+```
 
 ## See also
 

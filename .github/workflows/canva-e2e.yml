@@ -1,0 +1,133 @@
+name: canva-e2e
+
+# End-to-end integration test for the Canva-to-WordPress pipeline (v2.0.0).
+# Runs the deterministic canva-fse helper scripts against a committed fixture and
+# deploys the golden theme to a Docker-spun WordPress, asserting it activates with
+# no PHP fatals. Lighthouse runs informationally and never gates the merge — the
+# general lighthouse-ci workflow owns performance gating for real themes.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canva-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.filter.outputs.canva }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            canva:
+              - 'scripts/canva-fse/**'
+              - 'tests/fixtures/canva/**'
+              - 'tests/canva-e2e/**'
+              - 'scripts/block-markup-validator/**'
+              - '.github/workflows/canva-e2e.yml'
+              - 'docker-compose.yml'
+              - 'Dockerfile'
+
+  e2e:
+    needs: check-paths
+    if: needs.check-paths.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    name: Fixture conversion + activate + no-fatals
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # pnpm via Corepack — pnpm/action-setup isn't on the allowed-actions list.
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Restore pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install Node deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare .env for docker compose
+        run: cp .env.example .env
+
+      - name: Boot WordPress stack
+        run: |
+          docker compose up -d wordpress db
+          for i in $(seq 1 90); do
+            if curl --silent --fail --max-time 2 http://localhost:8080/ >/dev/null 2>&1; then
+              echo "WordPress responding."
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Install WordPress core
+        run: |
+          docker compose exec -T wordpress wp core is-installed --allow-root 2>/dev/null \
+            || docker compose exec -T wordpress wp core install \
+                 --url="http://localhost:8080" \
+                 --title="Flavian CI" \
+                 --admin_user=admin \
+                 --admin_password=admin \
+                 --admin_email=admin@example.com \
+                 --skip-email \
+                 --allow-root
+
+      # The hard gate: fixture scripts produce valid output, golden theme
+      # activates, renders, and logs no PHP fatals. Fails the PR on regression.
+      - name: Run Canva-to-WordPress integration test
+        run: pnpm test:canva-e2e
+
+      # Informational only — surfaces Lighthouse scores for the activated fixture
+      # theme without gating the merge (continue-on-error).
+      - name: Lighthouse (informational, non-gating)
+        continue-on-error: true
+        run: |
+          pnpm exec lhci collect \
+            --url=http://localhost:8080/ \
+            --numberOfRuns=1 || true
+          echo "Lighthouse ran for visibility only; it does not gate this job."
+
+  # Stable required check: always runs so branch protection can require
+  # "canva-e2e status" without blocking PRs that don't touch Canva paths
+  # (mirrors pipeline-tests.yml's test-status job).
+  status:
+    runs-on: ubuntu-latest
+    needs: [check-paths, e2e]
+    if: always()
+    name: canva-e2e status
+    steps:
+      - name: Report status
+        run: |
+          if [ "${{ needs.check-paths.outputs.should-run }}" != "true" ]; then
+            echo "No Canva pipeline/fixture/test changes — skipping e2e."
+            exit 0
+          fi
+          if [ "${{ needs.e2e.result }}" != "success" ]; then
+            echo "canva-e2e integration test failed."
+            exit 1
+          fi
+          echo "canva-e2e integration test passed."

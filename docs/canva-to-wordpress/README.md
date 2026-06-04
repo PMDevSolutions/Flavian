@@ -38,6 +38,32 @@ Convert Canva HTML/CSS exports into production-ready WordPress Full Site Editing
 | Best for | Complex multi-page sites | Landing pages, simple sites |
 | Automation | Fully automated via MCP | Automated after export |
 
+## CI Integration Test
+
+The pipeline is guarded end-to-end by the `canva-e2e` workflow
+(`.github/workflows/canva-e2e.yml`), which runs against a committed fixture export
+in `tests/fixtures/canva/landing/`:
+
+1. Runs the deterministic helper scripts (`parse-canva-export.sh`,
+   `convert-html-to-blocks.sh`) on the fixture and asserts their output is valid.
+2. Deploys the fixture's golden theme (`expected-theme/`, a representative
+   converter output) to a Docker-spun WordPress, **activates it, and asserts no
+   PHP fatals** on render. Lighthouse runs informationally only — it does not gate.
+
+Because the converter itself is an LLM agent (which can't run reproducibly in CI),
+the golden theme stands in for "what a good agent run produces." See
+`tests/fixtures/canva/landing/README.md` for the rationale and how to regenerate it.
+
+Run it locally against a booted stack (`./wordpress-local.sh start && install`):
+
+```bash
+pnpm exec playwright install chromium   # first time only
+pnpm test:canva-e2e
+```
+
+Part A (the helper-script assertions) runs without Docker; the deploy/activate
+checks skip cleanly when no WordPress stack is reachable.
+
 ## Troubleshooting
 
 - **Missing colors** — Check CSS file has hex or `rgb()` colors; fallback tokens are used automatically

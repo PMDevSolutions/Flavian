@@ -91,6 +91,44 @@ PRs with invalid commit messages will fail the `commitlint` check.
 See [docs/RELEASING.md](docs/RELEASING.md) for how these commits become tagged
 releases.
 
+## Versioning
+
+Flavian's version is **owned by release-please, not hand-edited.**
+
+The source of truth for the current version is:
+
+- **Git tags** (`vX.Y.Z`) — the canonical, immutable record of every release.
+- **[`.release-please-manifest.json`](.release-please-manifest.json)** — the
+  single line release-please reads to know "what version are we on" when it
+  computes the next bump.
+
+The `"version"` field in `package.json` mirrors the released version for tooling
+that expects it there. release-please keeps it in sync automatically via the
+`extra-files` entry in
+[`release-please-config.json`](release-please-config.json), so **do not bump it
+by hand** in a feature PR — let release-please own every version change.
+
+We use [release-please](https://github.com/googleapis/release-please) with the
+`simple` release type. The flow:
+
+1. You merge Conventional Commits to `main` (see
+   [Commit Message Format](#commit-message-format) above). The `type` decides
+   the bump — `fix:` → patch, `feat:` → minor, `!`/`BREAKING CHANGE:` → major.
+2. release-please opens (and keeps updating) a single **Release PR** titled
+   `chore(main): release X.Y.Z`, containing the bumped manifest, the synced
+   `package.json` version, and a generated `CHANGELOG.md` entry.
+3. A maintainer merges that Release PR. Only then does release-please cut the
+   `vX.Y.Z` git tag and GitHub Release. The Release PR is the human gate — no
+   tag is created until it is merged.
+
+The full mechanics, override footers (`Release-As:`), pre-release handling, and
+the list of files involved are in [docs/RELEASING.md](docs/RELEASING.md).
+
+> **Note:** Sibling frameworks [Aurelius](https://github.com/PMDevSolutions/Aurelius)
+> and [Nerva](https://github.com/PMDevSolutions/Nerva) follow the same
+> release-please convention. This section is intended to stay aligned with their
+> wording once their conventions are documented.
+
 ## Coding Standards
 
 - Follow [WordPress PHP Coding Standards](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/)

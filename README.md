@@ -251,6 +251,13 @@ Full catalog of 53 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-A
 - **Test Locally**: Use Local by Flywheel, XAMPP, MAMP, or Docker for development
 - **Version Control**: This template includes comprehensive `.gitignore` for WordPress
 
+> **Versioning:** the repository version is tracked in git tags +
+> `.release-please-manifest.json` (source of truth) and mirrored into
+> `package.json` by [release-please](https://github.com/googleapis/release-please).
+> Don't bump versions by hand. See
+> [CONTRIBUTING.md → Versioning](CONTRIBUTING.md#versioning) for the convention and
+> [docs/RELEASING.md](docs/RELEASING.md) for the full release flow.
+
 ## Resources
 
 - [WordPress Developer Handbook](https://developer.wordpress.org/)

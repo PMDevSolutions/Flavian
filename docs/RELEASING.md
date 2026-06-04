@@ -66,8 +66,11 @@ theme `style.css` headers.
 
 ## Files involved
 
-- `release-please-config.json` — section mapping, release type, package config.
+- `release-please-config.json` — section mapping, release type, package config,
+  and the `extra-files` entry that mirrors the version into `package.json`.
 - `.release-please-manifest.json` — current version state.
+- `package.json` — `version` field is kept in sync with the manifest by
+  release-please; never hand-edited.
 - `.github/workflows/release-please.yml` — opens / updates the Release PR and
   tags on merge.
 - `.github/workflows/commitlint.yml` — lints PR commit messages.

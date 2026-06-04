@@ -1,0 +1,77 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 2,
+	"settings": {
+		"appearanceTools": true,
+		"layout": {
+			"contentSize": "768px",
+			"wideSize": "1280px"
+		},
+		"color": {
+			"palette": [
+				{ "slug": "primary", "color": "#1f6feb", "name": "Primary" },
+				{ "slug": "accent", "color": "#e8491d", "name": "Accent" },
+				{ "slug": "foreground", "color": "#1d1d1f", "name": "Foreground" },
+				{ "slug": "background", "color": "#ffffff", "name": "Background" }
+			]
+		},
+		"typography": {
+			"fluid": true,
+			"fontFamilies": [
+				{ "slug": "primary", "fontFamily": "Inter, sans-serif", "name": "Primary" },
+				{ "slug": "heading", "fontFamily": "\"Playfair Display\", serif", "name": "Heading" }
+			],
+			"fontSizes": [
+				{ "slug": "base", "size": "1rem", "name": "Base" },
+				{ "slug": "medium", "size": "1.125rem", "name": "Medium" },
+				{ "slug": "large", "size": "1.5rem", "name": "Large" },
+				{ "slug": "x-large", "size": "2rem", "name": "Extra Large" },
+				{ "slug": "xx-large", "size": "3rem", "name": "2X Large" }
+			]
+		},
+		"spacing": {
+			"units": ["px", "rem", "em", "%", "vw", "vh"],
+			"spacingSizes": [
+				{ "slug": "40", "size": "1rem", "name": "Small" },
+				{ "slug": "50", "size": "1.5rem", "name": "Medium" },
+				{ "slug": "60", "size": "2rem", "name": "Large" },
+				{ "slug": "70", "size": "3rem", "name": "Extra Large" }
+			]
+		}
+	},
+	"styles": {
+		"color": {
+			"background": "var:preset|color|background",
+			"text": "var:preset|color|foreground"
+		},
+		"typography": {
+			"fontFamily": "var:preset|font-family|primary",
+			"fontSize": "var:preset|font-size|base",
+			"lineHeight": "1.6"
+		},
+		"elements": {
+			"heading": {
+				"typography": {
+					"fontFamily": "var:preset|font-family|heading"
+				}
+			},
+			"link": {
+				"color": {
+					"text": "var:preset|color|primary"
+				}
+			}
+		},
+		"blocks": {
+			"core/button": {
+				"color": {
+					"background": "var:preset|color|accent",
+					"text": "var:preset|color|background"
+				}
+			}
+		}
+	},
+	"templateParts": [
+		{ "name": "header", "title": "Header", "area": "header" },
+		{ "name": "footer", "title": "Footer", "area": "footer" }
+	]
+}

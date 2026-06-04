@@ -1,0 +1,46 @@
+/*
+ * Representative Canva HTML/CSS export stylesheet.
+ * Intentionally contains real design tokens so parse-canva-export.sh has
+ * colors (hex + rgb), font families, font sizes, and spacing to extract.
+ */
+:root {
+  --brand: #1f6feb;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: #1d1d1f;
+  background: #ffffff;
+  margin: 0;
+}
+
+.hero {
+  background: rgb(31, 111, 235);
+  padding: 48px;
+  gap: 24px;
+}
+
+.hero h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 48px;
+  color: #ffffff;
+}
+
+.hero p {
+  font-size: 18px;
+  margin: 16px;
+}
+
+.button {
+  background: #e8491d;
+  font-size: 16px;
+  padding: 12px;
+}
+
+.features {
+  padding: 32px;
+}
+
+.features h2 {
+  font-size: 32px;
+}

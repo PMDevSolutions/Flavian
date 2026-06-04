@@ -25,6 +25,7 @@
     "init": "node scripts/init.mjs",
     "test:init": "node --test \"tests/init/**/*.test.mjs\"",
     "test:pipeline": "pnpm --filter @flavian/pipeline test",
+    "test:canva-e2e": "node --test tests/canva-e2e/*.test.mjs",
     "visual:capture": "node tests/visual/capture.mjs",
     "visual:diff": "node scripts/visual-diff.js --batch tests/visual/actual tests/visual/baselines --output-dir tests/visual/diffs --threshold 0.005 --json > tests/visual/report.json && node tests/visual/print-report.mjs tests/visual/report.json",
     "visual:update": "bash scripts/visual-update-baselines.sh",

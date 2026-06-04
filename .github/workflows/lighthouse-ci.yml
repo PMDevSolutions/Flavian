@@ -30,11 +30,6 @@ jobs:
   lighthouse:
     name: Budgets + Core Web Vitals
     runs-on: ubuntu-latest
-    # Soft-fail while baselines settle. Flip to `false` once the suite has
-    # produced stable results for ~2 weeks against `main`. The numbers in
-    # lighthouserc.json + tests/lighthouse/budgets.json are intentionally
-    # lenient at first — tighten them before flipping.
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -97,8 +92,16 @@ jobs:
 
       # lhci CLI (already a devDependency) instead of the treosh marketplace
       # action, which isn't on this repo's allowed-actions list.
+      #
+      # Soft-fail while baselines settle: continue-on-error lives on THIS step
+      # (not the job) so a budget miss is advisory — it surfaces in the step log
+      # and the annotation below, but the job's check stays green rather than a
+      # misleading red X. Remove this line to make budgets a hard gate once the
+      # numbers in lighthouserc.json + tests/lighthouse/budgets.json are tightened
+      # and stable for ~2 weeks against `main`.
       - name: Run Lighthouse CI
         id: lhci
+        continue-on-error: true
         run: pnpm exec lhci autorun --config=./lighthouserc.json --upload.target=temporary-public-storage
 
       - name: Annotate failing budgets

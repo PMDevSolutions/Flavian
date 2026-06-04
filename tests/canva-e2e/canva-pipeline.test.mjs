@@ -11,18 +11,17 @@
 
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, rmSync } from 'node:fs';
 
 import {
 	BASE_URL,
 	THEME_SLUG,
 	FIXTURE_DIR,
-	EXPECTED_THEME,
-	DEPLOY_DIR,
 	run,
 	runScript,
 	wp,
 	dockerExec,
+	deployTheme,
+	removeTheme,
 	wpReachable,
 } from './lib.mjs';
 
@@ -67,9 +66,9 @@ const reachable = wpReachable();
 
 describe('golden theme deploys to WordPress and renders cleanly', { skip: reachable ? false : 'Docker WordPress stack not reachable at ' + BASE_URL + ' — boot it with `./wordpress-local.sh start && ./wordpress-local.sh install` to run the end-to-end checks' }, () => {
 	before(() => {
-		// Deploy the golden theme into the mounted themes/ directory.
-		rmSync(DEPLOY_DIR, { recursive: true, force: true });
-		cpSync(EXPECTED_THEME, DEPLOY_DIR, { recursive: true });
+		// Deploy the golden theme into the container (see deployTheme for why we
+		// go through Docker rather than writing the bind-mounted host dir).
+		deployTheme();
 
 		// Capture PHP issues to a log instead of the page, then start clean.
 		wp(['config', 'set', 'WP_DEBUG', 'true', '--raw']);
@@ -82,7 +81,7 @@ describe('golden theme deploys to WordPress and renders cleanly', { skip: reacha
 
 	after(() => {
 		// Switch off the fixture theme (activate any other installed theme) then
-		// remove it, so a local checkout is left clean.
+		// remove it, so the environment is left clean.
 		try {
 			const others = wp([
 				'theme', 'list', '--field=name', '--status=inactive',
@@ -91,7 +90,7 @@ describe('golden theme deploys to WordPress and renders cleanly', { skip: reacha
 		} catch {
 			/* best-effort */
 		}
-		rmSync(DEPLOY_DIR, { recursive: true, force: true });
+		removeTheme();
 	});
 
 	test('theme activates and becomes the active theme', () => {

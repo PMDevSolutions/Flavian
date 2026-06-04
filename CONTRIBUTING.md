@@ -93,41 +93,21 @@ releases.
 
 ## Versioning
 
-Flavian's version is **owned by release-please, not hand-edited.**
+The `version` field in `package.json` is intentionally pinned to `0.0.0` and is
+**not** the repository version — **do not edit it by hand**. The source of truth
+for the released version is the latest `vX.Y.Z` git tag together with
+[`.release-please-manifest.json`](.release-please-manifest.json).
 
-The source of truth for the current version is:
+Versioning is automated by [release-please](https://github.com/googleapis/release-please).
+The [Conventional Commit](#commit-message-format) types above drive the semver
+bump; release-please opens a **Release PR** that updates the manifest and
+`CHANGELOG.md`, and merging that PR creates the `vX.Y.Z` tag and GitHub Release.
+Because the project uses release-please's `simple` release type, the bump is
+recorded in `.release-please-manifest.json` rather than `package.json` — which
+is exactly why `package.json` stays at `0.0.0`.
 
-- **Git tags** (`vX.Y.Z`) — the canonical, immutable record of every release.
-- **[`.release-please-manifest.json`](.release-please-manifest.json)** — the
-  single line release-please reads to know "what version are we on" when it
-  computes the next bump.
-
-The `"version"` field in `package.json` mirrors the released version for tooling
-that expects it there. release-please keeps it in sync automatically via the
-`extra-files` entry in
-[`release-please-config.json`](release-please-config.json), so **do not bump it
-by hand** in a feature PR — let release-please own every version change.
-
-We use [release-please](https://github.com/googleapis/release-please) with the
-`simple` release type. The flow:
-
-1. You merge Conventional Commits to `main` (see
-   [Commit Message Format](#commit-message-format) above). The `type` decides
-   the bump — `fix:` → patch, `feat:` → minor, `!`/`BREAKING CHANGE:` → major.
-2. release-please opens (and keeps updating) a single **Release PR** titled
-   `chore(main): release X.Y.Z`, containing the bumped manifest, the synced
-   `package.json` version, and a generated `CHANGELOG.md` entry.
-3. A maintainer merges that Release PR. Only then does release-please cut the
-   `vX.Y.Z` git tag and GitHub Release. The Release PR is the human gate — no
-   tag is created until it is merged.
-
-The full mechanics, override footers (`Release-As:`), pre-release handling, and
-the list of files involved are in [docs/RELEASING.md](docs/RELEASING.md).
-
-> **Note:** Sibling frameworks [Aurelius](https://github.com/PMDevSolutions/Aurelius)
-> and [Nerva](https://github.com/PMDevSolutions/Nerva) follow the same
-> release-please convention. This section is intended to stay aligned with their
-> wording once their conventions are documented.
+See [docs/RELEASING.md](docs/RELEASING.md) for the full flow, the version-bump
+rules, and overrides (e.g. the `Release-As:` footer).
 
 ## Coding Standards
 

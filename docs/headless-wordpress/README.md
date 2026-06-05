@@ -10,6 +10,7 @@ Run WordPress as a content API (REST + WPGraphQL) and consume it from a decouple
 | Compose profile | `docker-compose.yml` → `headless-installer` | Wraps the installer in a one-shot container. Run with `docker compose --profile headless up headless-installer`. |
 | Mu-plugin | `mu-plugins/flavian-headless.php` | CORS, preview-URL rewriting, REST hardening, REST `preview_secret_match` field. Toggled by `flavian_headless_mode` option. |
 | Scaffold script | `scripts/scaffold-frontend.sh` | Generates `frontend/<slug>/` from `.claude/templates/frontend/nextjs/`. |
+| Smoke test | `tests/headless-e2e/` + `.github/workflows/headless-e2e.yml` | CI proof that the scaffold output, REST API, CORS allowlist, REST hardening, and WPGraphQL all work. |
 | Agent | `.claude/agents/headless-developer.md` | Domain expert; invoke for headless workflows. |
 
 ## Five-minute setup
@@ -49,6 +50,36 @@ pnpm install && pnpm dev
 - **REST**: `http://localhost:8080/wp-json/wp/v2/`
 - **GraphQL**: `http://localhost:8080/graphql`
 - **GraphiQL IDE**: `http://localhost:8080/wp-admin/admin.php?page=graphiql-ide`
+
+## Smoke test
+
+A CI smoke test (`.github/workflows/headless-e2e.yml`) guards the headless
+contract on every PR that touches the mu-plugin, installer, frontend templates,
+or scaffold script. It boots WordPress in Docker, runs `setup-headless.sh`, then
+asserts:
+
+- `scaffold-frontend.sh` emits a coherent Next.js consumer (file tree, valid
+  `package.json`, `.env.local.example` keys, no unrendered `{{TOKENS}}`)
+- the REST API responds and the `/wp/v2/users` route is hardened away
+- CORS mirrors **only** the configured frontend origin — an unconfigured origin
+  gets no credentialed grant, even on `/wp-json/` (the mu-plugin replaces
+  WordPress core's permissive `rest_send_cors_headers()`)
+- WPGraphQL answers a query
+- nothing logs a PHP fatal while exercising any of it
+
+Run it locally against a booted stack:
+
+```bash
+docker compose up -d wordpress db
+docker compose exec -T wordpress wp core install --url=http://localhost:8080 \
+  --title="Flavian" --admin_user=admin --admin_password=admin \
+  --admin_email=admin@example.com --skip-email --allow-root
+bash scripts/wordpress-install/setup-headless.sh
+pnpm test:headless-e2e
+```
+
+The scaffold half (Part A) runs even without Docker; the API half (Part B)
+skips cleanly with a message when the stack isn't reachable.
 
 ## Disabling headless mode
 

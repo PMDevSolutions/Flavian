@@ -567,10 +567,13 @@ docker compose --profile headless up headless-installer
 
 # Scaffold a Next.js 14 frontend under frontend/<slug>/
 bash scripts/scaffold-frontend.sh my-app --name "My Site"
+
+# Smoke test (boots WP, asserts REST/CORS/hardening/GraphQL/scaffold + no fatals)
+pnpm test:headless-e2e
 ```
-Mu-plugin: `mu-plugins/flavian-headless.php` (toggled by `flavian_headless_mode` option).
+Mu-plugin: `mu-plugins/flavian-headless.php` (toggled by `flavian_headless_mode` option; gates REST CORS to the frontend allowlist).
 Frontend templates: `.claude/templates/frontend/nextjs/`.
-Full guide: `docs/headless-wordpress/README.md`.
+CI: `.github/workflows/headless-e2e.yml`. Full guide: `docs/headless-wordpress/README.md`.
 
 **WooCommerce (e-commerce scaffold):**
 ```bash

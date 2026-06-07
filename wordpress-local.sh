@@ -7,6 +7,28 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# --- .env-aware configuration -------------------------------------------------
+# This script runs on the host, so it reads settings straight from .env. We parse
+# line-by-line rather than `source`-ing the file: generated .env values (e.g.
+# WP_SITE_TITLE=My Network) are unquoted and may contain spaces, which would break
+# a naive `source`.
+ENV_FILE="$SCRIPT_DIR/.env"
+
+read_env() {
+    # read_env KEY [default] — echo KEY's value from .env, else the default.
+    local key="$1" default="${2:-}" val=""
+    if [ -f "$ENV_FILE" ]; then
+        val="$(grep -E "^${key}=" "$ENV_FILE" | tail -n 1 | cut -d= -f2-)"
+        val="${val%$'\r'}"   # strip trailing CR from CRLF-encoded files
+    fi
+    printf '%s' "${val:-$default}"
+}
+
+WP_PORT="$(read_env WP_PORT 8080)"
+SITE_URL="http://localhost:${WP_PORT}"
+WP_MULTISITE="$(read_env WP_MULTISITE false)"
+WP_MULTISITE_MODE="$(read_env WP_MULTISITE_MODE subdirectory)"
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -157,7 +179,7 @@ start() {
     print_success "WordPress is starting..."
     echo ""
     echo "Services will be available at:"
-    echo "  • WordPress:   http://localhost:8080"
+    echo "  • WordPress:   $SITE_URL"
     echo "  • phpMyAdmin:  http://localhost:8081"
     echo ""
     echo "Database credentials: (see .env file)"
@@ -221,15 +243,24 @@ install() {
     echo "Waiting for WordPress to be ready..."
     sleep 5
 
-    # Admin credentials (override via environment variables or .env)
-    local admin_user="${WP_ADMIN_USER:-admin}"
-    local admin_password="${WP_ADMIN_PASSWORD:-admin}"
-    local admin_email="${WP_ADMIN_EMAIL:-admin@example.com}"
+    # Admin credentials (override via environment variables, else .env, else defaults)
+    local admin_user="${WP_ADMIN_USER:-$(read_env WP_ADMIN_USER admin)}"
+    local admin_password="${WP_ADMIN_PASSWORD:-$(read_env WP_ADMIN_PASSWORD admin)}"
+    local admin_email="${WP_ADMIN_EMAIL:-$(read_env WP_ADMIN_EMAIL admin@example.com)}"
 
-    # Install WordPress
+    # Multisite is configured by the init wizard via WP_MULTISITE in .env.
+    if [ "$WP_MULTISITE" = "true" ]; then
+        install_multisite "$admin_user" "$admin_password" "$admin_email"
+        return
+    fi
+
+    local site_title
+    site_title="$(read_env WP_SITE_TITLE 'FSE Dev Site')"
+
+    # Install WordPress (single site)
     docker-compose exec wordpress wp core install \
-        --url="http://localhost:8080" \
-        --title="FSE Dev Site" \
+        --url="$SITE_URL" \
+        --title="$site_title" \
         --admin_user="$admin_user" \
         --admin_password="$admin_password" \
         --admin_email="$admin_email" \
@@ -239,9 +270,106 @@ install() {
     print_success "WordPress installed!"
     echo ""
     echo "Admin Login:"
-    echo "  • URL:      http://localhost:8080/wp-admin"
+    echo "  • URL:      $SITE_URL/wp-admin"
     echo "  • Username: $admin_user"
     echo "  • Password: $admin_password"
+}
+
+# Write the multisite-aware .htaccess into the container.
+# `wp core multisite-install` writes the network constants to wp-config.php but
+# never touches .htaccess — without the rewrite block, sub-site URLs 404 on the
+# Apache image. The two rule sets differ between subdirectory and subdomain mode.
+write_multisite_htaccess() {
+    print_header "Writing multisite .htaccess ($WP_MULTISITE_MODE)"
+
+    local htaccess
+    if [ "$WP_MULTISITE_MODE" = "subdomain" ]; then
+        htaccess="$(cat <<'HTACCESS'
+# BEGIN WordPress Multisite
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+
+# add a trailing slash to /wp-admin
+RewriteRule ^wp-admin$ wp-admin/ [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^(wp-(content|admin|includes).*) $1 [L]
+RewriteRule ^(.*\.php)$ $1 [L]
+RewriteRule . index.php [L]
+# END WordPress Multisite
+HTACCESS
+)"
+    else
+        htaccess="$(cat <<'HTACCESS'
+# BEGIN WordPress Multisite
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+
+# add a trailing slash to /wp-admin
+RewriteRule ^([_0-9a-zA-Z-]+/)?wp-admin$ $1wp-admin/ [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) $2 [L]
+RewriteRule ^([_0-9a-zA-Z-]+/)?(.*\.php)$ $2 [L]
+RewriteRule . index.php [L]
+# END WordPress Multisite
+HTACCESS
+)"
+    fi
+
+    printf '%s\n' "$htaccess" | docker-compose exec -T wordpress tee /var/www/html/.htaccess >/dev/null
+    docker-compose exec -T wordpress chown www-data:www-data /var/www/html/.htaccess
+}
+
+# Install WordPress as a multisite network.
+# Mode (subdirectory|subdomain) comes from WP_MULTISITE_MODE in .env.
+install_multisite() {
+    local admin_user="$1" admin_password="$2" admin_email="$3"
+    local network_title subdomains_flag=""
+    network_title="$(read_env MS_NETWORK_TITLE "$(read_env WP_SITE_TITLE 'Flavian Network')")"
+
+    if [ "$WP_MULTISITE_MODE" = "subdomain" ]; then
+        subdomains_flag="--subdomains"
+    fi
+
+    print_header "Installing WordPress Multisite ($WP_MULTISITE_MODE)"
+
+    # `wp core multisite-install` installs WordPress and converts it to a network
+    # in one step. --subdomains selects subdomain mode; omitting it = subdirectory.
+    docker-compose exec wordpress wp core multisite-install \
+        --url="$SITE_URL" \
+        --title="$network_title" \
+        --admin_user="$admin_user" \
+        --admin_password="$admin_password" \
+        --admin_email="$admin_email" \
+        $subdomains_flag \
+        --skip-email \
+        --allow-root
+
+    write_multisite_htaccess
+
+    print_success "Multisite network installed!"
+    echo ""
+    echo "Network Admin:"
+    echo "  • URL:      $SITE_URL/wp-admin/network/"
+    echo "  • Username: $admin_user"
+    echo "  • Password: $admin_password"
+    echo ""
+    if [ "$WP_MULTISITE_MODE" = "subdomain" ]; then
+        print_warning "Subdomain mode needs wildcard DNS for *.localhost."
+        echo "  Add a hosts entry per sub-site (e.g. 127.0.0.1 site2.localhost) or use dnsmasq."
+        echo "  See docs/multisite/README.md."
+    else
+        echo "  Create sub-sites at: $SITE_URL/wp-admin/network/sites.php"
+    fi
 }
 
 # Activate a theme
@@ -269,7 +397,7 @@ activate_theme() {
     docker-compose exec wordpress wp theme activate "$theme_slug" --allow-root
 
     print_success "Theme '$theme_slug' activated!"
-    echo "View at: http://localhost:8080"
+    echo "View at: $SITE_URL"
 }
 
 # List themes
@@ -296,7 +424,7 @@ help() {
     echo "  restart            Restart WordPress"
     echo "  logs               Show WordPress logs (Ctrl+C to exit)"
     echo "  status             Show container status"
-    echo "  install            Install WordPress (first-time setup)"
+    echo "  install            Install WordPress (first-time setup; multisite-aware)"
     echo "  activate-theme     Activate a theme"
     echo "  list-themes        List all themes"
     echo "  shell              Open shell in WordPress container"
@@ -313,7 +441,11 @@ help() {
     echo "  2. ./wordpress-local.sh start"
     echo "  3. ./wordpress-local.sh install"
     echo "  4. ./wordpress-local.sh activate-theme your-theme"
-    echo "  5. Open http://localhost:8080"
+    echo "  5. Open $SITE_URL"
+    echo ""
+    echo "Multisite:"
+    echo "  Set WP_MULTISITE=true (and WP_MULTISITE_MODE=subdirectory|subdomain) in .env"
+    echo "  — 'pnpm run init -- --multisite' does this — then run 'install' to build the network."
 }
 
 # Main command router

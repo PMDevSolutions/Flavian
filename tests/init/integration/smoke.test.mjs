@@ -47,6 +47,58 @@ test('flavian-shop theme — copies shop and rewrites headers', async (t) => {
   assert.match(style, /Text Domain: smoke-shop/);
 });
 
+test('multisite — --yes --multisite --name=my-network produces a multisite .env', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  const { stdout } = await exec('node', ['scripts/init.mjs', '--yes', '--no-git',
+    '--multisite', '--name=my-network', '--theme=blank'], { cwd: dir });
+
+  assert.match(stdout, /Multisite \(subdirectory\) is configured/);
+
+  const env = await readFile(join(dir, '.env'), 'utf8');
+  assert.match(env, /WP_MULTISITE=true/);
+  assert.match(env, /WP_MULTISITE_MODE=subdirectory/);
+  assert.match(env, /MS_NETWORK_TITLE=My Network/);
+
+  // The theme is still scaffolded alongside the multisite config.
+  await access(join(dir, 'themes/my-network/style.css'), constants.F_OK);
+});
+
+test('multisite — subdomain mode writes .env and warns about wildcard DNS', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  const { stdout } = await exec('node', ['scripts/init.mjs', '--yes', '--no-git', '--multisite',
+    '--multisite-mode=subdomain', '--name=net-sub', '--theme=blank'], { cwd: dir });
+
+  const env = await readFile(join(dir, '.env'), 'utf8');
+  assert.match(env, /WP_MULTISITE_MODE=subdomain/);
+  assert.match(stdout, /wildcard DNS for \*\.localhost/);
+});
+
+test('multisite — --multisite-mode without --multisite is rejected (exit 2)', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await assert.rejects(
+    () => exec('node', ['scripts/init.mjs', '--yes', '--no-git',
+      '--multisite-mode=subdomain', '--name=x'], { cwd: dir }),
+    { code: 2 }
+  );
+});
+
+test('multisite — an unknown --multisite-mode value exits cleanly (exit 2)', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await assert.rejects(
+    () => exec('node', ['scripts/init.mjs', '--yes', '--no-git',
+      '--multisite', '--multisite-mode=sideways', '--name=x'], { cwd: dir }),
+    (err) => err.code === 2 && /multisite mode/i.test(err.stderr)
+  );
+});
+
 test('figma placeholder — writes NEXT-STEPS.md, no theme dir', async (t) => {
   const dir = await stageFixture();
   t.after(() => rm(dir, { recursive: true, force: true }));

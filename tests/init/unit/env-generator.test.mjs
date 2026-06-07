@@ -31,6 +31,61 @@ test('writes .env with substituted values', async (t) => {
   assert.match(env, /WP_SITE_TITLE=My Shop/);
 });
 
+test('non-multisite run writes WP_MULTISITE=false and leaves MS_NETWORK_TITLE default', async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), 'env-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await writeFile(join(dir, '.env.example'), [
+    'WORDPRESS_DB_NAME=wordpress',
+    'MS_NETWORK_TITLE=Flavian Network',
+  ].join('\n'));
+
+  await writeEnv(dir, {
+    projectName: 'plain', siteTitle: 'Plain', adminEmail: 'a@b.c',
+    port: 8080, themeStarter: 'blank', multisite: false, multisiteMode: 'subdirectory',
+  });
+
+  const env = await readFile(join(dir, '.env'), 'utf8');
+  assert.match(env, /WP_MULTISITE=false/);
+  assert.doesNotMatch(env, /WP_MULTISITE_MODE=/);
+  assert.match(env, /MS_NETWORK_TITLE=Flavian Network/);
+});
+
+test('multisite run writes WP_MULTISITE, mode, and network title from siteTitle', async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), 'env-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await writeFile(join(dir, '.env.example'), [
+    'WORDPRESS_DB_NAME=wordpress',
+    'MS_NETWORK_TITLE=Flavian Network',
+  ].join('\n'));
+
+  await writeEnv(dir, {
+    projectName: 'my-network', siteTitle: 'My Network', adminEmail: 'a@b.c',
+    port: 8080, themeStarter: 'blank', multisite: true, multisiteMode: 'subdirectory',
+  });
+
+  const env = await readFile(join(dir, '.env'), 'utf8');
+  assert.match(env, /WP_MULTISITE=true/);
+  assert.match(env, /WP_MULTISITE_MODE=subdirectory/);
+  assert.match(env, /MS_NETWORK_TITLE=My Network/);
+});
+
+test('multisite subdomain mode is recorded', async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), 'env-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await writeFile(join(dir, '.env.example'), 'WORDPRESS_DB_NAME=wordpress\n');
+
+  await writeEnv(dir, {
+    projectName: 'net', siteTitle: 'Net', adminEmail: 'a@b.c',
+    port: 8080, themeStarter: 'blank', multisite: true, multisiteMode: 'subdomain',
+  });
+
+  const env = await readFile(join(dir, '.env'), 'utf8');
+  assert.match(env, /WP_MULTISITE_MODE=subdomain/);
+});
+
 test('throws if .env.example missing', async (t) => {
   const dir = await mkdtemp(join(tmpdir(), 'env-'));
   t.after(() => rm(dir, { recursive: true, force: true }));

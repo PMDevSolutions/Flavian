@@ -1,0 +1,77 @@
+name: block-validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/scaffold-block.sh"
+      - "scripts/smoke-block.sh"
+      - "tests/unit/scaffold-block.bats"
+      - ".claude/commands/scaffold-block.md"
+      - "docs/blocks/**"
+      - ".github/workflows/block-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/scaffold-block.sh"
+      - "scripts/smoke-block.sh"
+      - "tests/unit/scaffold-block.bats"
+      - ".github/workflows/block-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: block-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Structural tests for the generator output (bats + node).
+  bats:
+    name: Scaffolder bats tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run scaffold-block bats suite
+        run: ./tests/libs/bats-core/bin/bats tests/unit/scaffold-block.bats
+
+  # 2. Generate a block, lint every emitted PHP file, and run the PHPUnit stub.
+  php:
+    name: Generated block · PHP lint + PHPUnit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: phpunit
+          coverage: none
+      - name: Scaffold a dynamic block
+        run: |
+          bash scripts/scaffold-block.sh ci-block \
+            --namespace flavian \
+            --attributes "heading:string:Hi,count:number:2,featured:boolean,items:array" \
+            --dynamic --dest "$RUNNER_TEMP/blk"
+      - name: Scaffold a static block
+        run: |
+          bash scripts/scaffold-block.sh ci-static \
+            --namespace flavian \
+            --attributes "message:string:Hello,dismissible:boolean" \
+            --dest "$RUNNER_TEMP/blk"
+      - name: php -l every generated PHP file
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            php -l "$f" || fail=1
+          done < <(find "$RUNNER_TEMP/blk" -name '*.php')
+          exit "$fail"
+      - name: Run the generated PHPUnit stubs
+        run: |
+          ( cd "$RUNNER_TEMP/blk/ci-block"  && phpunit )
+          ( cd "$RUNNER_TEMP/blk/ci-static" && phpunit )

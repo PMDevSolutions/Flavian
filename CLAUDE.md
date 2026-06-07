@@ -588,6 +588,30 @@ docker compose --profile woocommerce up woocommerce-installer
 Bundled WooCommerce-ready FSE theme: `themes/flavian-shop/`.
 Defaults configurable via `.env`: `WC_INSTALL_SAMPLE_DATA`, `WC_DEFAULT_THEME`, `WC_DEFAULT_CURRENCY`, `WC_DEFAULT_COUNTRY`.
 
+**Gutenberg custom block scaffolding:**
+```bash
+# Slash command: /scaffold-block  (or pnpm run scaffold:block)
+# Generates a self-contained, activatable block plugin under plugins/<name>/
+# (no build step — runtime globals + index.asset.php deps).
+
+# Static block (save() serializes markup)
+bash scripts/scaffold-block.sh hero-card --namespace flavian \
+  --attributes "heading:string:Welcome,centered:boolean:true"
+
+# Dynamic block (server-rendered render.php)
+bash scripts/scaffold-block.sh latest-events --namespace flavian \
+  --attributes "count:number:3" --dynamic
+
+# Full E2E smoke test (scaffold → activate → render; needs the Docker stack)
+docker compose up -d wordpress db
+bash scripts/smoke-block.sh            # or: pnpm run smoke:block
+```
+Inputs: block name (positional), `--namespace`, `--attributes "name:type[:default]"`
+(types: string, number, boolean, array, object), `--dynamic`.
+Outputs: `block.json`, `index.js` (edit+save), `index.asset.php`, styles,
+`render.php` (dynamic only), a PHPUnit stub, and `phpunit.xml.dist`.
+Full guide: `docs/blocks/README.md`. Tests: `tests/unit/scaffold-block.bats`.
+
 **Visual QA & Quality Scripts:**
 ```bash
 ./scripts/visual-diff.js [actual] [expected]     # Pixel-level screenshot comparison

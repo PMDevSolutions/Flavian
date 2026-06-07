@@ -39,7 +39,9 @@
     "lint:commits:last": "commitlint --from=HEAD~1 --to=HEAD",
     "test:visual": "pnpm visual:diff",
     "test:lighthouse": "pnpm lighthouse:run",
-    "playwright:install": "playwright install --with-deps chromium"
+    "playwright:install": "playwright install --with-deps chromium",
+    "scaffold:block": "bash scripts/scaffold-block.sh",
+    "smoke:block": "bash scripts/smoke-block.sh"
   },
   "devDependencies": {
     "@clack/prompts": "^0.7.0",

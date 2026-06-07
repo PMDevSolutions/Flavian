@@ -50,27 +50,15 @@ function preview_secret(): string {
 }
 
 /**
- * Emit CORS headers for the configured frontend origin.
+ * Origins allowed to make credentialed cross-origin requests.
  *
- * Wide-open headers would defeat the purpose; we mirror the configured
- * frontend origin (or echo the Origin header when it matches one of a small
- * allowlist) and let WP's standard REST/GraphQL responses pass through.
+ * The configured frontend plus localhost:3000 for local dev. Apps that need
+ * more origins can extend this on the `flavian_headless_allowed_origins` filter.
  *
- * @return void
+ * @return string[]
  */
-function send_cors_headers(): void {
-	if ( ! is_enabled() ) {
-		return;
-	}
-
-	$origin = isset( $_SERVER['HTTP_ORIGIN'] )
-		? esc_url_raw( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) )
-		: '';
-	if ( '' === $origin ) {
-		return;
-	}
-
-	$allowed = array_filter(
+function allowed_origins(): array {
+	$origins = array_filter(
 		array_unique(
 			array(
 				frontend_url(),
@@ -79,7 +67,41 @@ function send_cors_headers(): void {
 		)
 	);
 
-	if ( ! in_array( $origin, $allowed, true ) ) {
+	/**
+	 * Filter the CORS origin allowlist for headless mode.
+	 *
+	 * @param string[] $origins Allowed origins (no trailing slash).
+	 */
+	return (array) apply_filters( 'flavian_headless_allowed_origins', $origins );
+}
+
+/**
+ * The request Origin, sanitized, or '' when absent.
+ *
+ * @return string
+ */
+function request_origin(): string {
+	return isset( $_SERVER['HTTP_ORIGIN'] )
+		? esc_url_raw( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) )
+		: '';
+}
+
+/**
+ * Emit CORS headers for the configured frontend origin.
+ *
+ * Wide-open headers would defeat the purpose; we mirror the configured
+ * frontend origin (or echo the Origin header when it matches the allowlist)
+ * and let WP's standard REST/GraphQL responses pass through.
+ *
+ * @return void
+ */
+function send_cors_headers(): void {
+	if ( ! is_enabled() ) {
+		return;
+	}
+
+	$origin = request_origin();
+	if ( '' === $origin || ! in_array( $origin, allowed_origins(), true ) ) {
 		return;
 	}
 
@@ -98,6 +120,44 @@ function send_cors_headers(): void {
 	}
 }
 add_action( 'init', __NAMESPACE__ . '\\send_cors_headers' );
+
+/**
+ * Lock the REST API's CORS headers to the allowlist.
+ *
+ * WordPress core's default `rest_send_cors_headers()` reflects *any* Origin
+ * back with `Access-Control-Allow-Credentials: true`. For a headless install
+ * that hands the REST API to a known frontend, that's exactly the wide-open
+ * behavior we want to avoid — so we swap core's handler for an allowlisted one.
+ * Disallowed origins get no ACAO/ACAC and therefore no credentialed access.
+ *
+ * @return void
+ */
+function restrict_rest_cors(): void {
+	if ( ! is_enabled() ) {
+		return;
+	}
+	remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+	add_filter( 'rest_pre_serve_request', __NAMESPACE__ . '\\send_rest_cors_headers' );
+}
+add_action( 'rest_api_init', __NAMESPACE__ . '\\restrict_rest_cors', 15 );
+
+/**
+ * Allowlisted replacement for core's rest_send_cors_headers().
+ *
+ * @param bool $served Whether the request has already been served.
+ * @return bool Unmodified $served (this is a pass-through filter).
+ */
+function send_rest_cors_headers( $served ) {
+	$origin = request_origin();
+	if ( '' !== $origin && in_array( $origin, allowed_origins(), true ) ) {
+		header( 'Access-Control-Allow-Origin: ' . $origin );
+		header( 'Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, PATCH, DELETE' );
+		header( 'Access-Control-Allow-Credentials: true' );
+		header( 'Access-Control-Allow-Headers: Authorization, Content-Type, X-WP-Nonce' );
+		header( 'Vary: Origin', false );
+	}
+	return $served;
+}
 
 /**
  * Rewrite the admin "Preview" link to the frontend's /api/preview route.

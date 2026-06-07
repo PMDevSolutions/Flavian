@@ -1,0 +1,112 @@
+name: headless-e2e
+
+# Smoke test for the headless WordPress / REST API starter (v2.0.0, issue #81).
+# Boots WordPress in Docker, runs setup-headless.sh (WPGraphQL + headless mode),
+# then asserts the REST API, CORS policy, REST hardening, WPGraphQL endpoint, the
+# scaffold-frontend.sh output, and that nothing logs a PHP fatal. The scaffold
+# half (Part A) runs even on changes that don't boot WordPress.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: headless-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.filter.outputs.headless }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            headless:
+              - 'mu-plugins/flavian-headless.php'
+              - 'scripts/wordpress-install/setup-headless.sh'
+              - 'scripts/scaffold-frontend.sh'
+              - '.claude/templates/frontend/**'
+              - 'tests/headless-e2e/**'
+              - '.github/workflows/headless-e2e.yml'
+              - 'docker-compose.yml'
+              - 'Dockerfile'
+
+  e2e:
+    needs: check-paths
+    if: needs.check-paths.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    name: Headless API + CORS + scaffold smoke test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Prepare .env for docker compose
+        run: cp .env.example .env
+
+      - name: Boot WordPress stack
+        run: |
+          docker compose up -d wordpress db
+          for i in $(seq 1 90); do
+            if curl --silent --fail --max-time 2 http://localhost:8080/ >/dev/null 2>&1; then
+              echo "WordPress responding."
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Install WordPress core
+        run: |
+          docker compose exec -T wordpress wp core is-installed --allow-root 2>/dev/null \
+            || docker compose exec -T wordpress wp core install \
+                 --url="http://localhost:8080" \
+                 --title="Flavian CI" \
+                 --admin_user=admin \
+                 --admin_password=admin \
+                 --admin_email=admin@example.com \
+                 --skip-email \
+                 --allow-root
+
+      # Installs WPGraphQL + companions, enables headless mode, sets the preview
+      # secret and pretty permalinks. Tolerates optional-plugin install failures.
+      - name: Configure headless mode
+        run: bash scripts/wordpress-install/setup-headless.sh --frontend-url http://localhost:3000
+
+      # The hard gate: scaffold output is coherent, the REST/GraphQL APIs respond,
+      # CORS only mirrors the configured origin, the users route is hardened away,
+      # and nothing logs a PHP fatal. Fails the PR on regression.
+      - name: Run headless smoke test
+        run: node --test tests/headless-e2e/*.test.mjs
+
+  # Stable required check: always runs so branch protection can require
+  # "headless-e2e status" without blocking PRs that don't touch headless paths
+  # (mirrors canva-e2e.yml / pipeline-tests.yml).
+  status:
+    runs-on: ubuntu-latest
+    needs: [check-paths, e2e]
+    if: always()
+    name: headless-e2e status
+    steps:
+      - name: Report status
+        run: |
+          if [ "${{ needs.check-paths.outputs.should-run }}" != "true" ]; then
+            echo "No headless pipeline/template/test changes — skipping e2e."
+            exit 0
+          fi
+          if [ "${{ needs.e2e.result }}" != "success" ]; then
+            echo "headless-e2e smoke test failed."
+            exit 1
+          fi
+          echo "headless-e2e smoke test passed."

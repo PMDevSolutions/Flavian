@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/PMDevSolutions/Flavian/compare/v1.2.1...v1.3.0) (2026-06-07)
+
+
+### Added
+
+* **init:** add --multisite flag to the project init wizard ([b82f142](https://github.com/PMDevSolutions/Flavian/commit/b82f14296d4c8c5d54d772a934eedf3c86ffc95a))
+* **init:** add --multisite flag to the project init wizard ([d5f6dfd](https://github.com/PMDevSolutions/Flavian/commit/d5f6dfd3a9890dabc4cbb55c32c6fc91055d1721)), closes [#83](https://github.com/PMDevSolutions/Flavian/issues/83)
+
 ## [1.2.1](https://github.com/PMDevSolutions/Flavian/compare/v1.2.0...v1.2.1) (2026-06-07)
 
 

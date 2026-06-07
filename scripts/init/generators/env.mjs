@@ -17,7 +17,15 @@ export async function writeEnv(targetDir, config) {
     WP_SITE_TITLE: config.siteTitle,
     WP_PORT: String(config.port),
     WC_DEFAULT_THEME: config.projectName,
+    WP_MULTISITE: String(Boolean(config.multisite)),
   };
+
+  // Only commit a multisite mode and network title when multisite is enabled;
+  // otherwise leave the .env.example defaults (e.g. MS_NETWORK_TITLE) untouched.
+  if (config.multisite) {
+    overrides.WP_MULTISITE_MODE = config.multisiteMode ?? 'subdirectory';
+    overrides.MS_NETWORK_TITLE = config.siteTitle;
+  }
 
   const seen = new Set();
   const out = lines.map(line => {

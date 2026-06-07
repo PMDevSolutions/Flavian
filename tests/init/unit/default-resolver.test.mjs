@@ -47,3 +47,32 @@ test('invalid theme value throws', () => {
     /unknown theme/i
   );
 });
+
+test('multisite defaults to false', () => {
+  const cfg = resolveDefaults({}, { cwdBasename: 'x', gitEmail: null });
+  assert.equal(cfg.multisite, false);
+});
+
+test('--multisite enables multisite in subdirectory mode by default', () => {
+  const cfg = resolveDefaults({ multisite: true }, { cwdBasename: 'x', gitEmail: null });
+  assert.equal(cfg.multisite, true);
+  assert.equal(cfg.multisiteMode, 'subdirectory');
+});
+
+test('--multisite-mode=subdomain is honoured', () => {
+  const cfg = resolveDefaults(
+    { multisite: true, multisiteMode: 'subdomain' },
+    { cwdBasename: 'x', gitEmail: null }
+  );
+  assert.equal(cfg.multisiteMode, 'subdomain');
+});
+
+test('invalid multisite mode throws', () => {
+  assert.throws(
+    () => resolveDefaults(
+      { multisite: true, multisiteMode: 'sideways' },
+      { cwdBasename: 'x', gitEmail: null }
+    ),
+    /multisite mode/i
+  );
+});

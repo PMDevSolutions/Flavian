@@ -44,6 +44,23 @@ export async function runPrompts({ cwdBasename, gitEmail }) {
     }));
   }
 
+  const multisite = abortIfCancelled(await confirm({
+    message: 'Configure a WordPress multisite network?',
+    initialValue: false,
+  }));
+
+  let multisiteMode = 'subdirectory';
+  if (multisite) {
+    multisiteMode = abortIfCancelled(await select({
+      message: 'Multisite mode',
+      options: [
+        { value: 'subdirectory', label: 'Subdirectory (site.test/blog2) — works out of the box' },
+        { value: 'subdomain',    label: 'Subdomain (blog2.site.test) — needs wildcard DNS locally' },
+      ],
+      initialValue: 'subdirectory',
+    }));
+  }
+
   const port = abortIfCancelled(await text({
     message: 'Local dev port',
     placeholder: '8080',
@@ -73,6 +90,8 @@ export async function runPrompts({ cwdBasename, gitEmail }) {
     siteTitle,
     themeStarter,
     woocommerce,
+    multisite,
+    multisiteMode,
     port: Number(port),
     adminEmail,
     initGit: true,

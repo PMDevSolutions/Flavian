@@ -27,6 +27,7 @@ node scripts/init.mjs
 | Site title | Title-cased slug | Human-readable, used in `.env` and `theme.json` |
 | Theme starter | (you pick) | See below |
 | WooCommerce support | `no` | Hidden when starter = `flavian-shop` (auto-enabled) |
+| Multisite network | `no` | When `yes`, also asks for the mode (subdirectory / subdomain) |
 | Local dev port | `8080` | 1024–65535 |
 | Admin email | `git config user.email` | Falls back to `admin@example.com` |
 
@@ -46,6 +47,8 @@ node scripts/init.mjs
 --name <slug>        Project slug
 --theme <starter>    blank | flavian-shop | figma | indesign
 --woo                Enable WooCommerce (auto-true for flavian-shop)
+--multisite          Configure a WordPress multisite network
+--multisite-mode <m> subdirectory | subdomain (default subdirectory; requires --multisite)
 --port <n>           Local dev port (default 8080)
 --email <addr>       Admin email
 --no-git             Skip git init
@@ -63,7 +66,54 @@ node scripts/init.mjs --yes --name=acme-shop --theme=flavian-shop
 
 # Stage a Figma-driven project
 node scripts/init.mjs --yes --name=marketing-site --theme=figma
+
+# Configure a multisite network (subdirectory mode)
+pnpm run init -- --yes --multisite --name=my-network
+
+# …or subdomain mode
+pnpm run init -- --yes --multisite --multisite-mode=subdomain --name=my-network
 ```
+
+## Multisite
+
+`--multisite` doesn't convert WordPress on its own — consistent with the rest of the
+wizard, it only writes configuration. The conversion runs later, against a booted
+container. What the flag adds to `.env`:
+
+| Key | Value | Notes |
+|---|---|---|
+| `WP_MULTISITE` | `true` | `false` on non-multisite runs |
+| `WP_MULTISITE_MODE` | `subdirectory` \| `subdomain` | From `--multisite-mode` (default `subdirectory`) |
+| `MS_NETWORK_TITLE` | your site title | e.g. `--name=my-network` → `My Network` |
+
+The existing `MS_SECOND_SITE_*` defaults in `.env.example` (used by the sample
+sub-site) are left untouched.
+
+### Building the network
+
+Once the config is written, `./wordpress-local.sh install` is multisite-aware: it
+reads `WP_MULTISITE` / `WP_MULTISITE_MODE` from `.env` and runs
+`wp core multisite-install` (adding `--subdomains` for subdomain mode) instead of a
+single-site install. It also writes the mode-specific multisite `.htaccess` (so
+sub-site URLs resolve on the Apache image) and honours `WP_PORT` for the admin URL.
+
+```bash
+docker compose up -d            # boot WordPress + db
+./wordpress-local.sh install    # builds the network from .env
+open http://localhost:8080/wp-admin/network/
+```
+
+The `docker compose --profile multisite up multisite-installer` profile is an
+alternative path that converts an already-installed single site (subdirectory mode
+only — see `docs/multisite/README.md`).
+
+### Subdomain mode caveat
+
+Subdomain multisite (`blog2.localhost`) needs the request to reach WordPress with the
+right `Host` header, which means wildcard DNS for `*.localhost` (a per-site
+`/etc/hosts` entry, or `dnsmasq`). The wizard writes the config and
+`wordpress-local.sh install` passes `--subdomains`, but you must set up local DNS
+yourself. See [docs/multisite/README.md](multisite/README.md#why-subdomain-mode-isnt-shipped).
 
 ## What gets written
 
@@ -72,6 +122,7 @@ A successful run produces:
 ```
 <project>/
 ├── .env                  ← from .env.example, with your values
+│                            (includes WP_MULTISITE / WP_MULTISITE_MODE when --multisite)
 ├── themes/<slug>/        ← scaffolded theme (skipped for figma/indesign)
 ├── docs/NEXT-STEPS.md    ← only for figma/indesign starters
 └── .git/                 ← fresh repo, one commit (unless --no-git)

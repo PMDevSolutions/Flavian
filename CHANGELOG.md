@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1](https://github.com/PMDevSolutions/Flavian/compare/v1.2.0...v1.2.1) (2026-06-07)
+
+
+### Fixed
+
+* **deps:** patch tmp, uuid & cookie advisories via pnpm overrides ([f21d0be](https://github.com/PMDevSolutions/Flavian/commit/f21d0be9c489f0e417d80545a4848bf80c2810af))
+* **deps:** patch tmp, uuid & cookie advisories via pnpm overrides ([43127d5](https://github.com/PMDevSolutions/Flavian/commit/43127d59428a8cb742f986091c07e3f0dfa331bb))
+
 ## [1.2.0](https://github.com/PMDevSolutions/Flavian/compare/v1.1.0...v1.2.0) (2026-06-07)
 
 

@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/PMDevSolutions/Flavian/compare/v1.1.0...v1.2.0) (2026-06-07)
+
+
+### Added
+
+* add headless WordPress + Next.js frontend scaffold ([74e57b9](https://github.com/PMDevSolutions/Flavian/commit/74e57b95148193cacc8bcae99f3fce52d3ea256c))
+* add headless WordPress + Next.js frontend scaffold ([#22](https://github.com/PMDevSolutions/Flavian/issues/22)) ([09e680f](https://github.com/PMDevSolutions/Flavian/commit/09e680fe4e98f1c31086c0e083579b4178ec681b))
+* add plugin scaffold generator with flavian-starter reference plugin ([d8f0335](https://github.com/PMDevSolutions/Flavian/commit/d8f03351f160c99269bb99168c82ffc6a8576804))
+* add plugin scaffold generator with flavian-starter reference plugin ([53f98fd](https://github.com/PMDevSolutions/Flavian/commit/53f98fdace49152a73b8f92ca49ef243453ea008)), closes [#19](https://github.com/PMDevSolutions/Flavian/issues/19)
+* add WordPress multisite (subdirectory) network support ([9b354f1](https://github.com/PMDevSolutions/Flavian/commit/9b354f145e5a5ba930f791173b995cd5ff8be005))
+* add WordPress multisite (subdirectory) network support ([#23](https://github.com/PMDevSolutions/Flavian/issues/23)) ([2324c83](https://github.com/PMDevSolutions/Flavian/commit/2324c83c144af83af909ec79129ce23423564f8a))
+* **blocks:** add Gutenberg custom block scaffolder ([f9a9b53](https://github.com/PMDevSolutions/Flavian/commit/f9a9b53506f3d16d9141dfe14bf8ecf79009dcb8))
+* **blocks:** Gutenberg custom block scaffolder (v2.0.0) ([56cf28d](https://github.com/PMDevSolutions/Flavian/commit/56cf28de398d85887b88d0a5fbff0ae4070e71cf))
+* enforce performance budgets in CI via Lighthouse CI ([08327ee](https://github.com/PMDevSolutions/Flavian/commit/08327ee96dbec8843eedc18b47e526e739a179b8))
+* enforce performance budgets in CI via Lighthouse CI ([c54a708](https://github.com/PMDevSolutions/Flavian/commit/c54a7086633728e4cb87097c5feb046359c5d68c)), closes [#20](https://github.com/PMDevSolutions/Flavian/issues/20)
+* **headless:** headless WordPress / REST API starter — CI smoke test + CORS hardening ([0a30eaf](https://github.com/PMDevSolutions/Flavian/commit/0a30eafaca4fc8fac0bfd000eae08af5feb14915))
+* **init:** add .env generator ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([dc48133](https://github.com/PMDevSolutions/Flavian/commit/dc48133ea74f44ca88628700dfa38fffd5893e2f))
+* **init:** add blank FSE theme template for wizard ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([d414421](https://github.com/PMDevSolutions/Flavian/commit/d414421a2014c10fe21e6c98a1d2a54430e899ae))
+* **init:** add default resolver for non-interactive mode ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([73a9a23](https://github.com/PMDevSolutions/Flavian/commit/73a9a23294af62c816e89d3176a3d06feaf24899))
+* **init:** add git initialisation generator ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([17122e4](https://github.com/PMDevSolutions/Flavian/commit/17122e439a6b0a341e3ebfbb37c99e41687cd5a9))
+* **init:** add main wizard orchestrator and prompt flow ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([427b47f](https://github.com/PMDevSolutions/Flavian/commit/427b47f7c703e479c5f41a5576a5d6c65153ad0b))
+* **init:** add project name validator ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([b337dbd](https://github.com/PMDevSolutions/Flavian/commit/b337dbd5de1d231d048a541367d8cb565dcfbc74))
+* **init:** add slugify/titleCase helpers ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([9aeac2c](https://github.com/PMDevSolutions/Flavian/commit/9aeac2c5c1e8e2eca541104ad99209449648f756))
+* **init:** add static scaffold verifier ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([d29d757](https://github.com/PMDevSolutions/Flavian/commit/d29d757cf0f832c8e10c217b488e7ae0c8c42017))
+* **init:** add theme generator with 4 starters ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([25d853f](https://github.com/PMDevSolutions/Flavian/commit/25d853f407b7aea907965c067bdc1ced836a9322))
+* **init:** add token substitution helper ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([78f6c25](https://github.com/PMDevSolutions/Flavian/commit/78f6c25bc83eb2a72c52cd1114e717497f394413))
+* **init:** stage WooCommerce post-install hook when requested ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([e5ce037](https://github.com/PMDevSolutions/Flavian/commit/e5ce0376ceee53cd1d794e612887830923107ac0))
+* **init:** wire composer post-create-project-cmd to wizard ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([b13d173](https://github.com/PMDevSolutions/Flavian/commit/b13d1736cd7596caee435a16276bd2f6f3b8c07c))
+* integrate visual regression testing for theme changes ([0c72a59](https://github.com/PMDevSolutions/Flavian/commit/0c72a5969d27ab9638fcc04e156ee783b00f3dd3))
+* integrate visual regression testing for theme changes ([cc31bea](https://github.com/PMDevSolutions/Flavian/commit/cc31beaa39731f9b3f7ed5bbeb06b258932a34e9)), closes [#18](https://github.com/PMDevSolutions/Flavian/issues/18)
+* interactive CLI setup wizard ([#21](https://github.com/PMDevSolutions/Flavian/issues/21)) ([467db30](https://github.com/PMDevSolutions/Flavian/commit/467db309549e87a0bf4036a0e20a83a7f439cae3))
+* **pipeline:** add IDML parser and intermediate representation ([#62](https://github.com/PMDevSolutions/Flavian/issues/62)) ([ccfbbab](https://github.com/PMDevSolutions/Flavian/commit/ccfbbab0367e7f5b70a53f24ee7be2a8f296cf85))
+* **pipeline:** add map-tokens CLI ([04df136](https://github.com/PMDevSolutions/Flavian/commit/04df136f274332a3f61697c49206b05f68120cb1))
+* **pipeline:** add optional raw components to IR Color ([8b1d7cd](https://github.com/PMDevSolutions/Flavian/commit/8b1d7cd97f3a370318730c99f3ee09354a14b5ef))
+* **pipeline:** add PDF fallback parser and layout reconstruction ([#63](https://github.com/PMDevSolutions/Flavian/issues/63)) ([38f4b64](https://github.com/PMDevSolutions/Flavian/commit/38f4b64dba623ea0b7ffe17c2b72efe87d895e57))
+* **pipeline:** add PDF fallback parser and layout reconstruction ([#63](https://github.com/PMDevSolutions/Flavian/issues/63)) ([4491672](https://github.com/PMDevSolutions/Flavian/commit/4491672297d6cd8f62f425d365854abae94c3f20))
+* **pipeline:** assemble, deep-merge, and validate theme.json partials ([cbcc0d7](https://github.com/PMDevSolutions/Flavian/commit/cbcc0d7f6c2e85124464c844326104230a921efb))
+* **pipeline:** centralized color module with CMYK/LAB to sRGB conversion ([60c4b32](https://github.com/PMDevSolutions/Flavian/commit/60c4b327ff86febadccbd53973243ce08ba6252e))
+* **pipeline:** cluster paragraph styles into a theme.json typography scale ([1e9a146](https://github.com/PMDevSolutions/Flavian/commit/1e9a14609a6ca7ecd3cc8be0d140fe2ce0070df1))
+* **pipeline:** derive a quantized spacing scale from IR geometry ([4a0c3b6](https://github.com/PMDevSolutions/Flavian/commit/4a0c3b644ee00b96174645b0640275f7beb96c6b))
+* **pipeline:** emit Style Dictionary (DTCG) design tokens ([8148933](https://github.com/PMDevSolutions/Flavian/commit/81489330f5ebdb49c4d57917933ec572bb454d24))
+* **pipeline:** generate FSE themes from the InDesign IR ([#65](https://github.com/PMDevSolutions/Flavian/issues/65)) ([549320e](https://github.com/PMDevSolutions/Flavian/commit/549320e8c04b46292d0e784890fcbab2589175df))
+* **pipeline:** IDML parser and intermediate representation ([f970fc5](https://github.com/PMDevSolutions/Flavian/commit/f970fc52724465a536a80fc29da0d88cd9ed260c))
+* **pipeline:** InDesign as a first-class Flavian workflow — agent, skill, CLI, docs ([#66](https://github.com/PMDevSolutions/Flavian/issues/66)) ([ed82f68](https://github.com/PMDevSolutions/Flavian/commit/ed82f68449ddb69775eb726e4e9f5b05d0b3cde2))
+* **pipeline:** InDesign IR to WordPress design token mapper ([#64](https://github.com/PMDevSolutions/Flavian/issues/64)) ([b1fe980](https://github.com/PMDevSolutions/Flavian/commit/b1fe98081034a8f110ca8b054656f51fcd4c1c6b))
+* **pipeline:** InDesign output generator — FSE patterns, templates & theme.json writer ([#65](https://github.com/PMDevSolutions/Flavian/issues/65)) ([d7586bd](https://github.com/PMDevSolutions/Flavian/commit/d7586bd1535e5747a755449f3675b9e7b159d208))
+* **pipeline:** map IDML swatches to a deduped theme.json color palette ([7603ea5](https://github.com/PMDevSolutions/Flavian/commit/7603ea5b773e67faa164a4f3bd4a15ba7cf8b4fa))
+* **pipeline:** map InDesign fonts to web families with a fallback table ([bdf9460](https://github.com/PMDevSolutions/Flavian/commit/bdf946007bffdcfa1cccd0e8b06f9bf7ebfb5ed7))
+* **pipeline:** mapTokens orchestrator producing theme.json, tokens, and report ([d3bf245](https://github.com/PMDevSolutions/Flavian/commit/d3bf245233ee6f16333da8ee34bb48a3852202ba))
+* **pipeline:** populate raw color components and fix LAB swatch conversion ([e7dea54](https://github.com/PMDevSolutions/Flavian/commit/e7dea546813a5591160053accc5aabacbf1ec400))
+* **pipeline:** ship InDesign as a first-class Flavian workflow ([#66](https://github.com/PMDevSolutions/Flavian/issues/66)) ([db77ab9](https://github.com/PMDevSolutions/Flavian/commit/db77ab962d406607398c34f616ce31881a8702eb))
+
+
+### Fixed
+
+* **canva-e2e:** deploy golden theme through Docker, not host bind mount ([480c52b](https://github.com/PMDevSolutions/Flavian/commit/480c52baaaee37de0531ccfa70d19db3709bf1e7))
+* **canva-e2e:** treat block-markup validator as advisory, not a gate ([5672c03](https://github.com/PMDevSolutions/Flavian/commit/5672c0357c3d948eb64687c39d0a870859baf72b))
+* **docker:** libzip4 → libzip5 for Debian trixie base ([8becc60](https://github.com/PMDevSolutions/Flavian/commit/8becc608795f403ff50a1a34696823fc7b50efcb))
+* **headless:** gate REST API CORS to the configured frontend origin ([b7f72e3](https://github.com/PMDevSolutions/Flavian/commit/b7f72e389c53e67ee01b33524f59997e196ff335))
+* make scaffold-plugin output PHPUnit-green and PHPCS-clean ([76ac979](https://github.com/PMDevSolutions/Flavian/commit/76ac979925b62003ada55b9f907705655ad30bdc)), closes [#19](https://github.com/PMDevSolutions/Flavian/issues/19)
+
 ## [Unreleased]
 
 ### Added

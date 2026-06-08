@@ -1,8 +1,20 @@
 name: PHPCS
 
+# Enforces the WordPress Coding Standards on every pull request to main.
+# The standard, scan targets and exclusions live in ./phpcs.xml.dist; the same
+# check runs locally via `composer phpcs` or
+# `./scripts/wordpress/check-coding-standards.sh --strict`.
+#
+# No `paths:` filter on purpose: a path-filtered required check shows as pending
+# (and blocks merges) on PRs that don't touch its paths. The job is cheap and
+# passes trivially when no first-party PHP changed, so it is safe to require.
+
 on:
   pull_request:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   phpcs:
@@ -17,45 +29,31 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          coverage: none
           tools: cs2pr
 
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Verify WordPress standards are registered
         run: ./vendor/bin/phpcs -i
 
-      - name: Run PHPCS on themes
-        if: hashFiles('themes/**/*.php') != ''
-        run: >
-          ./vendor/bin/phpcs
-          --standard=WordPress-Extra,WordPress-Docs
-          --extensions=php
-          --ignore=*/index.php
-          --report=checkstyle
-          themes/
-          | cs2pr
-
-      - name: Run PHPCS on plugins
-        if: hashFiles('plugins/**/*.php') != ''
-        # First-party plugins (plugins/flavian-*) carry their own .phpcs.xml.dist
-        # and are linted by .github/workflows/plugin-validation.yml — skip them here.
-        run: >
-          ./vendor/bin/phpcs
-          --standard=WordPress-Extra,WordPress-Docs
-          --extensions=php
-          --ignore=*/index.php,plugins/akismet/*,plugins/hello.php,plugins/flavian-*/*
-          --report=checkstyle
-          plugins/
-          | cs2pr
-
-      - name: Run PHPCS on mu-plugins
-        if: hashFiles('mu-plugins/**/*.php') != ''
-        run: >
-          ./vendor/bin/phpcs
-          --standard=WordPress-Extra,WordPress-Docs
-          --extensions=php
-          --ignore=*/index.php
-          --report=checkstyle
-          mu-plugins/
-          | cs2pr
+      - name: Run WordPress Coding Standards (PHPCS)
+        shell: bash
+        # --strict makes the script exit non-zero on any violation; -q
+        # suppresses PHPCS progress so the checkstyle report on stdout stays
+        # clean for cs2pr, which turns it into inline PR annotations.
+        # `shell: bash` runs with -eo pipefail, so either the script or cs2pr
+        # failing fails the job.
+        run: ./scripts/wordpress/check-coding-standards.sh --strict -q --report=checkstyle | cs2pr

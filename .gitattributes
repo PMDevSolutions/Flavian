@@ -1,0 +1,29 @@
+# Normalize line endings. Text is stored as LF in the repository so PHPCS's
+# Generic.Files.LineEndings sniff never trips on a Windows checkout, and shell
+# scripts stay executable on Linux/CI runners.
+* text=auto
+
+# Files that must always be LF (linted by PHPCS, or executed on Linux/CI).
+*.php   text eol=lf
+*.sh    text eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Binary assets — never normalize or diff as text.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.svg   text eol=lf
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.eot   binary
+*.pdf   binary
+*.zip   binary
+*.idml  binary

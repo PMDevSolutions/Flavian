@@ -117,6 +117,66 @@ rules, and overrides (e.g. the `Release-As:` footer).
 - Use WordPress APIs and functions where available
 - Use PHPCS (PHP CodeSniffer) to check for coding standard violations
 
+### Running PHPCS locally
+
+All first-party PHP under `themes/`, `mu-plugins/`, and non-bundled `plugins/`
+is linted against `WordPress-Extra` + `WordPress-Docs`. The ruleset, scan
+targets, and exclusions live in one place — [`phpcs.xml.dist`](phpcs.xml.dist) —
+and the **same** check runs in CI on every pull request via
+[`.github/workflows/phpcs.yml`](.github/workflows/phpcs.yml).
+
+One-time setup (installs PHP_CodeSniffer + the WordPress Coding Standards):
+
+```bash
+composer install
+# …or, if you don't have the dev tooling yet:
+./scripts/wordpress/setup-phpcs.sh
+```
+
+Check your changes:
+
+```bash
+composer phpcs                                       # lint the whole project
+./scripts/wordpress/check-coding-standards.sh        # same, advisory
+./scripts/wordpress/check-coding-standards.sh themes/my-theme   # lint one path
+```
+
+Auto-fix everything PHPCS can fix automatically, then re-check:
+
+```bash
+composer phpcbf
+```
+
+To reproduce CI's pass/fail gate exactly (non-zero exit on any violation):
+
+```bash
+./scripts/wordpress/check-coding-standards.sh --strict
+# (equivalent to `composer check-standards`)
+```
+
+First-party plugins under `plugins/flavian-*/` carry their own
+`.phpcs.xml.dist` and are linted separately by the `plugin-validation`
+workflow, so they are excluded from the project-level check above.
+
+> **Windows users:** the repo pins LF line endings via
+> [`.gitattributes`](.gitattributes), because PHPCS's line-ending sniff expects
+> LF. Make sure your editor and Git (`core.autocrlf`) don't reintroduce CRLF —
+> otherwise you may see false `Generic.Files.LineEndings` errors locally that do
+> not appear in CI.
+
+### Required status check
+
+The **WordPress Coding Standards** check is intended to be a **required** status
+check for merging into `main`. A repository admin enforces this once, in the
+GitHub UI:
+
+- **Settings → Branches → Branch protection rules** (or **Settings → Rules →
+  Rulesets**) for `main`, then **Require status checks to pass before merging**
+  and select **WordPress Coding Standards**.
+
+Because the workflow runs on every PR (not just PHP-only PRs), it always reports
+a result and is safe to require without blocking unrelated changes.
+
 ## Development Setup
 
 See [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) for Docker-based local environment setup.

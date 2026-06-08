@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<ruleset name="Flavian">
+    <description>
+        WordPress Coding Standards for Flavian's first-party PHP: themes,
+        mu-plugins, and non-bundled plugins. First-party plugins under
+        plugins/flavian-* carry their own .phpcs.xml.dist and are linted by the
+        plugin-validation workflow, so they are excluded here.
+    </description>
+
+    <!-- Default scan targets when no path is given on the command line. -->
+    <file>themes</file>
+    <file>plugins</file>
+    <file>mu-plugins</file>
+
+    <arg name="extensions" value="php"/>
+    <arg name="basepath" value="."/>
+    <arg name="colors"/>
+    <arg value="ps"/><!-- p: show progress, s: show sniff codes -->
+
+    <!-- WordPress guard stubs (silence direct access); nothing to lint. -->
+    <exclude-pattern>*/index\.php$</exclude-pattern>
+
+    <!-- Bundled third-party plugins are vendored, not authored here. -->
+    <exclude-pattern>plugins/akismet/*</exclude-pattern>
+    <exclude-pattern>plugins/hello\.php$</exclude-pattern>
+
+    <!-- First-party plugins lint themselves via their own .phpcs.xml.dist. -->
+    <exclude-pattern>plugins/flavian-*/*</exclude-pattern>
+
+    <!-- Never lint dependencies or build output. -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <rule ref="WordPress-Extra"/>
+    <rule ref="WordPress-Docs"/>
+</ruleset>

@@ -10,12 +10,14 @@ on:
       - ".github/workflows/lighthouse-ci.yml"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "Dockerfile"
   push:
     branches: [main]
     paths:
       - "themes/**"
       - "tests/lighthouse/**"
       - "lighthouserc.json"
+      - "Dockerfile"
 
 permissions:
   contents: read
@@ -91,18 +93,25 @@ jobs:
         run: bash tests/visual/seed.sh
 
       # lhci CLI (already a devDependency) instead of the treosh marketplace
-      # action, which isn't on this repo's allowed-actions list.
-      #
-      # Soft-fail while baselines settle: continue-on-error lives on THIS step
-      # (not the job) so a budget miss is advisory — it surfaces in the step log
-      # and the annotation below, but the job's check stays green rather than a
-      # misleading red X. Remove this line to make budgets a hard gate once the
-      # numbers in lighthouserc.json + tests/lighthouse/budgets.json are tightened
-      # and stable for ~2 weeks against `main`.
-      - name: Run Lighthouse CI
-        id: lhci
+      # action, which isn't on this repo's allowed-actions list. autorun is split
+      # into collect -> assert -> upload so the *assert* step is the hard gate:
+      # `pnpm lighthouse:assert` exits non-zero on any budget/category regression
+      # (see lighthouserc.json `ci.assert`) and fails this job — no
+      # continue-on-error. Tune thresholds in lighthouserc.json, never by
+      # re-softening this workflow (see CONTRIBUTING.md -> 'Performance budgets').
+      - name: Collect Lighthouse results
+        run: pnpm lighthouse:collect
+
+      - name: Assert performance budgets (hard gate)
+        run: pnpm lighthouse:assert
+
+      # Upload runs even when the gate fails so reviewers get the shareable
+      # report URL on a red run. Best-effort: a storage hiccup must not mask the
+      # assert result, hence continue-on-error.
+      - name: Upload Lighthouse report
+        if: always()
         continue-on-error: true
-        run: pnpm exec lhci autorun --config=./lighthouserc.json --upload.target=temporary-public-storage
+        run: pnpm exec lhci upload --config=./lighthouserc.json
 
       - name: Annotate failing budgets
         if: always()

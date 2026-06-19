@@ -1,49 +1,74 @@
 # Lighthouse CI / Performance Budgets
 
-Enforces page-weight, Core Web Vitals, and Lighthouse-score budgets against
-`themes/flavian-shop/` on every PR that touches theme code. Runs via
-[`@lhci/cli`](https://github.com/GoogleChrome/lighthouse-ci) inside the
-same Docker WP stack the visual regression suite uses.
+Enforces Lighthouse category scores, Core Web Vitals (CLS), and page-weight
+budgets against `themes/flavian-shop/` on every PR that touches theme code.
+Runs via [`@lhci/cli`](https://github.com/GoogleChrome/lighthouse-ci) inside
+the same Docker WP stack the visual regression suite uses.
+
+**These are hard gates.** Any regression past a threshold makes
+`pnpm lighthouse:assert` exit non-zero and **fails the PR check** — there is no
+soft-fail / advisory mode.
 
 ## TL;DR
 
 ```bash
 # One-time setup:
 pnpm install
-pnpm playwright:install   # only if you don't have Chrome locally
+pnpm playwright:install        # only if you don't have Chrome locally
 
-# Run the full suite locally (boots Docker, seeds, runs lhci):
-pnpm lighthouse:run
+# Boot + seed the stack the budgets run against (same as CI):
+docker compose up -d wordpress db
+bash tests/visual/seed.sh
+
+# Run the full suite locally (collect + assert + upload):
+pnpm lighthouse:run            # exits non-zero if any budget regresses
+
+# Or run the two phases separately while debugging:
+pnpm lighthouse:collect        # gather LHRs into .lighthouseci/
+pnpm lighthouse:assert         # the hard gate — assert against lighthouserc.json
 
 # Inspect the HTML reports:
 pnpm lighthouse:open
 ```
 
+`pnpm lighthouse:run` expects WordPress to be reachable at
+`http://localhost:8080/` with the four audited URLs seeded — it does **not**
+boot Docker for you.
+
 ## Files
 
 ```
-lighthouserc.json                    ← lhci config: URLs, asserts, upload target
+lighthouserc.json                    ← lhci config: URLs + the enforced assertions (SOURCE OF TRUTH)
 tests/lighthouse/
 ├── README.md                        ← you are here
-├── budgets.json                     ← resource budgets (KB) + timing budgets (ms)
 └── annotate-report.mjs              ← parses lhci output, emits GH check annotations
-.github/workflows/lighthouse-ci.yml  ← CI orchestration
+.github/workflows/lighthouse-ci.yml  ← CI orchestration (collect → assert → upload → annotate)
 ```
+
+There is **no `budgets.json`.** Lighthouse 12 removed the budgets feature
+(the `performance-budget` / `timing-budget` audits no longer ship, and a
+`budgetsPath` setting is ignored), so every threshold is expressed as an
+`lhci` **assertion** in `lighthouserc.json` instead — see
+[Budgets](#budgets) below.
 
 ## What runs in CI
 
 `.github/workflows/lighthouse-ci.yml` triggers on PRs touching `themes/**`,
 `tests/lighthouse/**`, or `lighthouserc.json`. It:
 
-1. Boots `docker compose up -d wordpress db`.
+1. Boots `docker compose up -d wordpress db` and installs WordPress core.
 2. Installs WooCommerce via the `woocommerce-installer` profile (no sample data).
 3. Runs `tests/visual/seed.sh` for deterministic content (shared with visual regression).
-4. Invokes `treosh/lighthouse-ci-action@v12` with our config.
-5. Uploads the Lighthouse HTML reports as a workflow artifact.
-6. Uploads to LHCI's **temporary-public-storage** — a sharable URL appears in
-   the workflow log, viewable for ~7 days.
-7. Runs `annotate-report.mjs` to surface each violation as a native GitHub
-   Check annotation (`::error title=...::`).
+4. **Collects** — `pnpm lighthouse:collect` runs each URL `numberOfRuns: 3`
+   times into `.lighthouseci/`.
+5. **Asserts (hard gate)** — `pnpm lighthouse:assert` evaluates the median run
+   against the assertions in `lighthouserc.json`. Any `error`-level miss exits
+   non-zero and **fails the job**.
+6. **Uploads** to LHCI's **temporary-public-storage** — a shareable URL appears
+   in the log (viewable ~7 days). Runs even on a red gate so reviewers can open
+   the report.
+7. **Annotates** — `annotate-report.mjs` surfaces each violation as a native
+   GitHub Check annotation (`::error title=...::`).
 
 ### URLs covered
 
@@ -56,89 +81,133 @@ tests/lighthouse/
 
 Each URL is run `numberOfRuns: 3` times; assertions evaluate the median.
 
-### Soft-fail period
-
-The workflow currently runs with `continue-on-error: true`. Failures do
-not block merge while baselines settle. **Flip to `false`** once the suite
-has produced stable results against `main` for ~2 weeks. Tighten the
-budgets at the same time — the starting values in `budgets.json` are
-intentionally lenient.
-
 ## Budgets
 
-### Resource sizes — `tests/lighthouse/budgets.json`
+All thresholds live in `lighthouserc.json` under `ci.assert.assertMatrix` and are
+enforced at `error` level (they fail the build). Budgets are split into **two
+URL classes** because a WooCommerce storefront has two kinds of page, each gated
+by exactly one (mutually exclusive) `matchingUrlPattern`:
 
-Per-path budgets in **kilobytes** (Lighthouse's unit). Defaults apply to
-`/*`; add per-path entries to override:
+- **Content pages** — `/`, `/shop/`, `/product/…` — indexable and light on JS.
+- **Functional pages** — `/cart/`, `/checkout/`, `/my-account/` — WooCommerce
+  marks these `noindex` by design (so **SEO is not asserted** — Lighthouse's
+  `is-crawlable` correctly fails on a noindex page), and the Cart/Checkout
+  *blocks* ship a large React bundle (so the **script budget is raised**).
 
-```json
-[
-  { "path": "/*",
-    "resourceSizes": [
-      { "resourceType": "script",     "budget": 250 },
-      { "resourceType": "stylesheet", "budget": 80  },
-      ...
-    ]
-  },
-  { "path": "/shop/",
-    "resourceSizes": [
-      { "resourceType": "image", "budget": 600 }
-    ]
-  }
-]
-```
+### Category scores + Core Web Vitals
 
-Allowed `resourceType`: `document`, `script`, `stylesheet`, `image`,
-`media`, `font`, `other`, `total`, `third-party`.
+| Assertion                     | Content pages | Functional pages | Severity |
+| ----------------------------- | ------------- | ---------------- | -------- |
+| `categories:performance`      | ≥ 0.85        | ≥ 0.85           | error    |
+| `categories:accessibility`    | ≥ 0.90        | ≥ 0.90           | error    |
+| `categories:best-practices`   | ≥ 0.90        | ≥ 0.90           | error    |
+| `categories:seo`              | ≥ 0.90        | — (noindex)      | error    |
+| `cumulative-layout-shift`     | ≤ 0.10        | ≤ 0.10           | error    |
 
-### Timing budgets — also `budgets.json`
+The a11y/SEO floors are **0.90**, calibrated to the achievable baseline on this
+stack (observed a11y 0.91–0.94, content SEO 0.91–0.92 — `meta-description` needs
+an SEO plugin). Raising them toward 0.95 is tracked in issue #125.
 
-Milliseconds. Lighthouse's `timings` array doesn't accept CLS — that one
-lives in the lhci assertions below.
+### Resource (page-weight) budgets
 
-### Lighthouse category scores — `lighthouserc.json`
+Expressed as `resource-summary:<type>:size` assertions. The value is
+**`maxNumericValue` in bytes** — Lighthouse reports `transferSize`, the
+over-the-wire size. The dev/CI stack enables Apache `mod_deflate` (see the repo
+[`Dockerfile`](../../Dockerfile)), so JS/CSS are served **gzipped** and these
+budgets are measured against the gzipped size, as the "gz" labels intend. Drop
+`mod_deflate` and the same KB budgets would be measured against raw bytes —
+roughly 3× stricter.
 
-| Category        | Threshold | Severity |
-| --------------- | --------- | -------- |
-| Performance     | ≥ 0.70    | error    |
-| Accessibility   | ≥ 0.90    | error    |
-| Best Practices  | ≥ 0.90    | warn     |
-| SEO             | ≥ 0.90    | warn     |
-| CLS             | ≤ 0.10    | error    |
+| Assertion                            | Content pages          | Functional pages       |
+| ------------------------------------ | ---------------------- | ---------------------- |
+| `resource-summary:script:size`       | JS ≤ 200 KB (`204800`) | ≤ 800 KB (`819200`)    |
+| `resource-summary:stylesheet:size`   | CSS ≤ 50 KB (`51200`)  | CSS ≤ 50 KB (`51200`)  |
+| `resource-summary:image:size`        | ≤ 500 KB (`512000`)    | ≤ 500 KB (`512000`)    |
+
+`resource-summary:image:size` is the **total** image weight on the page (the
+`image` row aggregates every image request). The functional-page script budget
+(~800 KB gz) reflects the WooCommerce Cart/Checkout blocks; the classic
+`[woocommerce_cart]` shortcode would cut it ~6× (UX tradeoff — see issue #125).
+
+Valid `resource-summary` types: `document`, `script`, `stylesheet`, `image`,
+`media`, `font`, `other`, `total`, `third-party` — each supports `:size` (bytes)
+and `:count` (request count).
+
+### Why assertions, not a `budgets.json`
+
+`lhci assert` can read a `budgets.json` via its `budgetsFile` option **or** take
+inline `assertions` / `assertMatrix`, but [not both][lhci-assert] — and we need
+category assertions and per-URL budgets. Inlining `resource-summary:*:size` into
+the `assertMatrix` keeps every threshold in one file and is the only budget
+mechanism that still works under Lighthouse 12.
+
+[lhci-assert]: https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md#assert
+
+### Skipped audits
+
+`ci.collect.settings.skipAudits` drops audits that can **only** fail because CI
+serves the site over `http://localhost` — environment artifacts, not
+theme-quality signals:
+
+- `is-on-https` — weight 5/30 (~17%) of best-practices; always fails on http,
+  so it alone would cap best-practices below the 0.90 gate.
+- `uses-http2` — a weight-0 perf diagnostic localhost can't satisfy.
+
+Remove an entry only if/when CI serves that scenario for real (e.g. HTTPS).
 
 ## Tuning the budgets
 
-1. Run `pnpm lighthouse:run` locally to capture current values.
-2. Open the HTML reports in `.lighthouseci/` to see actual resource sizes
-   and timings.
-3. Edit `tests/lighthouse/budgets.json` to set budgets at ~10–15% headroom
-   above the current baseline.
-4. Re-run to confirm the suite still passes against the new budgets.
-5. Commit both the report-driven baseline conclusions and the updated
-   budgets.
+The budgets are intentionally strict. If a change legitimately needs more
+headroom (a justified new script, font, or hero image), bump the threshold in
+the **same PR** and explain it in the commit body:
+
+1. Run `pnpm lighthouse:run` locally (stack booted + seeded) to capture current
+   values, or open the PR's temporary-public-storage report.
+2. Open the HTML reports (`pnpm lighthouse:open`) and read the **actual**
+   `transferSize` per resource type from the *Resources Summary* / network
+   panel.
+3. Edit the relevant assertion in `lighthouserc.json`. Note there are **two
+   `assertMatrix` entries** — change the one whose `matchingUrlPattern` matches
+   the URL (content vs. functional), or both if the budget is global:
+   - Category / CLS: change `minScore` / `maxNumericValue`.
+   - Resource size: set `maxNumericValue` to **`new_KB × 1024`** bytes, with
+     ~10–15% headroom above the real value.
+4. Re-run `pnpm lighthouse:assert` to confirm the suite passes against the new
+   threshold.
+5. Commit the change and justify it in the body.
+
+> Calibration history: the first hard-gate run showed the seeded `flavian-shop`
+> theme tops out at a11y ~0.94 and content SEO ~0.92 (no SEO plugin → no
+> `meta-description`), and that WooCommerce intentionally `noindex`es the cart
+> (SEO 0.58) and ships a ~684 KB cart-block bundle. Floors were set to 0.90 and
+> the cart was given its own budget class accordingly. Pushing a11y/SEO back to
+> 0.95 is tracked in issue #125. Fix the theme where the signal is real; only
+> adjust a threshold when the miss is an environment artifact, and say so.
 
 ## Debugging a failure
 
-1. Open the failing PR run; scroll to the `lighthouse-ci` job.
-2. The temporary-public-storage URL is logged near the bottom — open it
+1. Open the failing PR run; scroll to the `lighthouse-ci` job → **Assert
+   performance budgets** step. Each failed assertion prints `expected` vs
+   `found` (and `all values:` across the 3 runs).
+2. The temporary-public-storage URL is logged in the **Upload** step — open it
    for an interactive Lighthouse report on the failing URLs.
-3. Download the `.lighthouseci-<run-id>` artifact for the local HTML reports.
-4. The GH check annotations on the PR list each violation with the URL,
-   audit, expected, and actual values.
+3. The GH check annotations on the PR list each violation with the URL, audit,
+   expected, and actual values.
 
 ## Adding a new URL to the suite
 
 1. Add the URL to `lighthouserc.json` under `ci.collect.url`.
-2. If the URL needs different budgets than `/*`, append a per-path entry
-   to `tests/lighthouse/budgets.json`.
+2. If the URL needs different budgets than the global ones, split the
+   assertions into an `assertMatrix` keyed by `matchingUrlPattern` (note:
+   `assertMatrix` replaces `assertions` — it can't be combined with it).
 3. Run `pnpm lighthouse:run` locally and tune if needed.
 4. Commit.
 
 ## Trend tracking
 
-**Not implemented in v1.** The temporary-public-storage upload gives a
-shareable report per run but doesn't persist beyond ~7 days. If you want
-in-repo trend history later, options are:
+**Not implemented.** The temporary-public-storage upload gives a shareable
+report per run but doesn't persist beyond ~7 days. If you want in-repo trend
+history later, options are:
 
 - Commit a small JSON summary per main-merge to `tests/lighthouse/history/`
   via a bot.
@@ -152,3 +221,5 @@ Open an issue when this becomes a real need.
   and Docker boot; runs a complementary check on rendered output.
 - `tests/visual/seed.sh` — the deterministic content seeder both suites
   depend on for stable runs.
+- [`CONTRIBUTING.md` → Performance budgets](../../CONTRIBUTING.md#performance-budgets)
+  — the contributor-facing summary of how to update budgets.

@@ -24,6 +24,8 @@ Common Docker issues and solutions for local WordPress development with this tem
 14. [phpMyAdmin Cannot Connect to Database](#14-phpmyadmin-cannot-connect-to-database)
 15. [Environment Variables Not Loading from .env](#15-environment-variables-not-loading-from-env)
 
+**Platform deep-dive:** [Apple Silicon (M-series Macs)](#apple-silicon) · [Platform-Specific Notes](#platform-specific-notes)
+
 ---
 
 ## 1. Docker Desktop Won't Start
@@ -422,13 +424,129 @@ docker-compose --version  # V1 (standalone, legacy)
 
 ---
 
+## Apple Silicon
+
+Running the stack on Apple **M-series** Macs (M1/M2/M3/M4). The default
+`docker-compose.yml` is built to run **natively on `arm64`** — but a handful of
+well-known Docker-on-Apple-Silicon gotchas are worth knowing before you start
+swapping images or chasing slow page loads.
+
+### Does the default stack "just work"? — Yes
+
+| Service | Image | On Apple Silicon |
+|---------|-------|------------------|
+| `wordpress` | `flavian-wordpress:latest` — built locally from `Dockerfile` (base `wordpress:php8.3-apache`) | **Native arm64** (built for your machine) |
+| `db` | `mysql:8.0` | **Native arm64** — the official MySQL 8.0 image publishes an `arm64` build |
+| `phpmyadmin` | `phpmyadmin:latest` | **Native arm64** (multi-arch) |
+| installers | `docker:cli` | **Native arm64** (multi-arch) |
+
+So `docker compose up -d wordpress db` needs **no changes** on an M-series Mac.
+The notes below apply when you deviate from the defaults (pin an old image tag,
+add an x86-only image) or want to tune file-share performance.
+
+### `platform: linux/amd64` overrides
+
+You only need a platform override for an image that has **no arm64 build**
+(some legacy database tags, vendor tool images). Without one, Docker warns and
+falls back to emulation:
+
+```
+! db The requested image's platform (linux/amd64) does not match the detected
+  host platform (linux/arm64/v8) and no specific platform was requested
+```
+
+**Per-service override** (preferred — scope it to the one image that needs it):
+
+```yaml
+services:
+  db:
+    platform: linux/amd64   # force x86 emulation for THIS service only
+    image: mysql:8.0
+```
+
+**Make emulation fast with Rosetta.** Emulated x86 images crawl under the
+default QEMU translator. Docker Desktop can use Apple's Rosetta instead, which
+is dramatically faster: **Settings → General → "Use Rosetta for x86/amd64
+emulation on Apple Silicon"** (needs macOS 13+ and the VirtioFS backend). Turn
+it on whenever you must run an amd64 image.
+
+> **Avoid the global hammer.** Setting `DOCKER_DEFAULT_PLATFORM=linux/amd64`
+> (env var, or Docker Desktop's default-platform setting) forces **every**
+> image — including the WordPress and MySQL images that *do* have native arm64
+> builds — to run emulated, throwing away performance you get for free.
+> Override per-service instead.
+
+**Check an image's architecture:**
+
+```bash
+docker image inspect mysql:8.0 --format '{{.Architecture}}'   # arm64 or amd64
+docker compose exec db uname -m                               # aarch64 (arm64) or x86_64
+docker manifest inspect mysql:8.0 | grep architecture         # every arch the tag ships
+```
+
+### MySQL on arm64 — alternatives
+
+`mysql:8.0` already runs natively on Apple Silicon, so **the default `db`
+service needs no change.** You only hit an arch wall if you:
+
+- pin an **old MySQL 8.0 patch tag** published before arm64 support landed, or
+- need **MySQL 5.7**, which never got an official arm64 image.
+
+Two ways out:
+
+**Option A — switch to MariaDB (native arm64, drop-in).** MariaDB is wire- and
+CLI-compatible with MySQL, honours the same `MYSQL_*` env vars, and ships
+`mysqladmin`, so the `db` healthcheck keeps working unchanged. Edit only the
+`db` image in `docker-compose.yml`:
+
+```yaml
+  db:
+    image: mariadb:11      # was: mysql:8.0 — native arm64, no emulation
+```
+
+> **One-time reset.** The existing `db_data` volume was initialised by MySQL and
+> is **not** compatible with MariaDB's system tables. Start fresh when switching:
+> `./wordpress-local.sh clean` (removes volumes), then `./wordpress-local.sh start`.
+
+**Option B — keep MySQL, emulate x86.** Add `platform: linux/amd64` to the `db`
+service (see above) and enable Rosetta so it isn't painfully slow. Prefer
+Option A unless you specifically need MySQL.
+
+### File-share performance (VirtioFS vs gRPC FUSE)
+
+Your bind-mounted source (`themes/`, `plugins/`, `mu-plugins/`) is synced
+between macOS and Docker's Linux VM. The sync backend makes a big difference to
+page-load times:
+
+| Backend | Speed | Notes |
+|---------|-------|-------|
+| **VirtioFS** | Fastest | Default on recent Docker Desktop for Apple Silicon — **recommended** |
+| **gRPC FUSE** | Slower | The older default; switch away from it if page loads feel sluggish |
+| **osxfs (Legacy)** | Slowest | Only on very old Docker Desktop — upgrade |
+
+Set it under **Settings → General → "Choose file sharing implementation for
+your containers" → VirtioFS**, then restart Docker Desktop. VirtioFS is also a
+prerequisite for the Rosetta option above.
+
+More macOS file-I/O tips (reducing mounted paths, Mutagen sync) live in
+[Issue #10: Slow File I/O on macOS](#10-slow-file-io-on-macos).
+
+### Give the VM enough resources
+
+The local `Dockerfile` build and MySQL/MariaDB are memory-hungry. If builds get
+OOM-killed or the database restarts under load, raise the VM allocation in
+**Settings → Resources** — **≥ 4 GB memory and ≥ 2 CPUs** is a comfortable
+baseline.
+
+---
+
 ## Platform-Specific Notes
 
 ### macOS (Docker Desktop)
 
 - Use **VirtioFS** for file sharing (Settings > General) — significantly faster than gRPC FUSE.
 - If you see "Docker Desktop requires a newer macOS version", update macOS or use an older Docker Desktop release.
-- Rosetta 2 emulation on Apple Silicon can slow x86 images. Use ARM-native images where available (the official `wordpress:latest` and `mysql:8.0` images support ARM64).
+- **On Apple Silicon (M-series)?** See the dedicated [Apple Silicon](#apple-silicon) section for image-architecture, `platform: linux/amd64` overrides, Rosetta, and MySQL/MariaDB guidance.
 
 ### Linux (Native Docker Engine)
 

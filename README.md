@@ -232,7 +232,7 @@ Full catalog of 53 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-A
 
 ### **Troubleshooting**
 - **`docs/TROUBLESHOOTING.md`** - General troubleshooting guide
-- **`docs/docker-troubleshooting.md`** - Docker & container issues
+- **`docs/docker-troubleshooting.md`** - Docker & container issues (incl. [Apple Silicon / M-series Macs](docs/docker-troubleshooting.md#apple-silicon))
 - **`docs/COMMON-FAILURES-FIXES.md`** - Figma-to-WordPress specific issues
 - **`docs/MCP-TROUBLESHOOTING.md`** - MCP server debugging
 - **`docs/E2E-VALIDATION.md`** - End-to-end testing procedures

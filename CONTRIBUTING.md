@@ -233,24 +233,64 @@ templates and fails if it diverges, so:
 
 ### Performance budgets
 
-PRs that touch `themes/**` are checked by Lighthouse CI against resource,
-timing, and category-score budgets defined in
-[`tests/lighthouse/budgets.json`](tests/lighthouse/budgets.json) and
-[`lighthouserc.json`](lighthouserc.json). Failures appear as native PR
-check annotations.
+PRs that touch `themes/**` are checked by Lighthouse CI against Lighthouse
+category scores, Core Web Vitals, and page-weight budgets. **These are hard
+gates** — `pnpm lighthouse:assert` runs in
+[`.github/workflows/lighthouse-ci.yml`](.github/workflows/lighthouse-ci.yml)
+and a regression past any threshold **fails the PR check** (also surfaced as
+native PR annotations).
 
-To debug locally:
+Every threshold lives in **one place**:
+[`lighthouserc.json`](lighthouserc.json) under `ci.assert.assertions`. There is
+no separate budgets file — Lighthouse 12 dropped the `budgets.json` mechanism,
+so page-weight limits are expressed as `resource-summary:<type>:size`
+assertions instead.
+
+| Budget                              | Threshold                      |
+| ----------------------------------- | ------------------------------ |
+| `categories:performance`            | ≥ 0.85                         |
+| `categories:accessibility`          | ≥ 0.95                         |
+| `categories:best-practices`         | ≥ 0.90                         |
+| `categories:seo`                    | ≥ 0.95                         |
+| `cumulative-layout-shift`           | ≤ 0.10                         |
+| `resource-summary:script:size`      | JS ≤ 200 KB (`204800` bytes)   |
+| `resource-summary:stylesheet:size`  | CSS ≤ 50 KB (`51200` bytes)    |
+| `resource-summary:image:size`       | Images ≤ 500 KB total (`512000` bytes) |
+
+Debug locally (WordPress must be running at `http://localhost:8080/` and
+seeded — `docker compose up -d wordpress db && bash tests/visual/seed.sh`):
 
 ```bash
-pnpm lighthouse:run   # boots Lighthouse, asserts against budgets
-pnpm lighthouse:open  # opens the HTML reports
+pnpm lighthouse:run     # collect + assert + upload; exits non-zero on a miss
+pnpm lighthouse:assert  # just re-run the gate against existing .lighthouseci/ runs
+pnpm lighthouse:open    # open the HTML reports
 ```
 
-If your change is intentionally heavier (e.g. you added a justified new
-script or font), update the budget in the same PR and explain the bump in
-the commit body. See
-[tests/lighthouse/README.md](tests/lighthouse/README.md) for the full
-workflow.
+#### Updating a budget
+
+If a change legitimately needs more headroom (a justified new script, font, or
+hero image), bump the threshold in the **same PR** and explain it in the commit
+body:
+
+1. Capture the real numbers — `pnpm lighthouse:run` locally, or open the PR
+   run's temporary-public-storage report. `pnpm lighthouse:open` shows the
+   actual `transferSize` per resource type.
+2. Edit the assertion in [`lighthouserc.json`](lighthouserc.json):
+   - **Category / CLS** — change `minScore` (categories) or `maxNumericValue` (CLS).
+   - **Resource size** — set `maxNumericValue` to **`new_KB × 1024`** bytes
+     (e.g. 220 KB → `225280`), aiming for ~10–15% headroom above the real
+     value. `transferSize` is the over-the-wire size; the dev/CI stack serves
+     JS/CSS **gzipped** (Apache `mod_deflate`, see the
+     [`Dockerfile`](Dockerfile)), so these budgets are measured against the
+     gzipped size.
+3. Re-run `pnpm lighthouse:assert` to confirm it passes.
+4. Commit, justifying the bump in the body (`perf:` or `fix:`), e.g.
+   `perf(shop): raise script budget to 220 KB for the new cart-recovery widget`.
+
+Don't re-soften the CI workflow (no `continue-on-error`) to get a PR green —
+tune the threshold in `lighthouserc.json` instead, so the gate stays honest.
+See [tests/lighthouse/README.md](tests/lighthouse/README.md) for the full
+workflow, skipped-audit rationale, and per-URL budget overrides.
 
 ### Visual regression
 

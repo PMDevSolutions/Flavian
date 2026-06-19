@@ -43,7 +43,12 @@ console.log(`\n=== Lighthouse budget violations (${failures.length}) ===\n`);
 for (const f of failures) {
   const level = f.level === "warn" ? "warning" : "error";
   const url = f.url || "(unknown URL)";
-  const audit = f.auditId || f.name;
+  // Several assertions share an auditId (the 4 `categories:*` scores, the 3
+  // `resource-summary:*:size` budgets), so append auditProperty to keep each
+  // annotation title distinct — e.g. "categories:performance",
+  // "resource-summary:script.size".
+  const base = f.auditId || f.name;
+  const audit = f.auditProperty ? `${base}:${f.auditProperty}` : base;
   const expected = f.expected ?? "?";
   const actual = f.actual ?? "?";
   const op = f.operator || "vs";

@@ -86,7 +86,25 @@ RUN { \
     } > /usr/local/etc/php/conf.d/wordpress-optimized.ini
 
 # Enable Apache modules (cached layer)
-RUN a2enmod rewrite expires headers
+RUN a2enmod rewrite expires headers deflate filter
+
+# Gzip text assets. Lighthouse CI budgets (lighthouserc.json) are expressed in
+# *gzipped* KB (JS ≤ 200, CSS ≤ 50) and measured against the over-the-wire
+# transferSize — so the origin must compress, exactly like production behind a
+# CDN. mod_deflate's Debian default conf omits `text/javascript` (the MIME WP
+# serves .js as), so declare the types explicitly. Compression is transparent
+# to rendering, so visual-regression baselines are unaffected.
+RUN { \
+    echo '<IfModule mod_deflate.c>'; \
+    echo '  <IfModule mod_filter.c>'; \
+    echo '    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css'; \
+    echo '    AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript application/ecmascript'; \
+    echo '    AddOutputFilterByType DEFLATE application/json application/xml application/rss+xml'; \
+    echo '    AddOutputFilterByType DEFLATE image/svg+xml'; \
+    echo '  </IfModule>'; \
+    echo '</IfModule>'; \
+    } > /etc/apache2/conf-available/flavian-deflate.conf \
+    && a2enconf flavian-deflate
 
 # Create WP-CLI config directory
 RUN mkdir -p /var/www/.wp-cli/cache \

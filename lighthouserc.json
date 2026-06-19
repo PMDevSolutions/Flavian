@@ -1,5 +1,5 @@
 {
-  "$comment": "Lighthouse CI config. See https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md. Mobile preset is the Lighthouse default — keeping it implicit. Resource budgets live in tests/lighthouse/budgets.json; Lighthouse still consumes them for the report. NOTE: the `performance-budget`/`timing-budget` *audit* assertions were dropped — those meta-audits aren't emitted by Lighthouse 12 (the bundled version), so asserting on them fails unconditionally with 'not a known audit'. Budget regressions are caught via the category + CLS assertions below; re-add budget assertions only with a LH12-compatible mechanism.",
+  "$comment": "Lighthouse CI config — the SINGLE source of truth for the performance gate. Docs: https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md. Every assertion below is `error`-level, so `lhci assert` (pnpm lighthouse:assert) exits non-zero and FAILS CI on any regression. RESOURCE BUDGETS are expressed as `resource-summary:<type>:size` assertions in BYTES (KB x 1024): script 200 KB, stylesheet 50 KB, image 500 KB. This is the only budget mechanism compatible with the bundled Lighthouse 12, which REMOVED the legacy budgets.json/budgetsPath + `performance-budget`/`timing-budget` audits (asserting on those now fails with 'not a known audit'); lhci's `budgetsFile` option also can't be combined with the category `assertions` here. `resource-summary` size is the over-the-wire transferSize — i.e. the gzip/brotli size when the server compresses text assets. Mobile preset is the Lighthouse default, kept implicit. `collect.settings.skipAudits` drops audits that can only fail because CI serves http://localhost (is-on-https is ~17% of best-practices and always fails on http; uses-http2 is a weight-0 perf diagnostic) — they are environment artifacts, not theme-quality signals. To change a threshold or budget, edit it here and follow CONTRIBUTING.md -> 'Performance budgets'.",
   "ci": {
     "collect": {
       "url": [
@@ -10,17 +10,20 @@
       ],
       "numberOfRuns": 3,
       "settings": {
-        "budgetsPath": "./tests/lighthouse/budgets.json",
-        "skipAudits": ["uses-http2"]
+        "skipAudits": ["is-on-https", "uses-http2"]
       }
     },
     "assert": {
       "assertions": {
-        "categories:performance":    ["error", { "minScore": 0.70 }],
-        "categories:accessibility":  ["error", { "minScore": 0.90 }],
-        "categories:best-practices": ["warn",  { "minScore": 0.90 }],
-        "categories:seo":            ["warn",  { "minScore": 0.90 }],
-        "cumulative-layout-shift":   ["error", { "maxNumericValue": 0.1 }]
+        "categories:performance":    ["error", { "minScore": 0.85 }],
+        "categories:accessibility":  ["error", { "minScore": 0.95 }],
+        "categories:best-practices": ["error", { "minScore": 0.90 }],
+        "categories:seo":            ["error", { "minScore": 0.95 }],
+        "cumulative-layout-shift":   ["error", { "maxNumericValue": 0.1 }],
+
+        "resource-summary:script:size":     ["error", { "maxNumericValue": 204800 }],
+        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 51200 }],
+        "resource-summary:image:size":      ["error", { "maxNumericValue": 512000 }]
       }
     },
     "upload": {

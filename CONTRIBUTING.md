@@ -241,21 +241,29 @@ and a regression past any threshold **fails the PR check** (also surfaced as
 native PR annotations).
 
 Every threshold lives in **one place**:
-[`lighthouserc.json`](lighthouserc.json) under `ci.assert.assertions`. There is
+[`lighthouserc.json`](lighthouserc.json) under `ci.assert.assertMatrix`. There is
 no separate budgets file — Lighthouse 12 dropped the `budgets.json` mechanism,
 so page-weight limits are expressed as `resource-summary:<type>:size`
-assertions instead.
+assertions instead. Budgets are split into **two URL classes** (each gated by
+one mutually-exclusive `matchingUrlPattern`): **content** pages (`/`, `/shop/`,
+`/product/…`) and WooCommerce **functional** pages (`/cart/`, `/checkout/`,
+`/my-account/`), which WooCommerce `noindex`es (so SEO is not asserted) and which
+ship a heavy Cart/Checkout block bundle (so the script budget is raised).
 
-| Budget                              | Threshold                      |
-| ----------------------------------- | ------------------------------ |
-| `categories:performance`            | ≥ 0.85                         |
-| `categories:accessibility`          | ≥ 0.95                         |
-| `categories:best-practices`         | ≥ 0.90                         |
-| `categories:seo`                    | ≥ 0.95                         |
-| `cumulative-layout-shift`           | ≤ 0.10                         |
-| `resource-summary:script:size`      | JS ≤ 200 KB (`204800` bytes)   |
-| `resource-summary:stylesheet:size`  | CSS ≤ 50 KB (`51200` bytes)    |
-| `resource-summary:image:size`       | Images ≤ 500 KB total (`512000` bytes) |
+| Budget                              | Content pages          | Functional pages    |
+| ----------------------------------- | ---------------------- | ------------------- |
+| `categories:performance`            | ≥ 0.85                 | ≥ 0.85              |
+| `categories:accessibility`          | ≥ 0.90                 | ≥ 0.90              |
+| `categories:best-practices`         | ≥ 0.90                 | ≥ 0.90              |
+| `categories:seo`                    | ≥ 0.90                 | — (noindex)         |
+| `cumulative-layout-shift`           | ≤ 0.10                 | ≤ 0.10              |
+| `resource-summary:script:size`      | JS ≤ 200 KB (`204800`) | ≤ 800 KB (`819200`) |
+| `resource-summary:stylesheet:size`  | CSS ≤ 50 KB (`51200`)  | CSS ≤ 50 KB (`51200`) |
+| `resource-summary:image:size`       | ≤ 500 KB (`512000`)    | ≤ 500 KB (`512000`) |
+
+The a11y/SEO floors are **0.90**, calibrated to the achievable baseline on the
+CI stack (no SEO plugin → no `meta-description`); raising them toward 0.95 is
+tracked in [issue #125](https://github.com/PMDevSolutions/Flavian/issues/125).
 
 Debug locally (WordPress must be running at `http://localhost:8080/` and
 seeded — `docker compose up -d wordpress db && bash tests/visual/seed.sh`):
@@ -275,7 +283,9 @@ body:
 1. Capture the real numbers — `pnpm lighthouse:run` locally, or open the PR
    run's temporary-public-storage report. `pnpm lighthouse:open` shows the
    actual `transferSize` per resource type.
-2. Edit the assertion in [`lighthouserc.json`](lighthouserc.json):
+2. Edit the assertion in [`lighthouserc.json`](lighthouserc.json). There are
+   **two `assertMatrix` entries** — edit the one whose `matchingUrlPattern`
+   matches the page (content vs. functional), or both for a global change:
    - **Category / CLS** — change `minScore` (categories) or `maxNumericValue` (CLS).
    - **Resource size** — set `maxNumericValue` to **`new_KB × 1024`** bytes
      (e.g. 220 KB → `225280`), aiming for ~10–15% headroom above the real

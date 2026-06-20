@@ -5,7 +5,9 @@ on:
     paths:
       - 'scripts/init.mjs'
       - 'scripts/init/**'
+      - 'scripts/canva-fse/**'
       - 'tests/init/**'
+      - 'tests/fixtures/canva/**'
       - '.claude/templates/theme/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -14,7 +16,9 @@ on:
     paths:
       - 'scripts/init.mjs'
       - 'scripts/init/**'
+      - 'scripts/canva-fse/**'
       - 'tests/init/**'
+      - 'tests/fixtures/canva/**'
       - '.claude/templates/theme/**'
       - 'package.json'
       - 'pnpm-lock.yaml'

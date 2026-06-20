@@ -31,10 +31,20 @@ export async function runPrompts({ cwdBasename, gitEmail }) {
     options: [
       { value: 'blank',        label: 'Blank FSE theme' },
       { value: 'flavian-shop', label: 'flavian-shop (WooCommerce-ready)' },
+      { value: 'canva',        label: 'Canva export → FSE theme' },
       { value: 'figma',        label: 'Figma import placeholder' },
       { value: 'indesign',     label: 'InDesign import placeholder (not yet implemented)' },
     ],
   }));
+
+  let canvaExport = null;
+  if (themeStarter === 'canva') {
+    canvaExport = abortIfCancelled(await text({
+      message: 'Canva export directory (contains HTML + CSS)',
+      placeholder: './canva-export',
+      validate: v => (v && v.trim() !== '' ? undefined : 'An export directory is required'),
+    }));
+  }
 
   let woocommerce = themeStarter === 'flavian-shop';
   if (!woocommerce) {
@@ -89,6 +99,7 @@ export async function runPrompts({ cwdBasename, gitEmail }) {
     projectName,
     siteTitle,
     themeStarter,
+    canvaExport,
     woocommerce,
     multisite,
     multisiteMode,

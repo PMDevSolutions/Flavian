@@ -13,7 +13,9 @@ function usage() {
 Options:
   --yes                 Non-interactive mode (uses defaults / flag values)
   --name <slug>         Project slug
-  --theme <starter>     blank | flavian-shop | figma | indesign
+  --theme <starter>     blank | flavian-shop | figma | indesign | canva
+  --canva               Shorthand for --theme=canva (needs --canva-export)
+  --canva-export <dir>  Canva HTML/CSS export directory (required for canva)
   --woo                 Enable WooCommerce
   --multisite           Configure a WordPress multisite network
   --multisite-mode <m>  subdirectory | subdomain (default subdirectory)
@@ -34,11 +36,19 @@ async function getGitEmail() {
 async function main() {
   let parsed;
   try {
+    // pnpm forwards the `--` separator literally on some platforms (notably
+    // Windows), e.g. `node scripts/init.mjs "--" "--yes"`. The wizard takes no
+    // positionals, so drop any bare `--` token — this makes both
+    // `pnpm run init -- --yes …` and `pnpm run init --yes …` work identically.
+    const argv = process.argv.slice(2).filter(a => a !== '--');
     parsed = parseArgs({
+      args: argv,
       options: {
         yes:    { type: 'boolean' },
         name:   { type: 'string' },
         theme:  { type: 'string' },
+        canva:  { type: 'boolean' },
+        'canva-export': { type: 'string' },
         woo:    { type: 'boolean' },
         multisite: { type: 'boolean' },
         'multisite-mode': { type: 'string' },
@@ -68,6 +78,11 @@ async function main() {
     process.exit(2);
   }
 
+  if (parsed.values['canva-export'] != null && !parsed.values.canva && parsed.values.theme !== 'canva') {
+    console.error('Error: --canva-export requires --canva (or --theme=canva)');
+    process.exit(2);
+  }
+
   const targetDir = process.cwd();
   const env = { cwdBasename: basename(targetDir), gitEmail: await getGitEmail() };
 
@@ -77,6 +92,8 @@ async function main() {
       config = resolveDefaults({
         name: parsed.values.name,
         theme: parsed.values.theme,
+        canva: parsed.values.canva,
+        canvaExport: parsed.values['canva-export'],
         woo: parsed.values.woo,
         multisite: parsed.values.multisite,
         multisiteMode: parsed.values['multisite-mode'],
@@ -101,6 +118,12 @@ async function main() {
     process.exit(1);
   }
 
+  const canvaSteps = config.themeStarter === 'canva' ? `
+Canva export converted into themes/${config.projectName}/ (tokens → theme.json,
+content → patterns/canva-content.php → templates/front-page.html). Refine it with
+the canva-fse-converter agent — see docs/NEXT-STEPS.md.
+` : '';
+
   const multisiteSteps = config.multisite ? `
 Multisite (${config.multisiteMode}) is configured in .env. To build the network:
   ./wordpress-local.sh install   # runs wp core multisite-install in ${config.multisiteMode} mode
@@ -116,7 +139,7 @@ Next steps:
   cp .env.example .env       # already done — review values
   docker compose up -d        # boot WordPress at http://localhost:${config.port}
   open http://localhost:${config.port}/wp-admin
-${multisiteSteps}
+${canvaSteps}${multisiteSteps}
 Resources:
   - Theme:   themes/${config.projectName}/
   - Docs:    CLAUDE.md, docs/QUICK-START.md, docs/CLI-WIZARD.md

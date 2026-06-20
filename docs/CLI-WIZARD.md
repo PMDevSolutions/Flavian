@@ -37,6 +37,7 @@ node scripts/init.mjs
 |---|---|
 | `blank` | Minimal FSE theme copied from `.claude/templates/theme/` with your slug/title substituted |
 | `flavian-shop` | The bundled WooCommerce-ready theme, copied and renamed to your slug |
+| `canva` | A **working** FSE theme converted from a Canva HTML/CSS export (requires `--canva-export`). See [Canva starter](#canva-starter) |
 | `figma` | No theme generated. Writes `docs/NEXT-STEPS.md` pointing at the `figma-to-fse-autonomous-workflow` skill |
 | `indesign` | Placeholder only — the InDesign-to-FSE pipeline is not yet implemented |
 
@@ -45,7 +46,9 @@ node scripts/init.mjs
 ```
 --yes                Skip prompts, use defaults / flag values
 --name <slug>        Project slug
---theme <starter>    blank | flavian-shop | figma | indesign
+--theme <starter>    blank | flavian-shop | canva | figma | indesign
+--canva              Shorthand for --theme=canva (requires --canva-export)
+--canva-export <dir> Canva HTML/CSS export directory (required for the canva starter)
 --woo                Enable WooCommerce (auto-true for flavian-shop)
 --multisite          Configure a WordPress multisite network
 --multisite-mode <m> subdirectory | subdomain (default subdirectory; requires --multisite)
@@ -67,12 +70,54 @@ node scripts/init.mjs --yes --name=acme-shop --theme=flavian-shop
 # Stage a Figma-driven project
 node scripts/init.mjs --yes --name=marketing-site --theme=figma
 
+# Convert a Canva export into a working theme (no prompts)
+pnpm run init -- --yes --canva --canva-export=path/to/export --name=landing
+
 # Configure a multisite network (subdirectory mode)
 pnpm run init -- --yes --multisite --name=my-network
 
 # …or subdomain mode
 pnpm run init -- --yes --multisite --multisite-mode=subdomain --name=my-network
 ```
+
+## Canva starter
+
+Unlike `figma` (which only stages a `NEXT-STEPS.md`), the `canva` starter produces a
+**working FSE theme** from a Canva HTML/CSS export, so CI and scripted setups can run
+it with no prompts:
+
+```bash
+pnpm run init -- --yes --canva --canva-export=path/to/export --name=landing
+```
+
+`--canva` is shorthand for `--theme=canva`; either form works, and both require
+`--canva-export=<dir>`. The export directory must contain at least one `.css` and one
+`.html` file (the wizard prefers `style.css` / `index.html` when present). The path is
+resolved relative to where you run the wizard.
+
+What the wizard generates in `themes/<slug>/`:
+
+1. A valid blank FSE base scaffold (`theme.json`, `style.css`, `templates/`, `parts/`,
+   `functions.php`) with your slug/title substituted.
+2. **Design tokens** — `scripts/canva-fse/parse-canva-export.sh` extracts colors,
+   font families, font sizes, and spacing from the CSS and merges them into
+   `theme.json`. The lightest/darkest extracted colors are wired to the default
+   background/text, and the first font family becomes the body font.
+3. **Content** — `scripts/canva-fse/convert-html-to-blocks.sh` converts the export's
+   HTML to block markup, written to `patterns/canva-content.php` and referenced from
+   `templates/front-page.html`. This keeps the theme **pattern-first**: PHP and images
+   live in the pattern, never in the `.html` template.
+4. Referenced images are copied into `themes/<slug>/assets/`.
+
+This is a **deterministic baseline** — the same pieces the `canva-fse-converter` agent
+starts from. For a production-quality pass (layout, semantics, responsiveness), point
+Claude Code at your export directory ("Convert this Canva export to a WordPress
+theme"), which runs the `canva-to-fse-autonomous-workflow` skill. The generated
+`docs/NEXT-STEPS.md` spells this out.
+
+> **Requires `bash`.** The canva path shells out to the `scripts/canva-fse/*.sh`
+> helpers (the same scripts the agent and the `canva-e2e` CI job use), so `bash` must
+> be on `PATH`. This is the only wizard starter with that requirement.
 
 ## Multisite
 
@@ -124,7 +169,10 @@ A successful run produces:
 ├── .env                  ← from .env.example, with your values
 │                            (includes WP_MULTISITE / WP_MULTISITE_MODE when --multisite)
 ├── themes/<slug>/        ← scaffolded theme (skipped for figma/indesign)
-├── docs/NEXT-STEPS.md    ← only for figma/indesign starters
+│   ├── patterns/canva-content.php      ← canva starter only (converted content)
+│   ├── templates/front-page.html       ← canva starter only (references the pattern)
+│   └── assets/                          ← canva starter only (copied export images)
+├── docs/NEXT-STEPS.md    ← figma / indesign / canva starters
 └── .git/                 ← fresh repo, one commit (unless --no-git)
 ```
 
@@ -142,7 +190,8 @@ After the apply phase, the wizard runs static checks:
 4. `themes/<slug>/templates/index.html` exists
 
 Steps 2–4 are skipped for `figma` and `indesign` starters since they don't
-generate a theme directly.
+generate a theme directly. The `canva` starter *does* generate a theme, so all
+four checks run against it.
 
 A verification failure leaves the scaffold in place so you can fix and re-run.
 

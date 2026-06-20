@@ -111,6 +111,62 @@ test('figma placeholder — writes NEXT-STEPS.md, no theme dir', async (t) => {
   await assert.rejects(() => access(join(dir, 'themes/smoke-figma'), constants.F_OK));
 });
 
+test('canva — --yes --canva --canva-export produces a working theme', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  const fixture = join(REPO_ROOT, 'tests/fixtures/canva/landing');
+  const { stdout } = await exec('node', ['scripts/init.mjs', '--yes', '--no-git',
+    '--canva', `--canva-export=${fixture}`, '--name=smoke-canva', '--port=8099'], { cwd: dir });
+
+  // The static verifier ran and passed (valid theme.json, style.css, index.html).
+  assert.match(stdout, /✓ theme/);
+  assert.match(stdout, /✓ verify/);
+
+  // theme.json carries Canva-extracted tokens.
+  const themeJson = JSON.parse(await readFile(join(dir, 'themes/smoke-canva/theme.json'), 'utf8'));
+  assert.ok(themeJson.settings.color.palette.some(c => c.color === '#1f6feb'));
+
+  // Content lives in a pattern referenced by front-page.html (pattern-first).
+  const front = await readFile(join(dir, 'themes/smoke-canva/templates/front-page.html'), 'utf8');
+  assert.match(front, /wp:pattern \{"slug":"smoke-canva\/canva-content"\}/);
+  const pattern = await readFile(join(dir, 'themes/smoke-canva/patterns/canva-content.php'), 'utf8');
+  assert.match(pattern, /Welcome to Acme/);
+  await access(join(dir, 'themes/smoke-canva/assets/images/hero.jpg'), constants.F_OK);
+});
+
+test('canva — --canva without --canva-export exits 2', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await assert.rejects(
+    () => exec('node', ['scripts/init.mjs', '--yes', '--no-git', '--canva', '--name=x'], { cwd: dir }),
+    (err) => err.code === 2 && /export path/i.test(err.stderr)
+  );
+});
+
+test('canva — --canva-export without --canva exits 2', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  await assert.rejects(
+    () => exec('node', ['scripts/init.mjs', '--yes', '--no-git',
+      '--canva-export=./somewhere', '--theme=blank', '--name=x'], { cwd: dir }),
+    (err) => err.code === 2 && /requires --canva/i.test(err.stderr)
+  );
+});
+
+test('a leading "--" separator (as pnpm forwards it) is tolerated', async (t) => {
+  const dir = await stageFixture();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+
+  // pnpm on some platforms passes the `--` through to the script literally.
+  const { stdout } = await exec('node', ['scripts/init.mjs', '--', '--yes', '--no-git',
+    '--name=dash-sep', '--theme=blank'], { cwd: dir });
+  assert.match(stdout, /✓ verify/);
+  await access(join(dir, 'themes/dash-sep/style.css'), constants.F_OK);
+});
+
 test('--yes refuses an existing themes/<slug> dir cleanly', async (t) => {
   const dir = await stageFixture();
   t.after(() => rm(dir, { recursive: true, force: true }));

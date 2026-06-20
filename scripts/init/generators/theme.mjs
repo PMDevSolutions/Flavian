@@ -37,6 +37,19 @@ async function copyBlank(targetDir, slug) {
   await cp(src, dst, { recursive: true });
 }
 
+/**
+ * Materialize the blank FSE theme into themes/<slug>/ with tokens substituted.
+ * Shared by the `blank` and `canva` starters (canva builds on this base).
+ */
+export async function copyBlankBase(targetDir, slug, siteTitle) {
+  await copyBlank(targetDir, slug);
+  await substituteTokens(join(targetDir, 'themes', slug), {
+    THEME_NAME: siteTitle,
+    THEME_SLUG: slug,
+    SITE_TITLE: siteTitle,
+  });
+}
+
 async function copyFlavianShop(targetDir, slug) {
   const src = join(targetDir, 'themes/flavian-shop');
   try {
@@ -80,17 +93,19 @@ export async function setupTheme(targetDir, config) {
 
   switch (themeStarter) {
     case 'blank':
-      await copyBlank(targetDir, slug);
-      await substituteTokens(join(targetDir, 'themes', slug), {
-        THEME_NAME: siteTitle,
-        THEME_SLUG: slug,
-        SITE_TITLE: siteTitle,
-      });
+      await copyBlankBase(targetDir, slug, siteTitle);
       break;
     case 'flavian-shop':
       await copyFlavianShop(targetDir, slug);
       await rewriteFlavianShopHeaders(targetDir, slug, siteTitle);
       break;
+    case 'canva': {
+      // Dynamic import keeps the static module graph acyclic (canva.mjs imports
+      // copyBlankBase from here).
+      const { setupCanvaTheme } = await import('./canva.mjs');
+      await setupCanvaTheme(targetDir, config);
+      break;
+    }
     case 'figma':
     case 'indesign':
       await writeNextSteps(targetDir, themeStarter, slug);

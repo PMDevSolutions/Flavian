@@ -76,3 +76,53 @@ test('invalid multisite mode throws', () => {
     /multisite mode/i
   );
 });
+
+test('canvaExport is null for non-canva starters', () => {
+  const cfg = resolveDefaults({ theme: 'blank' }, { cwdBasename: 'x', gitEmail: null });
+  assert.equal(cfg.canvaExport, null);
+});
+
+test('--canva selects the canva starter and keeps the export path', () => {
+  const cfg = resolveDefaults(
+    { canva: true, canvaExport: './export', name: 'shop' },
+    { cwdBasename: 'x', gitEmail: null }
+  );
+  assert.equal(cfg.themeStarter, 'canva');
+  assert.equal(cfg.canvaExport, './export');
+});
+
+test('--theme=canva is equivalent to --canva', () => {
+  const cfg = resolveDefaults(
+    { theme: 'canva', canvaExport: './export' },
+    { cwdBasename: 'x', gitEmail: null }
+  );
+  assert.equal(cfg.themeStarter, 'canva');
+  assert.equal(cfg.canvaExport, './export');
+});
+
+test('canva starter without an export path throws', () => {
+  assert.throws(
+    () => resolveDefaults({ canva: true }, { cwdBasename: 'x', gitEmail: null }),
+    /export path/i
+  );
+});
+
+test('--canva conflicting with --theme=blank throws', () => {
+  assert.throws(
+    () => resolveDefaults(
+      { canva: true, theme: 'blank', canvaExport: './export' },
+      { cwdBasename: 'x', gitEmail: null }
+    ),
+    /conflicts/i
+  );
+});
+
+test('--canva-export without the canva starter throws', () => {
+  assert.throws(
+    () => resolveDefaults(
+      { theme: 'blank', canvaExport: './export' },
+      { cwdBasename: 'x', gitEmail: null }
+    ),
+    /requires --canva/i
+  );
+});

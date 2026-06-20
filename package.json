@@ -1,6 +1,6 @@
 {
   "name": "flavian",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "description": "Claude Code-integrated WordPress development template. The repository version is tracked in git tags + .release-please-manifest.json (source of truth) and mirrored into the version field above by release-please.",
   "license": "MIT",

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/PMDevSolutions/Flavian/compare/v1.3.0...v1.4.0) (2026-06-20)
+
+
+### Added
+
+* **init:** add non-interactive Canva flags to the setup wizard ([1a42bfd](https://github.com/PMDevSolutions/Flavian/commit/1a42bfdee819ad0128edfd689b23be5987e06f38)), closes [#87](https://github.com/PMDevSolutions/Flavian/issues/87)
+* **init:** non-interactive Canva flags for the setup wizard ([e290b9d](https://github.com/PMDevSolutions/Flavian/commit/e290b9da244487a54041717bca6b25a7acc5edc9))
+
 ## [1.3.0](https://github.com/PMDevSolutions/Flavian/compare/v1.2.1...v1.3.0) (2026-06-07)
 
 

@@ -13,6 +13,8 @@ export const IPC = {
   dockerRun: 'flavian:docker:run',
   dockerStatus: 'flavian:docker:status',
   listThemes: 'flavian:project:themes',
+  pipelineRun: 'flavian:pipeline:run',
+  pipelineResult: 'flavian:pipeline:result',
   taskSnapshot: 'flavian:task:snapshot',
   taskCancel: 'flavian:task:cancel',
   // main → renderer push

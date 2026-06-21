@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { IPC } from '../shared/ipc-channels';
 import type { DockerCommand, DockerService } from '../shared/types/docker';
 import type { InitResult } from '../shared/types/init';
+import type { PipelineResult } from '../shared/types/pipeline';
 import type { FlavianBridge, TaskEventEnvelope } from '../shared/types/ipc';
 import type { PrereqReport } from '../shared/types/prerequisites';
 import type { ProjectRef } from '../shared/types/project';
@@ -17,6 +18,8 @@ const bridge: FlavianBridge = {
     ipcRenderer.invoke(IPC.dockerRun, command, arg) as Promise<{ taskId: string }>,
   getDockerStatus: () => ipcRenderer.invoke(IPC.dockerStatus) as Promise<DockerService[]>,
   listThemes: () => ipcRenderer.invoke(IPC.listThemes) as Promise<string[]>,
+  runPipeline: (input) => ipcRenderer.invoke(IPC.pipelineRun, input) as Promise<{ taskId: string }>,
+  getPipelineResult: (taskId) => ipcRenderer.invoke(IPC.pipelineResult, taskId) as Promise<PipelineResult>,
   getTaskSnapshot: (taskId) =>
     ipcRenderer.invoke(IPC.taskSnapshot, taskId) as Promise<TaskSnapshot | null>,
   cancelTask: (taskId) => ipcRenderer.invoke(IPC.taskCancel, taskId) as Promise<void>,

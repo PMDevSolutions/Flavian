@@ -404,3 +404,13 @@ button:disabled {
   font-size: 12px;
   color: var(--text-dim);
 }
+
+.hint-note {
+  font-size: 12.5px;
+  color: var(--warn);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  max-width: 540px;
+}

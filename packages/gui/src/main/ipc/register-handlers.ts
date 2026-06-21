@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import type { InitInput, InitResult } from '../../shared/types/init';
+import type { PipelineInput, PipelineResult } from '../../shared/types/pipeline';
 import type { PrereqReport } from '../../shared/types/prerequisites';
 import type { ProjectRef } from '../../shared/types/project';
 import type { TaskSnapshot } from '../../shared/types/task';
@@ -12,6 +13,7 @@ import { DefaultShellResolver } from '../../core/shell/shell-resolver';
 import { collectOutput } from '../../core/process/collect';
 import { createPrereqRun } from '../../core/prerequisites/run-prerequisites';
 import { createInitRun } from '../../core/init/run-init';
+import { createPipelineRun } from '../../core/pipelines/pipeline-run';
 import { dockerCommandSpec } from '../../core/docker/docker-commands';
 import { parseComposePs } from '../../core/docker/docker-status';
 import { listThemeDirs } from '../../core/project/list-themes';
@@ -35,6 +37,7 @@ export function registerHandlers(deps: HandlerDeps): void {
   // Results keyed by task id, awaited by the matching get*Result handler.
   const prereqResults = new Map<string, Promise<PrereqReport>>();
   const initResults = new Map<string, Promise<InitResult>>();
+  const pipelineResults = new Map<string, Promise<PipelineResult>>();
 
   ipcMain.handle(IPC.projectGet, (): ProjectRef => deps.projectRef);
 
@@ -101,6 +104,26 @@ export function registerHandlers(deps: HandlerDeps): void {
   });
 
   ipcMain.handle(IPC.listThemes, (): Promise<string[]> => listThemeDirs(deps.projectRef.root));
+
+  ipcMain.handle(IPC.pipelineRun, async (_event, input: PipelineInput): Promise<{ taskId: string }> => {
+    const pipeline = await createPipelineRun({
+      repoRoot: deps.projectRef.root,
+      input,
+      runner,
+      commands,
+    });
+    const task = deps.taskManager.create({ kind: `pipeline:${input.kind}`, run: pipeline.run });
+    deps.bridge.attach(task);
+    pipelineResults.set(task.id, pipeline.result);
+    task.start();
+    return { taskId: task.id };
+  });
+
+  ipcMain.handle(IPC.pipelineResult, async (_event, taskId: string): Promise<PipelineResult> => {
+    const result = pipelineResults.get(taskId);
+    if (!result) throw new Error(`Unknown pipeline task: ${taskId}`);
+    return result;
+  });
 
   ipcMain.handle(IPC.taskSnapshot, (_event, taskId: string): TaskSnapshot | null =>
     deps.taskManager.snapshot(taskId),

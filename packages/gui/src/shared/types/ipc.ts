@@ -1,5 +1,6 @@
 import type { DockerCommand, DockerService } from './docker';
 import type { InitInput, InitResult } from './init';
+import type { PipelineInput, PipelineResult } from './pipeline';
 import type { PrereqReport } from './prerequisites';
 import type { ProjectRef } from './project';
 import type { TaskEvent, TaskSnapshot } from './task';
@@ -43,6 +44,12 @@ export interface FlavianBridge {
 
   /** Theme slugs available in themes/ (for the activate-theme picker). */
   listThemes(): Promise<string[]>;
+
+  /** Launch a design-to-WordPress conversion (Figma/Canva/InDesign); returns a task id. */
+  runPipeline(input: PipelineInput): Promise<{ taskId: string }>;
+
+  /** Fetch the conversion outcome once the pipeline task reaches a terminal state. */
+  getPipelineResult(taskId: string): Promise<PipelineResult>;
 
   /** Snapshot any task (state + bounded log tail). */
   getTaskSnapshot(taskId: string): Promise<TaskSnapshot | null>;

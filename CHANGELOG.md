@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0](https://github.com/PMDevSolutions/Flavian/compare/v1.8.0...v1.9.0) (2026-06-21)
+
+
+### Added
+
+* **theme:** add SEO metadata (meta, OG, Twitter, JSON-LD) via wp_head ([#116](https://github.com/PMDevSolutions/Flavian/issues/116)) ([137d9ae](https://github.com/PMDevSolutions/Flavian/commit/137d9aef9ce61ce81471d6693c768aed6bb5ccc8))
+* **theme:** add SEO metadata (meta, OG, Twitter, JSON-LD) via wp_head ([#116](https://github.com/PMDevSolutions/Flavian/issues/116)) ([1872a4f](https://github.com/PMDevSolutions/Flavian/commit/1872a4fee875ceba01cbad4e11d3f5ebaaac4318))
+
 ## [1.8.0](https://github.com/PMDevSolutions/Flavian/compare/v1.7.0...v1.8.0) (2026-06-21)
 
 

@@ -42,6 +42,9 @@ jobs:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm --filter @flavian/gui lint
+
       - name: Typecheck
         run: pnpm --filter @flavian/gui typecheck
 

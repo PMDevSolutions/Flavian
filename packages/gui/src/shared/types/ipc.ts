@@ -28,6 +28,12 @@ export interface FlavianBridge {
   /** Open a native folder picker to choose the Flavian project; persists the choice. */
   selectProject(): Promise<ProjectRef>;
 
+  /** Native folder picker; returns the chosen absolute path, or null if cancelled. */
+  selectDirectory(): Promise<string | null>;
+
+  /** Native file picker filtered to the given extensions; returns path, or null. */
+  selectFile(extensions: string[]): Promise<string | null>;
+
   /** Start a prerequisite check; returns the task id to subscribe to. */
   runPrereqCheck(): Promise<{ taskId: string }>;
 

@@ -7,6 +7,8 @@ export const IPC = {
   // request / response
   projectGet: 'flavian:project:get',
   projectSelect: 'flavian:project:select',
+  dialogDirectory: 'flavian:dialog:directory',
+  dialogFile: 'flavian:dialog:file',
   prereqRun: 'flavian:prereq:run',
   prereqResult: 'flavian:prereq:result',
   initRun: 'flavian:init:run',

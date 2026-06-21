@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { PipelineInput, PipelineKind } from '../../shared/types/pipeline';
+import { bridge } from '../api/bridge';
 import { usePipeline } from '../hooks/usePipeline';
 import { LogStream } from './LogStream';
 
@@ -8,6 +9,15 @@ const KINDS: { value: PipelineKind; label: string }[] = [
   { value: 'canva', label: 'Canva' },
   { value: 'indesign', label: 'InDesign' },
 ];
+
+const FIGMA_URL = /^https?:\/\/(www\.)?figma\.com\//i;
+
+/** Per-pipeline reference docs (opened from the panel). */
+const DOCS: Record<PipelineKind, string> = {
+  figma: 'docs/figma-to-wordpress/README.md',
+  canva: 'docs/canva-to-wordpress/README.md',
+  indesign: 'docs/pipelines/indesign.md',
+};
 
 export function PipelinePanel() {
   const [kind, setKind] = useState<PipelineKind>('figma');
@@ -18,13 +28,32 @@ export function PipelinePanel() {
 
   const { result, error, running, lines, run, cancel, reset } = usePipeline();
 
+  const figmaUrlValid = FIGMA_URL.test(figmaUrl.trim());
   const inputReady =
     kind === 'figma'
-      ? figmaUrl.trim() !== ''
+      ? figmaUrlValid
       : kind === 'canva'
         ? canvaExport.trim() !== ''
         : indesignFile.trim() !== '';
   const canLaunch = slug.trim() !== '' && inputReady && !running;
+
+  const browseDir = (): void => {
+    void bridge()
+      .selectDirectory()
+      .then((p) => {
+        if (p) setCanvaExport(p);
+      });
+  };
+  const browseFile = (): void => {
+    void bridge()
+      .selectFile(['idml', 'pdf'])
+      .then((p) => {
+        if (p) setIndesignFile(p);
+      });
+  };
+  const openDoc = (): void => {
+    void bridge().openPath(DOCS[kind]);
+  };
 
   const launch = () => {
     const input: PipelineInput = { kind, slug: slug.trim(), figmaUrl, canvaExport, indesignFile };
@@ -115,46 +144,66 @@ export function PipelinePanel() {
 
         {kind === 'figma' && (
           <label className="field">
-            <span>Figma file URL</span>
+            <span>Figma file URL (Dev Mode)</span>
             <input
               value={figmaUrl}
               onChange={(e) => setFigmaUrl(e.target.value)}
               placeholder="https://www.figma.com/design/…"
               spellCheck={false}
             />
+            {figmaUrl.trim() !== '' && !figmaUrlValid && (
+              <span className="field-error">Enter a valid figma.com URL.</span>
+            )}
           </label>
         )}
 
         {kind === 'canva' && (
-          <label className="field">
+          <div className="field">
             <span>Canva export directory</span>
-            <input
-              value={canvaExport}
-              onChange={(e) => setCanvaExport(e.target.value)}
-              placeholder="./canva-export"
-              spellCheck={false}
-            />
-          </label>
+            <div className="input-row">
+              <input
+                value={canvaExport}
+                onChange={(e) => setCanvaExport(e.target.value)}
+                placeholder="./canva-export"
+                spellCheck={false}
+              />
+              <button type="button" onClick={browseDir}>
+                Browse…
+              </button>
+            </div>
+          </div>
         )}
 
         {kind === 'indesign' && (
-          <label className="field">
+          <div className="field">
             <span>InDesign file (.idml or .pdf)</span>
-            <input
-              value={indesignFile}
-              onChange={(e) => setIndesignFile(e.target.value)}
-              placeholder="./brochure.idml"
-              spellCheck={false}
-            />
-          </label>
+            <div className="input-row">
+              <input
+                value={indesignFile}
+                onChange={(e) => setIndesignFile(e.target.value)}
+                placeholder="./brochure.idml"
+                spellCheck={false}
+              />
+              <button type="button" onClick={browseFile}>
+                Browse…
+              </button>
+            </div>
+          </div>
         )}
 
         {kind === 'figma' && (
           <p className="hint-note">
-            Figma conversion opens a headless Claude Code session and requires Claude Code with Figma
-            access configured.
+            Figma conversion needs <strong>Figma Dev Mode</strong> (a Figma Professional plan or
+            higher) and opens a headless Claude Code session — Claude Code with Figma access must be
+            configured.
           </p>
         )}
+
+        <p className="panel-intro">
+          <button type="button" className="link-btn" onClick={openDoc}>
+            Learn more about the {KINDS.find((k) => k.value === kind)?.label} pipeline →
+          </button>
+        </p>
 
         <div className="form-actions">
           <button type="submit" disabled={!canLaunch}>

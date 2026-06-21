@@ -363,6 +363,21 @@ button:disabled {
   border-color: var(--accent);
 }
 
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-row input {
+  flex: 1;
+}
+
+.field-error {
+  color: var(--fail);
+  font-size: 12px;
+}
+
 .field-check {
   display: flex;
   align-items: center;

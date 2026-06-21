@@ -50,3 +50,34 @@ jobs:
 
       - name: Run GUI unit tests
         run: pnpm --filter @flavian/gui test
+
+  smoke:
+    # Launches the built Electron app headlessly (Xvfb) and asserts it reaches the
+    # setup view. Separate job because it needs the Electron binary + a display.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        # No ELECTRON_SKIP here — the smoke needs the real Electron binary.
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Electron runtime libraries + Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          pnpm --filter @flavian/gui exec playwright install-deps chromium
+
+      - name: Build GUI
+        run: pnpm --filter @flavian/gui build
+
+      - name: Smoke test (app launches and reaches the setup view)
+        run: xvfb-run --auto-servernum pnpm --filter @flavian/gui smoke

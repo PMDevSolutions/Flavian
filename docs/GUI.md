@@ -109,15 +109,39 @@ an elevated shell, so it 404s the build — disabling signing sidesteps it entir
 `signAndEditExecutable: false`, and build on a host with signing privileges (Developer Mode
 / elevated shell, or CI).
 
-The GUI **operates on a Flavian project directory on disk** — it writes themes, `.env`,
-and conversion output there, so those files must stay writable. The app bundle therefore
-ships only the GUI itself and does **not** embed the template or its scripts. At startup it
-locates the project by walking up from where it runs (so launching from inside a checkout
-"just works"); pointing it at an arbitrary folder is the planned **Open project folder…**
-follow-up (the `resolveProjectRef`/`locateRepoRoot` seam already supports it).
+**Versioning & release artifacts.** The GUI version is written by release-please
+(`packages/gui/package.json` is an `extra-files` entry in `release-please-config.json`), so
+it tracks the repo's git-tag-driven version and is **never hand-bumped**. When release-please
+publishes a GitHub Release, the **GUI Release Build** workflow
+(`.github/workflows/gui-release.yml`) builds the macOS / Windows / Linux installers,
+smoke-tests each, and attaches them to the release. A packaged-launch smoke test also runs on
+every GUI PR (`.github/workflows/gui.yml`, via Xvfb).
+
+The GUI **operates on a Flavian project directory on disk** — it writes themes, `.env`, and
+conversion output there, so those files must stay writable. The app bundle therefore ships
+only the GUI itself and does **not** embed the template or its scripts. At startup it locates
+the project by walking up from where it runs (launching from inside a checkout "just works");
+the **Open project folder…** action (sidebar "Choose project…" / "Change…") lets you point it
+at any checkout, and the choice is remembered between launches.
 
 The distribution model: a user installs the app and runs it against a Flavian project on
 disk, driving setup → Docker → conversion → QA entirely through the UI — no terminal.
+
+## First run & walkthrough
+
+1. **Install & launch** — run the installer for your OS (or `pnpm gui:dev` from a checkout).
+2. **Open a project** — on first launch, click **Choose folder…** and pick your Flavian
+   checkout (the folder with `wordpress-local.sh`). It's remembered next time.
+3. **Prerequisites** — confirm Claude Code, Docker, Git, and Node are detected; fix anything
+   flagged.
+4. **Setup wizard** — scaffold a project (slug, theme starter, options) — runs the same
+   `apply()`/`resolveDefaults()` as `pnpm run init`.
+5. **WordPress** — **Build → Start → Install**, then open the site / wp-admin from the quick
+   links.
+6. **Convert design** — pick Figma / Canva / InDesign, provide the input, launch, and watch
+   the streamed progress; on success, click **Activate theme**.
+7. **Visual QA** — run visual-diff + Lighthouse and review the diffs, scores, and any
+   design-vs-result comparison.
 
 ## Requirements
 

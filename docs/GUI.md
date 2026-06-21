@@ -68,6 +68,7 @@ From the repo root:
 pnpm gui:dev         # launch the app in development (Vite HMR)
 pnpm gui:build       # build main/preload/renderer bundles
 pnpm gui:test        # run the core unit tests (headless, no Electron window)
+pnpm gui:lint        # ESLint (flat config: TypeScript + React)
 pnpm gui:typecheck   # type-check main + renderer
 pnpm gui:package     # build + produce an installer via electron-builder
 ```
@@ -78,8 +79,11 @@ Or from `packages/gui/`: `pnpm dev` / `pnpm build` / `pnpm test` / `pnpm typeche
 
 The orchestration core is covered by `node --test` (via `tsx`) under
 `packages/gui/tests/` — process runner, shell resolver, prerequisite parser,
-prerequisite orchestration, and project-root detection. These run headless in CI
-(`.github/workflows/gui.yml`, Node 22) and never open a window.
+prerequisite orchestration, and project-root detection. CI
+(`.github/workflows/gui.yml`, Node 22) runs **lint → typecheck → tests**, all
+headless — no window is launched. Linting is ESLint 9 flat config
+(`eslint.config.mjs`): typescript-eslint for all `.ts`/`.tsx`/`.mts`, plus
+React + React-Hooks rules for the renderer. Type-checking stays in `tsc`.
 
 ## Packaging & distribution
 

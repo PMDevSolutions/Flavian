@@ -18,7 +18,7 @@ export type TaskKind =
   | 'pipeline-canva'
   | 'pipeline-figma'
   | 'visual-qa'
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // (string & {}) preserves literal autocomplete while still allowing any string.
   | (string & {});
 
 /** An incremental event emitted while a task runs. */

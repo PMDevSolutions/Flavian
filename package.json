@@ -45,6 +45,7 @@
     "gui:dev": "pnpm --filter @flavian/gui dev",
     "gui:build": "pnpm --filter @flavian/gui build",
     "gui:test": "pnpm --filter @flavian/gui test",
+    "gui:lint": "pnpm --filter @flavian/gui lint",
     "gui:typecheck": "pnpm --filter @flavian/gui typecheck",
     "gui:package": "pnpm --filter @flavian/gui package"
   },

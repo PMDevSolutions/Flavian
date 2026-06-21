@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { PipelineInput, PipelineKind } from '../../shared/types/pipeline';
 import { bridge } from '../api/bridge';
 import { usePipeline } from '../hooks/usePipeline';
+import { useTaskStream } from '../hooks/useTaskStream';
 import { LogStream } from './LogStream';
 
 const KINDS: { value: PipelineKind; label: string }[] = [
@@ -55,6 +56,18 @@ export function PipelinePanel() {
     void bridge().openPath(DOCS[kind]);
   };
 
+  const [activateTaskId, setActivateTaskId] = useState<string | null>(null);
+  const activate = useTaskStream(activateTaskId);
+  const activateTheme = (themeSlug: string): void => {
+    void bridge()
+      .runDocker('activate-theme', themeSlug)
+      .then(({ taskId }) => setActivateTaskId(taskId))
+      .catch(() => {});
+  };
+  const openHelp = (relPath: string): void => {
+    void bridge().openPath(relPath);
+  };
+
   const launch = () => {
     const input: PipelineInput = { kind, slug: slug.trim(), figmaUrl, canvaExport, indesignFile };
     run(input);
@@ -87,17 +100,54 @@ export function PipelinePanel() {
           </button>
         </header>
         {result.ok ? (
-          <div className="banner banner-ok">
-            <strong>Conversion finished ({result.kind})</strong>
-            <span className="summary">
-              Theme: <code>themes/{result.slug}</code> — activate it from the WordPress tab.
-            </span>
-          </div>
+          <>
+            <div className="banner banner-ok">
+              <strong>Conversion finished ({result.kind})</strong>
+              <span className="summary">
+                Theme: <code>themes/{result.slug}</code>
+              </span>
+            </div>
+            <div className="form-actions">
+              <button
+                type="button"
+                onClick={() => activateTheme(result.slug)}
+                disabled={activate.state === 'running'}
+              >
+                {activate.state === 'running' ? 'Activating…' : 'Activate theme'}
+              </button>
+              {activate.state === 'succeeded' && (
+                <span className="activate-note"> Activated — open it from the WordPress tab.</span>
+              )}
+              {activate.state === 'failed' && (
+                <span className="field-error"> Activation failed — start WordPress first, then retry.</span>
+              )}
+            </div>
+          </>
         ) : (
-          <div className="banner banner-error">
-            <strong>Conversion failed</strong>
-            <span>{result.error}</span>
-          </div>
+          <>
+            <div className="banner banner-error">
+              <strong>Conversion failed</strong>
+              <span>{result.error}</span>
+            </div>
+            <p className="panel-intro">
+              Troubleshooting:{' '}
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => openHelp('docs/COMMON-FAILURES-FIXES.md')}
+              >
+                Common failures &amp; fixes
+              </button>
+              {' · '}
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => openHelp('docs/TROUBLESHOOTING.md')}
+              >
+                Troubleshooting guide
+              </button>
+            </p>
+          </>
         )}
         <details className="raw" open={!result.ok}>
           <summary>Conversion log</summary>

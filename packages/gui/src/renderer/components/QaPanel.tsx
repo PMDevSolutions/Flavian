@@ -137,6 +137,33 @@ export function QaPanel() {
         )}
       </div>
 
+      {artifacts && artifacts.design.length > 0 && (
+        <div className="group">
+          <h2>Design vs result</h2>
+          {artifacts.design.map((d) => (
+            <div className="diff-row" key={d.name}>
+              <div className="diff-head">
+                <span>{d.name}</span>
+              </div>
+              <div className="diff-images">
+                <figure>
+                  <figcaption>Design</figcaption>
+                  <ArtifactImage relPath={d.designRel} alt={`design ${d.name}`} />
+                </figure>
+                <figure>
+                  <figcaption>Result</figcaption>
+                  {d.resultRel ? (
+                    <ArtifactImage relPath={d.resultRel} alt={`result ${d.name}`} />
+                  ) : (
+                    <div className="art-img art-img-state">no render yet</div>
+                  )}
+                </figure>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="group">
         <h2>Lighthouse</h2>
         {!lighthouse ? (

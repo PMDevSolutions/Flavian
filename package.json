@@ -25,6 +25,7 @@
     "init": "node scripts/init.mjs",
     "test:init": "node --test \"tests/init/**/*.test.mjs\"",
     "test:pipeline": "pnpm --filter @flavian/pipeline test",
+    "pipeline:ingest": "node packages/pipeline/bin/ingest.mjs",
     "test:canva-e2e": "node --test tests/canva-e2e/*.test.mjs",
     "test:headless-e2e": "node --test tests/headless-e2e/*.test.mjs",
     "visual:capture": "node tests/visual/capture.mjs",

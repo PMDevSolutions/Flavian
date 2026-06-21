@@ -16,6 +16,10 @@ files:
 asar: true
 win:
   target: nsis
+  # Unsigned local builds: skip the code-sign + exe-edit step so electron-builder
+  # doesn't fetch the winCodeSign toolchain (whose archive holds macOS symlinks that
+  # can't be extracted on Windows without Developer Mode / an elevated shell).
+  signAndEditExecutable: false
 mac:
   target: dmg
   category: public.app-category.developer-tools

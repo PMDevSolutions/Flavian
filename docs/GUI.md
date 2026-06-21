@@ -88,7 +88,16 @@ pnpm gui:package   # electron-vite build && electron-builder
 ```
 
 Config: `packages/gui/electron-builder.yml` (targets: NSIS on Windows, DMG on macOS,
-AppImage on Linux; output to `packages/gui/dist/`).
+AppImage on Linux; output to `packages/gui/dist/`). Windows produces
+`dist/Flavian Setup <version>.exe` (installer) plus a runnable `dist/win-unpacked/`.
+
+Builds are **unsigned** (`signAndEditExecutable: false`) so `gui:package` works on a stock
+Windows without elevated privileges. electron-builder's code-signing toolchain
+(`winCodeSign`) ships macOS symlinks that Windows can't extract without Developer Mode or
+an elevated shell, so it 404s the build — disabling signing sidesteps it entirely. For a
+**signed release**, supply a certificate (`CSC_LINK` / `CSC_KEY_PASSWORD`), remove
+`signAndEditExecutable: false`, and build on a host with signing privileges (Developer Mode
+/ elevated shell, or CI).
 
 The GUI **operates on a Flavian project directory on disk** — it writes themes, `.env`,
 and conversion output there, so those files must stay writable. The app bundle therefore

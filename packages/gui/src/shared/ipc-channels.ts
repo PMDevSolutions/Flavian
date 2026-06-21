@@ -15,6 +15,10 @@ export const IPC = {
   listThemes: 'flavian:project:themes',
   pipelineRun: 'flavian:pipeline:run',
   pipelineResult: 'flavian:pipeline:result',
+  qaRun: 'flavian:qa:run',
+  qaArtifacts: 'flavian:qa:artifacts',
+  qaImage: 'flavian:qa:image',
+  qaText: 'flavian:qa:text',
   taskSnapshot: 'flavian:task:snapshot',
   taskCancel: 'flavian:task:cancel',
   // main → renderer push

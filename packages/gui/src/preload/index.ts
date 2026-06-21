@@ -3,6 +3,7 @@ import { IPC } from '../shared/ipc-channels';
 import type { DockerCommand, DockerService } from '../shared/types/docker';
 import type { InitResult } from '../shared/types/init';
 import type { PipelineResult } from '../shared/types/pipeline';
+import type { QaArtifacts } from '../shared/types/qa';
 import type { FlavianBridge, TaskEventEnvelope } from '../shared/types/ipc';
 import type { PrereqReport } from '../shared/types/prerequisites';
 import type { ProjectRef } from '../shared/types/project';
@@ -20,6 +21,10 @@ const bridge: FlavianBridge = {
   listThemes: () => ipcRenderer.invoke(IPC.listThemes) as Promise<string[]>,
   runPipeline: (input) => ipcRenderer.invoke(IPC.pipelineRun, input) as Promise<{ taskId: string }>,
   getPipelineResult: (taskId) => ipcRenderer.invoke(IPC.pipelineResult, taskId) as Promise<PipelineResult>,
+  runQa: (script) => ipcRenderer.invoke(IPC.qaRun, script) as Promise<{ taskId: string }>,
+  getQaArtifacts: () => ipcRenderer.invoke(IPC.qaArtifacts) as Promise<QaArtifacts>,
+  readQaImage: (relPath) => ipcRenderer.invoke(IPC.qaImage, relPath) as Promise<string | null>,
+  readQaText: (relPath) => ipcRenderer.invoke(IPC.qaText, relPath) as Promise<string | null>,
   getTaskSnapshot: (taskId) =>
     ipcRenderer.invoke(IPC.taskSnapshot, taskId) as Promise<TaskSnapshot | null>,
   cancelTask: (taskId) => ipcRenderer.invoke(IPC.taskCancel, taskId) as Promise<void>,

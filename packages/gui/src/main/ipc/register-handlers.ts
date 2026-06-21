@@ -4,6 +4,7 @@ import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import type { InitInput, InitResult } from '../../shared/types/init';
 import type { PipelineInput, PipelineResult } from '../../shared/types/pipeline';
 import type { PrereqReport } from '../../shared/types/prerequisites';
+import type { QaArtifacts, QaScript } from '../../shared/types/qa';
 import type { ProjectRef } from '../../shared/types/project';
 import type { TaskSnapshot } from '../../shared/types/task';
 import type { TaskManager } from '../../core/task/task-manager';
@@ -17,6 +18,9 @@ import { createPipelineRun } from '../../core/pipelines/pipeline-run';
 import { dockerCommandSpec } from '../../core/docker/docker-commands';
 import { parseComposePs } from '../../core/docker/docker-status';
 import { listThemeDirs } from '../../core/project/list-themes';
+import { qaCommandSpec } from '../../core/qa/qa-commands';
+import { discoverQaArtifacts } from '../../core/qa/discover';
+import { readImageDataUrl, readTextArtifact } from '../../core/fs/read-artifact';
 import { getScriptsDir } from '../paths';
 import type { TaskBridge } from './task-bridge';
 
@@ -124,6 +128,27 @@ export function registerHandlers(deps: HandlerDeps): void {
     if (!result) throw new Error(`Unknown pipeline task: ${taskId}`);
     return result;
   });
+
+  ipcMain.handle(IPC.qaRun, async (_event, script: QaScript): Promise<{ taskId: string }> => {
+    const spec = await qaCommandSpec(commands, deps.projectRef.root, script);
+    const task = deps.taskManager.create({
+      kind: `qa:${script}`,
+      run: (onEvent) => runner.run(spec, onEvent),
+    });
+    deps.bridge.attach(task);
+    task.start();
+    return { taskId: task.id };
+  });
+
+  ipcMain.handle(IPC.qaArtifacts, (): Promise<QaArtifacts> => discoverQaArtifacts(deps.projectRef.root));
+
+  ipcMain.handle(IPC.qaImage, (_event, relPath: string): Promise<string | null> =>
+    readImageDataUrl(deps.projectRef.root, relPath),
+  );
+
+  ipcMain.handle(IPC.qaText, (_event, relPath: string): Promise<string | null> =>
+    readTextArtifact(deps.projectRef.root, relPath),
+  );
 
   ipcMain.handle(IPC.taskSnapshot, (_event, taskId: string): TaskSnapshot | null =>
     deps.taskManager.snapshot(taskId),

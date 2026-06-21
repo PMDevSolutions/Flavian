@@ -4,18 +4,20 @@ import { bridge } from './api/bridge';
 import { DockerPanel } from './components/DockerPanel';
 import { PipelinePanel } from './components/PipelinePanel';
 import { PrereqPanel } from './components/PrereqPanel';
+import { QaPanel } from './components/QaPanel';
 import { WizardPanel } from './components/WizardPanel';
 
-type View = 'prereq' | 'wizard' | 'docker' | 'pipeline';
+type View = 'prereq' | 'wizard' | 'docker' | 'pipeline' | 'qa';
 
 const VIEWS: { id: View; label: string }[] = [
   { id: 'prereq', label: 'Prerequisites' },
   { id: 'wizard', label: 'Setup wizard' },
   { id: 'docker', label: 'WordPress' },
   { id: 'pipeline', label: 'Convert design' },
+  { id: 'qa', label: 'Visual QA' },
 ];
 
-const COMING_SOON = ['Visual QA'];
+const COMING_SOON: string[] = [];
 
 export function App() {
   const [project, setProject] = useState<ProjectRef | null>(null);
@@ -63,6 +65,7 @@ export function App() {
         {view === 'wizard' && <WizardPanel />}
         {view === 'docker' && <DockerPanel />}
         {view === 'pipeline' && <PipelinePanel />}
+        {view === 'qa' && <QaPanel />}
       </main>
     </div>
   );

@@ -15,6 +15,12 @@ export class CommandBuilder {
     return { command: bash, args: [scriptAbsPath, ...args], cwd, lineBuffered: true };
   }
 
+  /** Run an inline bash command: `bash -c "<command>"` (for pnpm scripts with redirection). */
+  async bashCommand(command: string, cwd: string): Promise<RunSpec> {
+    const bash = await this.shell.resolveBash();
+    return { command: bash, args: ['-c', command], cwd, lineBuffered: true };
+  }
+
   /** Run a Node script with the current Node binary (e.g. bin/flavian.mjs for InDesign). */
   nodeBin(scriptAbsPath: string, args: readonly string[], cwd: string): RunSpec {
     return { command: process.execPath, args: [scriptAbsPath, ...args], cwd, lineBuffered: true };

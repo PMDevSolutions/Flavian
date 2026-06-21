@@ -2,6 +2,7 @@ import type { DockerCommand, DockerService } from './docker';
 import type { InitInput, InitResult } from './init';
 import type { PipelineInput, PipelineResult } from './pipeline';
 import type { PrereqReport } from './prerequisites';
+import type { QaArtifacts, QaScript } from './qa';
 import type { ProjectRef } from './project';
 import type { TaskEvent, TaskSnapshot } from './task';
 
@@ -50,6 +51,18 @@ export interface FlavianBridge {
 
   /** Fetch the conversion outcome once the pipeline task reaches a terminal state. */
   getPipelineResult(taskId: string): Promise<PipelineResult>;
+
+  /** Run a visual-QA script (visual:diff / lighthouse:run); returns a task id. */
+  runQa(script: QaScript): Promise<{ taskId: string }>;
+
+  /** Discover the QA artifacts currently on disk. */
+  getQaArtifacts(): Promise<QaArtifacts>;
+
+  /** Read a QA PNG as a data URL (sandboxed to artifact dirs), or null. */
+  readQaImage(relPath: string): Promise<string | null>;
+
+  /** Read a QA text/markdown artifact (sandboxed), or null. */
+  readQaText(relPath: string): Promise<string | null>;
 
   /** Snapshot any task (state + bounded log tail). */
   getTaskSnapshot(taskId: string): Promise<TaskSnapshot | null>;

@@ -25,6 +25,9 @@ export interface FlavianBridge {
   /** The current project root + validity. */
   getProject(): Promise<ProjectRef>;
 
+  /** Open a native folder picker to choose the Flavian project; persists the choice. */
+  selectProject(): Promise<ProjectRef>;
+
   /** Start a prerequisite check; returns the task id to subscribe to. */
   runPrereqCheck(): Promise<{ taskId: string }>;
 

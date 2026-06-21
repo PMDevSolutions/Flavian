@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ProjectRef } from '../shared/types/project';
 import { bridge } from './api/bridge';
 import { DockerPanel } from './components/DockerPanel';
 import { PipelinePanel } from './components/PipelinePanel';
 import { PrereqPanel } from './components/PrereqPanel';
+import { ProjectGate } from './components/ProjectGate';
 import { QaPanel } from './components/QaPanel';
 import { WizardPanel } from './components/WizardPanel';
 
@@ -17,20 +18,33 @@ const VIEWS: { id: View; label: string }[] = [
   { id: 'qa', label: 'Visual QA' },
 ];
 
-const COMING_SOON: string[] = [];
-
 export function App() {
   const [project, setProject] = useState<ProjectRef | null>(null);
   const [view, setView] = useState<View>('prereq');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     bridge()
       .getProject()
       .then(setProject)
-      .catch(() => setProject(null));
+      .catch(() => setProject(null))
+      .finally(() => setLoading(false));
   }, []);
 
-  const projectName = project?.valid ? (project.root.split(/[\\/]/).pop() ?? project.root) : null;
+  const chooseProject = useCallback(() => {
+    bridge()
+      .selectProject()
+      .then((ref) => setProject(ref))
+      .catch(() => {});
+  }, []);
+
+  if (loading) {
+    return <div className="app-loading">Loading…</div>;
+  }
+
+  const valid = project?.valid ?? false;
+  const projectName =
+    valid && project ? (project.root.split(/[\\/]/).pop() ?? project.root) : null;
 
   return (
     <div className="app">
@@ -40,32 +54,40 @@ export function App() {
           {VIEWS.map((v) => (
             <li
               key={v.id}
-              className={`nav-item${view === v.id ? ' active' : ''}`}
-              onClick={() => setView(v.id)}
+              className={`nav-item${view === v.id ? ' active' : ''}${valid ? '' : ' disabled'}`}
+              onClick={() => valid && setView(v.id)}
             >
               {v.label}
             </li>
           ))}
-          {COMING_SOON.map((label) => (
-            <li key={label} className="nav-item disabled" title="Coming soon">
-              {label}
-            </li>
-          ))}
         </ul>
         <div className="project-info">
-          {projectName ? (
-            <span title={project?.root}>Project: {projectName}</span>
+          {valid && project ? (
+            <>
+              <span title={project.root}>Project: {projectName}</span>
+              <button type="button" className="link-btn" onClick={chooseProject}>
+                Change…
+              </button>
+            </>
           ) : (
-            <span className="warn">No Flavian project detected</span>
+            <button type="button" className="link-btn" onClick={chooseProject}>
+              Choose project…
+            </button>
           )}
         </div>
       </nav>
-      <main className="content">
-        {view === 'prereq' && <PrereqPanel />}
-        {view === 'wizard' && <WizardPanel />}
-        {view === 'docker' && <DockerPanel />}
-        {view === 'pipeline' && <PipelinePanel />}
-        {view === 'qa' && <QaPanel />}
+      <main className="content" key={project?.root ?? 'none'}>
+        {!valid ? (
+          <ProjectGate reason={project?.reason} onChoose={chooseProject} />
+        ) : (
+          <>
+            {view === 'prereq' && <PrereqPanel />}
+            {view === 'wizard' && <WizardPanel />}
+            {view === 'docker' && <DockerPanel />}
+            {view === 'pipeline' && <PipelinePanel />}
+            {view === 'qa' && <QaPanel />}
+          </>
+        )}
       </main>
     </div>
   );

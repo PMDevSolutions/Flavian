@@ -103,6 +103,53 @@ body {
   color: var(--warn);
 }
 
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 4px 0 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--text-dim);
+}
+
+/* Project gate (no project selected) */
+.gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.gate-card {
+  max-width: 520px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+}
+
+.gate-card h1 {
+  margin-top: 0;
+}
+
+.gate-card p {
+  color: var(--text-dim);
+}
+
+.gate-card code {
+  background: var(--bg-elev-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
 /* Content */
 .content {
   overflow-y: auto;

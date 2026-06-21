@@ -11,6 +11,7 @@ import type { TaskEvent, TaskSnapshot } from '../shared/types/task';
 
 const bridge: FlavianBridge = {
   getProject: () => ipcRenderer.invoke(IPC.projectGet) as Promise<ProjectRef>,
+  selectProject: () => ipcRenderer.invoke(IPC.projectSelect) as Promise<ProjectRef>,
   runPrereqCheck: () => ipcRenderer.invoke(IPC.prereqRun) as Promise<{ taskId: string }>,
   getPrereqResult: (taskId) => ipcRenderer.invoke(IPC.prereqResult, taskId) as Promise<PrereqReport>,
   runInit: (input) => ipcRenderer.invoke(IPC.initRun, input) as Promise<{ taskId: string }>,

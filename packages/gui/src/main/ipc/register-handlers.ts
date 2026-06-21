@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { BrowserWindow, dialog, ipcMain } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import type { InitInput, InitResult } from '../../shared/types/init';
@@ -18,15 +18,22 @@ import { createPipelineRun } from '../../core/pipelines/pipeline-run';
 import { dockerCommandSpec } from '../../core/docker/docker-commands';
 import { parseComposePs } from '../../core/docker/docker-status';
 import { listThemeDirs } from '../../core/project/list-themes';
+import { validateRepoRoot } from '../../core/project/locate-root';
 import { qaCommandSpec } from '../../core/qa/qa-commands';
 import { discoverQaArtifacts } from '../../core/qa/discover';
 import { readImageDataUrl, readTextArtifact } from '../../core/fs/read-artifact';
 import { getScriptsDir } from '../paths';
+import { saveSettings } from '../settings';
 import type { TaskBridge } from './task-bridge';
+
+/** Mutable holder so the user can switch the active project at runtime. */
+export interface ProjectContext {
+  current: ProjectRef;
+}
 
 export interface HandlerDeps {
   taskManager: TaskManager;
-  projectRef: ProjectRef;
+  project: ProjectContext;
   bridge: TaskBridge;
 }
 
@@ -43,14 +50,34 @@ export function registerHandlers(deps: HandlerDeps): void {
   const initResults = new Map<string, Promise<InitResult>>();
   const pipelineResults = new Map<string, Promise<PipelineResult>>();
 
-  ipcMain.handle(IPC.projectGet, (): ProjectRef => deps.projectRef);
+  ipcMain.handle(IPC.projectGet, (): ProjectRef => deps.project.current);
+
+  ipcMain.handle(IPC.projectSelect, async (): Promise<ProjectRef> => {
+    const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+    const options = {
+      title: 'Select your Flavian project folder',
+      message: 'Choose the directory that contains wordpress-local.sh and scripts/.',
+      properties: ['openDirectory' as const],
+    };
+    const result = win
+      ? await dialog.showOpenDialog(win, options)
+      : await dialog.showOpenDialog(options);
+    if (result.canceled || result.filePaths.length === 0) return deps.project.current;
+
+    const ref = await validateRepoRoot(result.filePaths[0]);
+    if (ref.valid) {
+      deps.project.current = ref;
+      await saveSettings({ projectRoot: ref.root });
+    }
+    return ref; // invalid refs carry a reason for the renderer to surface
+  });
 
   ipcMain.handle(IPC.prereqRun, async (): Promise<{ taskId: string }> => {
     const prereq = await createPrereqRun({
       runner,
       commands,
-      scriptsDir: getScriptsDir(deps.projectRef.root),
-      repoRoot: deps.projectRef.root,
+      scriptsDir: getScriptsDir(deps.project.current.root),
+      repoRoot: deps.project.current.root,
     });
     const task = deps.taskManager.create({
       kind: 'prereq-check',
@@ -73,7 +100,7 @@ export function registerHandlers(deps: HandlerDeps): void {
   ipcMain.handle(IPC.initRun, async (_event, input: InitInput): Promise<{ taskId: string }> => {
     // createInitRun validates via resolveDefaults and throws on bad input — that
     // rejection surfaces to the renderer before any task is created.
-    const init = await createInitRun({ repoRoot: deps.projectRef.root, input });
+    const init = await createInitRun({ repoRoot: deps.project.current.root, input });
     const task = deps.taskManager.create({ kind: 'init', run: init.run });
     deps.bridge.attach(task);
     initResults.set(task.id, init.result);
@@ -90,7 +117,7 @@ export function registerHandlers(deps: HandlerDeps): void {
   ipcMain.handle(
     IPC.dockerRun,
     async (_event, command: DockerCommand, arg?: string): Promise<{ taskId: string }> => {
-      const spec = await dockerCommandSpec(commands, deps.projectRef.root, command, arg);
+      const spec = await dockerCommandSpec(commands, deps.project.current.root, command, arg);
       const task = deps.taskManager.create({
         kind: `docker:${command}`,
         run: (onEvent) => runner.run(spec, onEvent),
@@ -102,16 +129,16 @@ export function registerHandlers(deps: HandlerDeps): void {
   );
 
   ipcMain.handle(IPC.dockerStatus, async (): Promise<DockerService[]> => {
-    const spec = await commands.dockerCompose(['ps', '--format', 'json'], deps.projectRef.root);
+    const spec = await commands.dockerCompose(['ps', '--format', 'json'], deps.project.current.root);
     const { stdout } = await collectOutput(runner, spec);
     return parseComposePs(stdout);
   });
 
-  ipcMain.handle(IPC.listThemes, (): Promise<string[]> => listThemeDirs(deps.projectRef.root));
+  ipcMain.handle(IPC.listThemes, (): Promise<string[]> => listThemeDirs(deps.project.current.root));
 
   ipcMain.handle(IPC.pipelineRun, async (_event, input: PipelineInput): Promise<{ taskId: string }> => {
     const pipeline = await createPipelineRun({
-      repoRoot: deps.projectRef.root,
+      repoRoot: deps.project.current.root,
       input,
       runner,
       commands,
@@ -130,7 +157,7 @@ export function registerHandlers(deps: HandlerDeps): void {
   });
 
   ipcMain.handle(IPC.qaRun, async (_event, script: QaScript): Promise<{ taskId: string }> => {
-    const spec = await qaCommandSpec(commands, deps.projectRef.root, script);
+    const spec = await qaCommandSpec(commands, deps.project.current.root, script);
     const task = deps.taskManager.create({
       kind: `qa:${script}`,
       run: (onEvent) => runner.run(spec, onEvent),
@@ -140,14 +167,14 @@ export function registerHandlers(deps: HandlerDeps): void {
     return { taskId: task.id };
   });
 
-  ipcMain.handle(IPC.qaArtifacts, (): Promise<QaArtifacts> => discoverQaArtifacts(deps.projectRef.root));
+  ipcMain.handle(IPC.qaArtifacts, (): Promise<QaArtifacts> => discoverQaArtifacts(deps.project.current.root));
 
   ipcMain.handle(IPC.qaImage, (_event, relPath: string): Promise<string | null> =>
-    readImageDataUrl(deps.projectRef.root, relPath),
+    readImageDataUrl(deps.project.current.root, relPath),
   );
 
   ipcMain.handle(IPC.qaText, (_event, relPath: string): Promise<string | null> =>
-    readTextArtifact(deps.projectRef.root, relPath),
+    readTextArtifact(deps.project.current.root, relPath),
   );
 
   ipcMain.handle(IPC.taskSnapshot, (_event, taskId: string): TaskSnapshot | null =>

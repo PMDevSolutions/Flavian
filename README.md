@@ -19,6 +19,10 @@ Typical runtime: 5–30 minutes. No manual `theme.json` authoring.
 - Automatic validation against WordPress coding standards and security best practices
 - A running local WordPress site at http://localhost:8080
 
+## Desktop GUI (experimental)
+
+Prefer not to use a terminal? A cross-platform **desktop GUI** (v3.0.0, epic #100) wraps the whole workflow behind a graphical interface — five screens: **Prerequisites**, **Setup wizard**, **WordPress (Docker)**, **Convert design** (Figma/Canva/InDesign), and **Visual QA**. It's a thin orchestration layer over the existing scripts and pipelines — it invokes them, it doesn't replace them. Run it from source with `pnpm gui:dev` (or build an installer with `pnpm gui:package`). See **[docs/GUI.md](docs/GUI.md)**.
+
 ## Prerequisites
 
 | Requirement | What for | Install |

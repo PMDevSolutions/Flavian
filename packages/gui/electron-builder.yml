@@ -1,0 +1,28 @@
+# Packaging config. Build installers locally with:
+#   pnpm --filter @flavian/gui package      (electron-vite build && electron-builder)
+#
+# The GUI operates on a Flavian project directory on disk — it locates the repo
+# markers (or, in a future iteration, you point it at a folder) and writes themes,
+# .env, and conversion output there. So the app bundle ships only the GUI itself;
+# it deliberately does NOT embed the template or its scripts (those live in, and
+# must stay writable in, the user's project).
+appId: net.pmds.flavian.gui
+productName: Flavian
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+asar: true
+win:
+  target: nsis
+  # Unsigned local builds: skip the code-sign + exe-edit step so electron-builder
+  # doesn't fetch the winCodeSign toolchain (whose archive holds macOS symlinks that
+  # can't be extracted on Windows without Developer Mode / an elevated shell).
+  signAndEditExecutable: false
+mac:
+  target: dmg
+  category: public.app-category.developer-tools
+linux:
+  target: AppImage
+  category: Development

@@ -1,0 +1,35 @@
+
+=== Prerequisites Check ===
+
+REQUIRED SOFTWARE
+-----------------
+[PASS] Git 2.43.0 (minimum: 2.30.0)
+[PASS] Docker 27.0.3 (daemon running)
+[PASS] Claude Code 1.0.0
+
+REQUIRED ACCOUNTS
+-----------------
+[INFO] Figma Dev Mode - Manual verification required
+       Open Figma > Press Shift+D > Dev Mode panel should appear
+[SKIP] GitHub CLI not installed
+       Install: https://cli.github.com/
+
+OPTIONAL SOFTWARE
+-----------------
+[SKIP] WP-CLI not installed (Docker includes it internally)
+[SKIP] Node.js not installed
+[SKIP] PHP not installed (Docker provides PHP internally)
+[SKIP] Composer not installed
+
+SYSTEM REQUIREMENTS
+-------------------
+[PASS] RAM: 16 GB (minimum: 8 GB)
+[PASS] Disk: 120 GB free (minimum: 10 GB)
+[PASS] OS: Linux (supported)
+
+=== Summary ===
+Required: 3/3 passed
+Optional: 0/5 installed
+System:   3/3 passed
+
+Ready to use this template: YES

@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { IPC } from '../../shared/ipc-channels';
 import type { DockerCommand, DockerService } from '../../shared/types/docker';
@@ -51,18 +51,20 @@ export function registerHandlers(deps: HandlerDeps): void {
   const initResults = new Map<string, Promise<InitResult>>();
   const pipelineResults = new Map<string, Promise<PipelineResult>>();
 
+  // Open a native dialog parented to the active window (or window-less if none).
+  const showOpen = (options: OpenDialogOptions) => {
+    const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+    return win ? dialog.showOpenDialog(win, options) : dialog.showOpenDialog(options);
+  };
+
   ipcMain.handle(IPC.projectGet, (): ProjectRef => deps.project.current);
 
   ipcMain.handle(IPC.projectSelect, async (): Promise<ProjectRef> => {
-    const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
-    const options = {
+    const result = await showOpen({
       title: 'Select your Flavian project folder',
       message: 'Choose the directory that contains wordpress-local.sh and scripts/.',
-      properties: ['openDirectory' as const],
-    };
-    const result = win
-      ? await dialog.showOpenDialog(win, options)
-      : await dialog.showOpenDialog(options);
+      properties: ['openDirectory'],
+    });
     if (result.canceled || result.filePaths.length === 0) return deps.project.current;
 
     const ref = await validateRepoRoot(result.filePaths[0]);
@@ -71,6 +73,19 @@ export function registerHandlers(deps: HandlerDeps): void {
       await saveSettings({ projectRoot: ref.root });
     }
     return ref; // invalid refs carry a reason for the renderer to surface
+  });
+
+  ipcMain.handle(IPC.dialogDirectory, async (): Promise<string | null> => {
+    const result = await showOpen({ properties: ['openDirectory'] });
+    return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0];
+  });
+
+  ipcMain.handle(IPC.dialogFile, async (_event, extensions: string[]): Promise<string | null> => {
+    const result = await showOpen({
+      properties: ['openFile'],
+      filters: [{ name: 'Supported files', extensions }],
+    });
+    return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0];
   });
 
   ipcMain.handle(IPC.prereqRun, async (): Promise<{ taskId: string }> => {

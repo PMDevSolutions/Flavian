@@ -26,6 +26,8 @@ const bridge: FlavianBridge = {
   getQaArtifacts: () => ipcRenderer.invoke(IPC.qaArtifacts) as Promise<QaArtifacts>,
   readQaImage: (relPath) => ipcRenderer.invoke(IPC.qaImage, relPath) as Promise<string | null>,
   readQaText: (relPath) => ipcRenderer.invoke(IPC.qaText, relPath) as Promise<string | null>,
+  openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url) as Promise<void>,
+  openPath: (relPath) => ipcRenderer.invoke(IPC.openPath, relPath) as Promise<string>,
   getTaskSnapshot: (taskId) =>
     ipcRenderer.invoke(IPC.taskSnapshot, taskId) as Promise<TaskSnapshot | null>,
   cancelTask: (taskId) => ipcRenderer.invoke(IPC.taskCancel, taskId) as Promise<void>,

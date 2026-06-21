@@ -20,6 +20,8 @@ export const IPC = {
   qaArtifacts: 'flavian:qa:artifacts',
   qaImage: 'flavian:qa:image',
   qaText: 'flavian:qa:text',
+  openExternal: 'flavian:shell:open-external',
+  openPath: 'flavian:shell:open-path',
   taskSnapshot: 'flavian:task:snapshot',
   taskCancel: 'flavian:task:cancel',
   // main → renderer push

@@ -1,4 +1,5 @@
-import { BrowserWindow, dialog, ipcMain } from 'electron';
+import { BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { isAbsolute, relative, resolve } from 'node:path';
 import { IPC } from '../../shared/ipc-channels';
 import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import type { InitInput, InitResult } from '../../shared/types/init';
@@ -176,6 +177,20 @@ export function registerHandlers(deps: HandlerDeps): void {
   ipcMain.handle(IPC.qaText, (_event, relPath: string): Promise<string | null> =>
     readTextArtifact(deps.project.current.root, relPath),
   );
+
+  ipcMain.handle(IPC.openExternal, async (_event, url: string): Promise<void> => {
+    if (/^https?:\/\//i.test(url)) await shell.openExternal(url);
+  });
+
+  ipcMain.handle(IPC.openPath, async (_event, relPath: string): Promise<string> => {
+    // Open a project-relative doc; refuse traversal and non-text targets.
+    const target = resolve(deps.project.current.root, relPath);
+    const rel = relative(deps.project.current.root, target).replace(/\\/g, '/');
+    if (rel === '' || rel.startsWith('../') || isAbsolute(rel) || !/\.(md|txt)$/i.test(rel)) {
+      return 'Path not allowed';
+    }
+    return shell.openPath(target);
+  });
 
   ipcMain.handle(IPC.taskSnapshot, (_event, taskId: string): TaskSnapshot | null =>
     deps.taskManager.snapshot(taskId),

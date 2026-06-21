@@ -67,6 +67,13 @@ export interface FlavianBridge {
   /** Read a QA text/markdown artifact (sandboxed), or null. */
   readQaText(relPath: string): Promise<string | null>;
 
+  /** Open an http(s) URL in the user's default browser. */
+  openExternal(url: string): Promise<void>;
+
+  /** Open a project-relative doc (e.g. a troubleshooting .md) in the OS default app.
+   *  Returns '' on success or an error message. */
+  openPath(relPath: string): Promise<string>;
+
   /** Snapshot any task (state + bounded log tail). */
   getTaskSnapshot(taskId: string): Promise<TaskSnapshot | null>;
 

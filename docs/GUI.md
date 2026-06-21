@@ -56,7 +56,7 @@ Figma `claude` session and `docker logs -f`).
 | --- | --- | --- |
 | **Prerequisites** | Runs the prereq check and shows a pass/fail checklist with actionable guidance. | `scripts/check-prerequisites.sh` |
 | **Setup wizard** | Scaffolds a project (slug, theme starter, Canva/Woo/multisite/port…). | `scripts/init/` `resolveDefaults()` + `apply()` (in-process) |
-| **WordPress (Docker)** | Build/start/stop/restart/install, live container status, theme activation, log streaming. | `wordpress-local.sh` + `docker compose` |
+| **WordPress (Docker)** | Build/start/stop/restart/install, live container status, theme activation, log streaming; quick links to the site / wp-admin / phpMyAdmin, first-run ordering guidance, and actionable error hints (Docker not running, port conflicts) linking to `docs/docker-troubleshooting.md`. | `wordpress-local.sh` + `docker compose` |
 | **Convert design** | Launches a Figma, Canva, or InDesign conversion and streams progress. | `claude -p` / init canva path / `flavian pipeline indesign` |
 | **Visual QA** | Runs visual-diff + Lighthouse and renders the artifacts (diff triptychs, scores, report). | `pnpm visual:diff` / `pnpm lighthouse:run` |
 

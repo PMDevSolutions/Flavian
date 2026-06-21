@@ -78,6 +78,36 @@ function register_network_dashboard_widget(): void {
 add_action( 'wp_network_dashboard_setup', __NAMESPACE__ . '\\register_network_dashboard_widget' );
 
 /**
+ * Build a "headless" badge for a site, or '' when headless mode is off / unknown.
+ *
+ * Reads the target site's config through the headless plugin's isolated accessor
+ * (which uses switch_to_blog() + a per-blog site transient), so one site's config
+ * never leaks into another's row.
+ *
+ * @param int $blog_id Target blog id.
+ * @return string Escaped HTML fragment, or '' when not applicable.
+ */
+function headless_badge( int $blog_id ): string {
+	if ( ! function_exists( 'Flavian\\Headless\\settings_for_blog' ) ) {
+		return '';
+	}
+	$config = \Flavian\Headless\settings_for_blog( $blog_id );
+	if ( empty( $config['enabled'] ) ) {
+		return '';
+	}
+	return sprintf(
+		' <span class="flavian-headless-badge">%s</span>',
+		esc_html(
+			sprintf(
+				/* translators: %s: configured headless frontend URL. */
+				__( 'headless → %s', 'flavian' ),
+				$config['frontend_url']
+			)
+		)
+	);
+}
+
+/**
  * Render the body of the network sites dashboard widget.
  *
  * @return void
@@ -96,12 +126,15 @@ function render_network_dashboard_widget(): void {
 		if ( ! $details ) {
 			continue;
 		}
+		echo '<li>';
 		printf(
-			'<li><a href="%1$s">%2$s</a> &mdash; <code>%3$s</code></li>',
+			'<a href="%1$s">%2$s</a> &mdash; <code>%3$s</code>',
 			esc_url( get_admin_url( $blog_id ) ),
 			esc_html( $details->blogname ),
 			esc_html( $details->siteurl )
 		);
+		echo wp_kses_post( headless_badge( $blog_id ) );
+		echo '</li>';
 	}
 	echo '</ul>';
 }

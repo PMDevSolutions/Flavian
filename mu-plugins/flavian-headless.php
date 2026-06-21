@@ -17,37 +17,123 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Per-blog site-transient cache for cross-site (network) config reads.
+const CONFIG_CACHE_PREFIX = 'flavian_headless_cfg_';
+const CONFIG_CACHE_TTL    = 5 * MINUTE_IN_SECONDS;
+
 /**
- * Cached check so the toggle doesn't hit the options table on every hook.
+ * Read the headless settings for the current blog, cached per blog for the request.
  *
- * @return bool
+ * In multisite get_option() is already per-blog, but a request-static that is not
+ * keyed by blog id leaks one site's config into another after switch_to_blog().
+ * Keying the request cache by blog id keeps each tenant isolated.
+ *
+ * @return array Current blog config: enabled (bool), frontend_url (string), preview_secret (string).
  */
-function is_enabled(): bool {
-	static $enabled = null;
-	if ( null === $enabled ) {
-		$enabled = (bool) get_option( 'flavian_headless_mode', false );
+function current_settings(): array {
+	static $cache = array();
+
+	$blog_id = get_current_blog_id();
+	if ( ! isset( $cache[ $blog_id ] ) ) {
+		$cache[ $blog_id ] = array(
+			'enabled'        => (bool) get_option( 'flavian_headless_mode', false ),
+			'frontend_url'   => normalize_frontend_url( (string) get_option( 'flavian_headless_frontend_url', '' ) ),
+			'preview_secret' => (string) get_option( 'flavian_headless_preview_secret', '' ),
+		);
 	}
-	return $enabled;
+
+	return $cache[ $blog_id ];
 }
 
 /**
- * Configured frontend origin without a trailing slash.
+ * Normalize a stored frontend URL: strip a trailing slash, fall back to local dev.
  *
+ * @param string $url Raw stored URL.
  * @return string
  */
-function frontend_url(): string {
-	$url = (string) get_option( 'flavian_headless_frontend_url', '' );
+function normalize_frontend_url( string $url ): string {
 	return '' !== $url ? rtrim( $url, '/' ) : 'http://localhost:3000';
 }
 
 /**
- * Stored preview secret used to authenticate Preview-button clicks.
+ * Whether headless mode is enabled for the current blog.
+ *
+ * @return bool
+ */
+function is_enabled(): bool {
+	return current_settings()['enabled'];
+}
+
+/**
+ * Configured frontend origin without a trailing slash, for the current blog.
+ *
+ * @return string
+ */
+function frontend_url(): string {
+	return current_settings()['frontend_url'];
+}
+
+/**
+ * Stored preview secret used to authenticate Preview-button clicks, for the current blog.
  *
  * @return string
  */
 function preview_secret(): string {
-	return (string) get_option( 'flavian_headless_preview_secret', '' );
+	return current_settings()['preview_secret'];
 }
+
+/**
+ * Read another blog's public headless config without leaking the current blog's.
+ *
+ * Network-level views (e.g. the network dashboard widget) need a sub-site's
+ * config. This switches into the target blog to read its per-site options, always
+ * restores, and caches the non-sensitive result in a per-blog site transient so a
+ * network screen listing many sites does not switch on every render. The preview
+ * secret is intentionally excluded — it never needs to leave its own site.
+ *
+ * @param int $blog_id Target blog id.
+ * @return array Public config: enabled (bool), frontend_url (string).
+ */
+function settings_for_blog( int $blog_id ): array {
+	if ( ! is_multisite() || get_current_blog_id() === $blog_id ) {
+		$current = current_settings();
+		return array(
+			'enabled'      => $current['enabled'],
+			'frontend_url' => $current['frontend_url'],
+		);
+	}
+
+	$cache_key = CONFIG_CACHE_PREFIX . $blog_id;
+	$cached    = get_site_transient( $cache_key );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+
+	switch_to_blog( $blog_id );
+	$settings = array(
+		'enabled'      => (bool) get_option( 'flavian_headless_mode', false ),
+		'frontend_url' => normalize_frontend_url( (string) get_option( 'flavian_headless_frontend_url', '' ) ),
+	);
+	restore_current_blog();
+
+	set_site_transient( $cache_key, $settings, CONFIG_CACHE_TTL );
+	return $settings;
+}
+
+/**
+ * Drop the cross-site config cache for a blog when its headless options change.
+ *
+ * The update_option_* hooks fire on the blog whose option changed, so the current
+ * blog id identifies the transient to invalidate.
+ *
+ * @return void
+ */
+function flush_config_cache(): void {
+	delete_site_transient( CONFIG_CACHE_PREFIX . get_current_blog_id() );
+}
+add_action( 'update_option_flavian_headless_mode', __NAMESPACE__ . '\\flush_config_cache' );
+add_action( 'update_option_flavian_headless_frontend_url', __NAMESPACE__ . '\\flush_config_cache' );
+add_action( 'update_option_flavian_headless_preview_secret', __NAMESPACE__ . '\\flush_config_cache' );
 
 /**
  * Origins allowed to make credentialed cross-origin requests.

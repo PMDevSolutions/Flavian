@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
+import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import type { InitInput, InitResult } from '../../shared/types/init';
 import type { PrereqReport } from '../../shared/types/prerequisites';
 import type { ProjectRef } from '../../shared/types/project';
@@ -8,8 +9,12 @@ import type { TaskManager } from '../../core/task/task-manager';
 import { ChildProcessRunner } from '../../core/process/process-runner';
 import { CommandBuilder } from '../../core/shell/command-builder';
 import { DefaultShellResolver } from '../../core/shell/shell-resolver';
+import { collectOutput } from '../../core/process/collect';
 import { createPrereqRun } from '../../core/prerequisites/run-prerequisites';
 import { createInitRun } from '../../core/init/run-init';
+import { dockerCommandSpec } from '../../core/docker/docker-commands';
+import { parseComposePs } from '../../core/docker/docker-status';
+import { listThemeDirs } from '../../core/project/list-themes';
 import { getScriptsDir } from '../paths';
 import type { TaskBridge } from './task-bridge';
 
@@ -74,6 +79,28 @@ export function registerHandlers(deps: HandlerDeps): void {
     if (!result) throw new Error(`Unknown init task: ${taskId}`);
     return result;
   });
+
+  ipcMain.handle(
+    IPC.dockerRun,
+    async (_event, command: DockerCommand, arg?: string): Promise<{ taskId: string }> => {
+      const spec = await dockerCommandSpec(commands, deps.projectRef.root, command, arg);
+      const task = deps.taskManager.create({
+        kind: `docker:${command}`,
+        run: (onEvent) => runner.run(spec, onEvent),
+      });
+      deps.bridge.attach(task);
+      task.start();
+      return { taskId: task.id };
+    },
+  );
+
+  ipcMain.handle(IPC.dockerStatus, async (): Promise<DockerService[]> => {
+    const spec = await commands.dockerCompose(['ps', '--format', 'json'], deps.projectRef.root);
+    const { stdout } = await collectOutput(runner, spec);
+    return parseComposePs(stdout);
+  });
+
+  ipcMain.handle(IPC.listThemes, (): Promise<string[]> => listThemeDirs(deps.projectRef.root));
 
   ipcMain.handle(IPC.taskSnapshot, (_event, taskId: string): TaskSnapshot | null =>
     deps.taskManager.snapshot(taskId),

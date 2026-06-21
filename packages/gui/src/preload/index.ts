@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC } from '../shared/ipc-channels';
+import type { DockerCommand, DockerService } from '../shared/types/docker';
 import type { InitResult } from '../shared/types/init';
 import type { FlavianBridge, TaskEventEnvelope } from '../shared/types/ipc';
 import type { PrereqReport } from '../shared/types/prerequisites';
@@ -12,6 +13,10 @@ const bridge: FlavianBridge = {
   getPrereqResult: (taskId) => ipcRenderer.invoke(IPC.prereqResult, taskId) as Promise<PrereqReport>,
   runInit: (input) => ipcRenderer.invoke(IPC.initRun, input) as Promise<{ taskId: string }>,
   getInitResult: (taskId) => ipcRenderer.invoke(IPC.initResult, taskId) as Promise<InitResult>,
+  runDocker: (command: DockerCommand, arg?: string) =>
+    ipcRenderer.invoke(IPC.dockerRun, command, arg) as Promise<{ taskId: string }>,
+  getDockerStatus: () => ipcRenderer.invoke(IPC.dockerStatus) as Promise<DockerService[]>,
+  listThemes: () => ipcRenderer.invoke(IPC.listThemes) as Promise<string[]>,
   getTaskSnapshot: (taskId) =>
     ipcRenderer.invoke(IPC.taskSnapshot, taskId) as Promise<TaskSnapshot | null>,
   cancelTask: (taskId) => ipcRenderer.invoke(IPC.taskCancel, taskId) as Promise<void>,

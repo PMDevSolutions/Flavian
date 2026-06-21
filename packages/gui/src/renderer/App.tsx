@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import type { ProjectRef } from '../shared/types/project';
 import { bridge } from './api/bridge';
+import { DockerPanel } from './components/DockerPanel';
 import { PrereqPanel } from './components/PrereqPanel';
 import { WizardPanel } from './components/WizardPanel';
 
-type View = 'prereq' | 'wizard';
+type View = 'prereq' | 'wizard' | 'docker';
 
 const VIEWS: { id: View; label: string }[] = [
   { id: 'prereq', label: 'Prerequisites' },
   { id: 'wizard', label: 'Setup wizard' },
+  { id: 'docker', label: 'WordPress' },
 ];
 
-const COMING_SOON = ['WordPress', 'Convert design', 'Visual QA'];
+const COMING_SOON = ['Convert design', 'Visual QA'];
 
 export function App() {
   const [project, setProject] = useState<ProjectRef | null>(null);
@@ -54,7 +56,11 @@ export function App() {
           )}
         </div>
       </nav>
-      <main className="content">{view === 'prereq' ? <PrereqPanel /> : <WizardPanel />}</main>
+      <main className="content">
+        {view === 'prereq' && <PrereqPanel />}
+        {view === 'wizard' && <WizardPanel />}
+        {view === 'docker' && <DockerPanel />}
+      </main>
     </div>
   );
 }

@@ -10,6 +10,9 @@ export const IPC = {
   prereqResult: 'flavian:prereq:result',
   initRun: 'flavian:init:run',
   initResult: 'flavian:init:result',
+  dockerRun: 'flavian:docker:run',
+  dockerStatus: 'flavian:docker:status',
+  listThemes: 'flavian:project:themes',
   taskSnapshot: 'flavian:task:snapshot',
   taskCancel: 'flavian:task:cancel',
   // main → renderer push

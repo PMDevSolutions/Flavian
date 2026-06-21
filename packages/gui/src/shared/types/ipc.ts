@@ -1,3 +1,4 @@
+import type { DockerCommand, DockerService } from './docker';
 import type { InitInput, InitResult } from './init';
 import type { PrereqReport } from './prerequisites';
 import type { ProjectRef } from './project';
@@ -33,6 +34,15 @@ export interface FlavianBridge {
 
   /** Fetch the init outcome once the init task reaches a terminal state. */
   getInitResult(taskId: string): Promise<InitResult>;
+
+  /** Run a Docker WordPress lifecycle command (wordpress-local.sh); returns a task id. */
+  runDocker(command: DockerCommand, arg?: string): Promise<{ taskId: string }>;
+
+  /** Structured `docker compose ps` for the current project. */
+  getDockerStatus(): Promise<DockerService[]>;
+
+  /** Theme slugs available in themes/ (for the activate-theme picker). */
+  listThemes(): Promise<string[]>;
 
   /** Snapshot any task (state + bounded log tail). */
   getTaskSnapshot(taskId: string): Promise<TaskSnapshot | null>;

@@ -353,3 +353,54 @@ button:disabled {
   font-family: 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
   font-size: 12.5px;
 }
+
+/* Docker panel */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.button-row button {
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.button-row button:not(:disabled):hover {
+  border-color: var(--accent);
+}
+
+.button-row select {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  color: var(--text);
+}
+
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.status-table th {
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 600;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-table .ports {
+  font-family: 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+}

@@ -17,6 +17,7 @@
     "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit",
     "lint": "eslint .",
     "test": "node --import tsx --test \"tests/**/*.test.mts\"",
+    "smoke": "node tests/smoke/smoke.mjs",
     "package": "electron-vite build && electron-builder"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "playwright": "1.60.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.61.1",

@@ -10,6 +10,24 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Plain JS/MJS scripts (e.g. the smoke test) run on Node — declare its globals.
+    files: ['**/*.{js,cjs,mjs}'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        queueMicrotask: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.{ts,tsx,mts}'],
     rules: {
       // TypeScript already reports undefined identifiers; the core rule double-flags globals.

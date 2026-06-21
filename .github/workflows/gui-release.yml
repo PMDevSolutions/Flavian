@@ -1,0 +1,71 @@
+name: GUI Release Build
+
+# Builds installable GUI artifacts for macOS / Windows / Linux and attaches them to
+# the GitHub Release that release-please publishes. The app version is whatever
+# release-please wrote into packages/gui/package.json (an extra-file in
+# release-please-config.json) — never hand-bumped.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # allow a manual dry run (builds, but skips upload)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            artifacts: 'packages/gui/dist/*.dmg'
+          - os: windows-latest
+            artifacts: 'packages/gui/dist/*.exe'
+          - os: ubuntu-latest
+            artifacts: 'packages/gui/dist/*.AppImage'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Electron runtime libraries + Xvfb (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          pnpm --filter @flavian/gui exec playwright install-deps chromium
+
+      - name: Build GUI
+        run: pnpm --filter @flavian/gui build
+
+      - name: Smoke test (app launches and reaches the setup view)
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run --auto-servernum pnpm --filter @flavian/gui smoke
+          else
+            pnpm --filter @flavian/gui smoke
+          fi
+
+      - name: Package installer
+        # Unsigned (no certs in CI) — see electron-builder.yml signAndEditExecutable.
+        run: pnpm --filter @flavian/gui exec electron-builder --publish never
+
+      - name: Upload artifacts to the release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" ${{ matrix.artifacts }} --clobber

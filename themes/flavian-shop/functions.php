@@ -13,6 +13,9 @@ if ( ! defined( 'FLAVIAN_SHOP_VERSION' ) ) {
 	define( 'FLAVIAN_SHOP_VERSION', '0.1.0' );
 }
 
+// Front-end SEO metadata (meta description, Open Graph, Twitter Card, JSON-LD).
+require get_template_directory() . '/inc/seo.php';
+
 /**
  * Theme setup.
  *
@@ -22,6 +25,7 @@ if ( ! defined( 'FLAVIAN_SHOP_VERSION' ) ) {
 function flavian_shop_setup() {
 	load_theme_textdomain( 'flavian-shop', get_template_directory() . '/languages' );
 
+	add_theme_support( 'title-tag' );
 	add_theme_support( 'wp-block-styles' );
 	add_theme_support( 'editor-styles' );
 	add_theme_support( 'responsive-embeds' );

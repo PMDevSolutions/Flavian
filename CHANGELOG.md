@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0](https://github.com/PMDevSolutions/Flavian/compare/v1.5.0...v1.6.0) (2026-06-21)
+
+
+### Added
+
+* **gui:** activate action, design-vs-result, troubleshooting links ([#105](https://github.com/PMDevSolutions/Flavian/issues/105)) ([b1fd016](https://github.com/PMDevSolutions/Flavian/commit/b1fd01666a0181fb5cd7b7287f6c4314fe422e66))
+* **gui:** close conversion-progress & visual-QA gaps ([#105](https://github.com/PMDevSolutions/Flavian/issues/105)) ([dd95ace](https://github.com/PMDevSolutions/Flavian/commit/dd95acea6490be5b0a98bbacdde8421a36557df1))
+* **gui:** close Docker-controls gaps ([#104](https://github.com/PMDevSolutions/Flavian/issues/104)) ([9449b44](https://github.com/PMDevSolutions/Flavian/commit/9449b44151c7919f3c259fb8887ce2a6747c00d0))
+* **gui:** close packaging, release & docs gaps ([#106](https://github.com/PMDevSolutions/Flavian/issues/106)) ([f51cb1f](https://github.com/PMDevSolutions/Flavian/commit/f51cb1f77c5e32dedb30ec94d8ebff627c58562e))
+* **gui:** close pipeline-selection gaps ([#103](https://github.com/PMDevSolutions/Flavian/issues/103)) ([7230020](https://github.com/PMDevSolutions/Flavian/commit/72300200ab33fa2d36be2af79c40c98ea5f3e4ca))
+* **gui:** docker quick links, first-run guidance, actionable errors ([#104](https://github.com/PMDevSolutions/Flavian/issues/104)) ([06bfc67](https://github.com/PMDevSolutions/Flavian/commit/06bfc67f2f2361c8ec6ff62d25d0ffe4ca9ae9f2))
+* **gui:** native pickers + Figma validation for pipeline selection ([#103](https://github.com/PMDevSolutions/Flavian/issues/103)) ([cbb636e](https://github.com/PMDevSolutions/Flavian/commit/cbb636e183e06cb035b3dd5eccc2fa67772ccefa))
+* **gui:** release CI, packaged smoke test, and release-please versioning ([#106](https://github.com/PMDevSolutions/Flavian/issues/106)) ([400c1b3](https://github.com/PMDevSolutions/Flavian/commit/400c1b364e04495d62d09ddf44774356278acf07))
+
 ## [1.5.0](https://github.com/PMDevSolutions/Flavian/compare/v1.4.0...v1.5.0) (2026-06-21)
 
 

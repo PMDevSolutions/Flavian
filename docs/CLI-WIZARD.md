@@ -4,6 +4,12 @@
 optionally stages WooCommerce, and creates an initial git commit. Run it once after
 cloning the template (or after `composer create-project`).
 
+> **Prefer a GUI?** Flavian's desktop app has a **Setup wizard** screen that wraps this
+> exact flow — it collects the same inputs and runs the wizard's `apply()` /
+> `resolveDefaults()` in-process, so the GUI and CLI share one code path (no duplicated
+> setup logic). See **[GUI.md](GUI.md)**. This page remains the reference for the prompts
+> and flags the wizard form maps onto.
+
 ## Running the wizard
 
 ```bash

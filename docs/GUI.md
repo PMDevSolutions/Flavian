@@ -60,6 +60,12 @@ Figma `claude` session and `docker logs -f`).
 | **Convert design** | Launches a Figma, Canva, or InDesign conversion and streams progress. | `claude -p` / init canva path / `flavian pipeline indesign` |
 | **Visual QA** | Runs visual-diff + Lighthouse and renders the artifacts (diff triptychs, scores, report). | `pnpm visual:diff` / `pnpm lighthouse:run` |
 
+The **Setup wizard** mirrors `pnpm run init` — the same inputs and flags documented in
+**[CLI-WIZARD.md](CLI-WIZARD.md)** — and runs the wizard's `apply()` / `resolveDefaults()`
+in-process (one shared code path, no duplicated setup logic) rather than spawning the CLI.
+It surfaces each step (`.env` written, theme scaffolded, git commit) as a streamed log with
+success/error states, and validates inputs (via `resolveDefaults`) before running.
+
 ## Commands
 
 From the repo root:

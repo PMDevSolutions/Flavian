@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0](https://github.com/PMDevSolutions/Flavian/compare/v1.9.0...v1.10.0) (2026-06-21)
+
+
+### Added
+
+* **pipeline:** add format-detecting ingest stage with content extraction ([082f75d](https://github.com/PMDevSolutions/Flavian/commit/082f75d45dc8fe8e4049cbcb619e527f75ca6dde))
+* **pipeline:** add format-detecting ingest stage with content extraction ([086d757](https://github.com/PMDevSolutions/Flavian/commit/086d75788854fd321e50734e57cfc7e65ae8a5de))
+
 ## [1.9.0](https://github.com/PMDevSolutions/Flavian/compare/v1.8.0...v1.9.0) (2026-06-21)
 
 

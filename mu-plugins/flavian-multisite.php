@@ -25,6 +25,10 @@ if ( ! is_multisite() ) {
 const SITES_CACHE_KEY = 'flavian_multisite_sites';
 const SITES_CACHE_TTL = 5 * MINUTE_IN_SECONDS;
 
+const RECENT_POSTS_CACHE_KEY = 'flavian_network_recent_posts';
+const RECENT_POSTS_CACHE_TTL = 10 * MINUTE_IN_SECONDS;
+const RECENT_POSTS_LIMIT     = 5;
+
 /**
  * Fetch the network's sites with a short-lived transient cache.
  *
@@ -219,3 +223,119 @@ function shortcode_network_sites( $atts ): string {
 	return $rendered_any ? $html : '';
 }
 add_shortcode( 'flavian_network_sites', __NAMESPACE__ . '\\shortcode_network_sites' );
+
+/**
+ * Recent published posts aggregated across the whole network, cached.
+ *
+ * This is genuinely expensive: it switches into every site in the network and
+ * runs a query per site, so the merged, date-sorted result is cached in a site
+ * (network) transient and only rebuilt when a post's published state changes
+ * (see flush_recent_posts_cache_on_save() / the deleted_post hook below).
+ *
+ * @param int $limit Maximum number of posts to return.
+ * @return array List of posts, each: title (string), url (string), site (string), timestamp (int).
+ */
+function get_recent_network_posts( int $limit = RECENT_POSTS_LIMIT ): array {
+	$cached = get_site_transient( RECENT_POSTS_CACHE_KEY );
+	if ( is_array( $cached ) ) {
+		return array_slice( $cached, 0, $limit );
+	}
+
+	$posts = array();
+	foreach ( get_network_sites_cached() as $site ) {
+		switch_to_blog( (int) $site->blog_id );
+
+		$recent    = get_posts(
+			array(
+				'numberposts'      => RECENT_POSTS_LIMIT,
+				'post_status'      => 'publish',
+				'suppress_filters' => false,
+			)
+		);
+		$blog_name = get_bloginfo( 'name' );
+
+		foreach ( $recent as $post ) {
+			$posts[] = array(
+				'title'     => get_the_title( $post ),
+				'url'       => (string) get_permalink( $post ),
+				'site'      => $blog_name,
+				'timestamp' => (int) get_post_timestamp( $post ),
+			);
+		}
+
+		restore_current_blog();
+	}
+
+	usort(
+		$posts,
+		static function ( array $a, array $b ): int {
+			return $b['timestamp'] <=> $a['timestamp'];
+		}
+	);
+
+	set_site_transient( RECENT_POSTS_CACHE_KEY, $posts, RECENT_POSTS_CACHE_TTL );
+
+	return array_slice( $posts, 0, $limit );
+}
+
+/**
+ * Invalidate the network recent-posts cache.
+ *
+ * @return void
+ */
+function flush_recent_posts_cache(): void {
+	delete_site_transient( RECENT_POSTS_CACHE_KEY );
+}
+add_action( 'deleted_post', __NAMESPACE__ . '\\flush_recent_posts_cache' );
+
+/**
+ * Clear the network recent-posts cache when a post is saved.
+ *
+ * Skips autosaves and revisions so routine editor traffic doesn't churn the
+ * cache; any real create/update on any site invalidates the network aggregate.
+ *
+ * @param int $post_id Post being saved.
+ * @return void
+ */
+function flush_recent_posts_cache_on_save( int $post_id ): void {
+	if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+	flush_recent_posts_cache();
+}
+add_action( 'save_post', __NAMESPACE__ . '\\flush_recent_posts_cache_on_save' );
+
+/**
+ * Expose a `flavian_recent_network_posts` shortcode listing recent network posts.
+ *
+ * @param array $atts Shortcode attributes.
+ * @return string
+ */
+function shortcode_recent_network_posts( $atts ): string {
+	$atts = shortcode_atts(
+		array(
+			'limit' => (string) RECENT_POSTS_LIMIT,
+		),
+		$atts,
+		'flavian_recent_network_posts'
+	);
+
+	$posts = get_recent_network_posts( max( 1, (int) $atts['limit'] ) );
+	if ( empty( $posts ) ) {
+		return '';
+	}
+
+	$html = '<ul class="flavian-network-recent-posts">';
+	foreach ( $posts as $post ) {
+		$html .= sprintf(
+			'<li><a href="%1$s">%2$s</a> <span class="flavian-post-site">%3$s</span></li>',
+			esc_url( $post['url'] ),
+			esc_html( $post['title'] ),
+			esc_html( $post['site'] )
+		);
+	}
+	$html .= '</ul>';
+
+	return $html;
+}
+add_shortcode( 'flavian_recent_network_posts', __NAMESPACE__ . '\\shortcode_recent_network_posts' );

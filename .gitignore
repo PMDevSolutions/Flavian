@@ -114,6 +114,12 @@ bower_components/
 .sass-cache/
 *.map
 
+# Flavian GUI (Electron) build output
+# The root /dist/ and /build/ patterns above are root-anchored and do NOT match
+# nested package output, so the GUI's build dirs are listed explicitly.
+packages/gui/out/
+packages/gui/dist/
+
 # Package Manager Files
 npm-debug.log*
 yarn-debug.log*

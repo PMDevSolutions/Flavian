@@ -1,0 +1,49 @@
+name: GUI Tests
+
+on:
+  pull_request:
+    paths:
+      - 'packages/gui/**'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/gui.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/gui/**'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/gui.yml'
+
+jobs:
+  gui:
+    runs-on: ubuntu-latest
+    # The GUI's orchestration core is pure Node/TS and tests run headless — no
+    # Electron window is launched, so this lane needs no display server.
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm via Corepack — the pnpm/action-setup marketplace action isn't on this
+      # repo's allowed-actions list (see pipeline-tests.yml).
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          # 22, not 20: the test script uses `node --test "<glob>"`, and test-runner
+          # glob support landed in Node 21 (matches init-wizard.yml).
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        # Skip the ~100 MB Electron binary download — typecheck needs only the
+        # bundled types and the core tests never launch Electron.
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter @flavian/gui typecheck
+
+      - name: Run GUI unit tests
+        run: pnpm --filter @flavian/gui test

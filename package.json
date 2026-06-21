@@ -41,7 +41,11 @@
     "test:lighthouse": "pnpm lighthouse:run",
     "playwright:install": "playwright install --with-deps chromium",
     "scaffold:block": "bash scripts/scaffold-block.sh",
-    "smoke:block": "bash scripts/smoke-block.sh"
+    "smoke:block": "bash scripts/smoke-block.sh",
+    "gui:dev": "pnpm --filter @flavian/gui dev",
+    "gui:build": "pnpm --filter @flavian/gui build",
+    "gui:test": "pnpm --filter @flavian/gui test",
+    "gui:typecheck": "pnpm --filter @flavian/gui typecheck"
   },
   "devDependencies": {
     "@clack/prompts": "^0.7.0",

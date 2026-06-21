@@ -1,0 +1,29 @@
+# Packaging config skeleton — NOT exercised in sub-issue 1 (packaging is sub-issue 6).
+# Present so a later sub-issue can package with config-only changes.
+#
+# extraResources carries the repo's orchestrated scripts into the packaged app so
+# the shipped GUI can still invoke them (main/paths.ts resolves them via
+# process.resourcesPath when app.isPackaged). The from-paths are relative to this
+# package dir (packages/gui) → repo root is ../../.
+appId: net.pmds.flavian.gui
+productName: Flavian
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+extraResources:
+  - from: ../../scripts
+    to: scripts
+  - from: ../../wordpress-local.sh
+    to: wordpress-local.sh
+  - from: ../../docker-compose.yml
+    to: docker-compose.yml
+win:
+  target: nsis
+mac:
+  target: dmg
+  category: public.app-category.developer-tools
+linux:
+  target: AppImage
+  category: Development

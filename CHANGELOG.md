@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/PMDevSolutions/Flavian/compare/v1.4.0...v1.5.0) (2026-06-21)
+
+
+### Added
+
+* cross-platform desktop GUI for the design→WordPress workflow ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([d4d45c6](https://github.com/PMDevSolutions/Flavian/commit/d4d45c6678aeebc240d8fc646cccde73e7495091))
+* **gui:** add "Open project folder" picker so the installed app finds a project ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([c14052d](https://github.com/PMDevSolutions/Flavian/commit/c14052d6f73d42e935395d3b025d1400ed31089c))
+* **gui:** add design-to-WordPress pipeline selection ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([4ca314c](https://github.com/PMDevSolutions/Flavian/commit/4ca314c72ea4dbc1dcb92366d70fce24ce8835a6))
+* **gui:** add desktop GUI shell and orchestration core ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([4e84d07](https://github.com/PMDevSolutions/Flavian/commit/4e84d07432b53fb76eba7778477aa6a324c20311))
+* **gui:** add Docker WordPress controls ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([20506cc](https://github.com/PMDevSolutions/Flavian/commit/20506ccd4c82f003444b66774dfda39b58b5b115))
+* **gui:** add setup wizard screen wrapping the init flow ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([f7adc47](https://github.com/PMDevSolutions/Flavian/commit/f7adc479ffb67574645c0bfda570ed0634e05e47))
+* **gui:** add visual-QA review view + QA runners ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([fcf3f00](https://github.com/PMDevSolutions/Flavian/commit/fcf3f0031272df0db0d6b737392af610e4e4c5bf))
+* **gui:** finalize packaging, project-dir resolution, and docs ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([4e35274](https://github.com/PMDevSolutions/Flavian/commit/4e35274a4092825909078ae01d44493c3268ee0b))
+
+
+### Fixed
+
+* **gui:** build an unsigned installer so packaging works on stock Windows ([#100](https://github.com/PMDevSolutions/Flavian/issues/100)) ([b912644](https://github.com/PMDevSolutions/Flavian/commit/b9126445a1c946fa3249df404367d537a9fe5954))
+
 ## [1.4.0](https://github.com/PMDevSolutions/Flavian/compare/v1.3.0...v1.4.0) (2026-06-20)
 
 

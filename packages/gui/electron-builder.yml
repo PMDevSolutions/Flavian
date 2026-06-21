@@ -1,10 +1,11 @@
-# Packaging config skeleton — NOT exercised in sub-issue 1 (packaging is sub-issue 6).
-# Present so a later sub-issue can package with config-only changes.
+# Packaging config. Build installers locally with:
+#   pnpm --filter @flavian/gui package      (electron-vite build && electron-builder)
 #
-# extraResources carries the repo's orchestrated scripts into the packaged app so
-# the shipped GUI can still invoke them (main/paths.ts resolves them via
-# process.resourcesPath when app.isPackaged). The from-paths are relative to this
-# package dir (packages/gui) → repo root is ../../.
+# The GUI operates on a Flavian project directory on disk — it locates the repo
+# markers (or, in a future iteration, you point it at a folder) and writes themes,
+# .env, and conversion output there. So the app bundle ships only the GUI itself;
+# it deliberately does NOT embed the template or its scripts (those live in, and
+# must stay writable in, the user's project).
 appId: net.pmds.flavian.gui
 productName: Flavian
 directories:
@@ -12,13 +13,7 @@ directories:
   buildResources: build
 files:
   - out/**
-extraResources:
-  - from: ../../scripts
-    to: scripts
-  - from: ../../wordpress-local.sh
-    to: wordpress-local.sh
-  - from: ../../docker-compose.yml
-    to: docker-compose.yml
+asar: true
 win:
   target: nsis
 mac:

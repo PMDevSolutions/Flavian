@@ -3,14 +3,15 @@ import type { ProjectRef } from '../shared/types/project';
 import { locateRepoRoot } from '../core/project/locate-root';
 
 /**
- * Resolve the Flavian project root the GUI operates on.
- * - Dev: walk up from the app path (packages/gui), then cwd, to find the markers.
- * - Packaged: scripts are carried as extraResources at process.resourcesPath.
+ * Resolve the Flavian project the GUI operates on by locating the repo markers,
+ * walking up from the app path (dev: packages/gui) and then the launch cwd.
+ *
+ * The GUI always works against a real, writable project directory on disk —
+ * themes, .env, and conversion output are written there — so it never targets the
+ * (read-only, asar-packed) app bundle. A future "Open project folder…" action
+ * plugs in here, returning a user-chosen ProjectRef.
  */
 export async function resolveProjectRef(): Promise<ProjectRef> {
-  if (app.isPackaged) {
-    return { root: process.resourcesPath, valid: true };
-  }
   const fromAppPath = await locateRepoRoot(app.getAppPath());
   if (fromAppPath.valid) return fromAppPath;
   return locateRepoRoot(process.cwd());

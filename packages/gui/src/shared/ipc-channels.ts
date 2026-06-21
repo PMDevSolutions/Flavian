@@ -8,6 +8,8 @@ export const IPC = {
   projectGet: 'flavian:project:get',
   prereqRun: 'flavian:prereq:run',
   prereqResult: 'flavian:prereq:result',
+  initRun: 'flavian:init:run',
+  initResult: 'flavian:init:result',
   taskSnapshot: 'flavian:task:snapshot',
   taskCancel: 'flavian:task:cancel',
   // main → renderer push

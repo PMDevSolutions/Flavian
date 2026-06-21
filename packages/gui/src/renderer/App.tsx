@@ -2,11 +2,20 @@ import { useEffect, useState } from 'react';
 import type { ProjectRef } from '../shared/types/project';
 import { bridge } from './api/bridge';
 import { PrereqPanel } from './components/PrereqPanel';
+import { WizardPanel } from './components/WizardPanel';
 
-const COMING_SOON = ['Setup wizard', 'WordPress', 'Convert design', 'Visual QA'];
+type View = 'prereq' | 'wizard';
+
+const VIEWS: { id: View; label: string }[] = [
+  { id: 'prereq', label: 'Prerequisites' },
+  { id: 'wizard', label: 'Setup wizard' },
+];
+
+const COMING_SOON = ['WordPress', 'Convert design', 'Visual QA'];
 
 export function App() {
   const [project, setProject] = useState<ProjectRef | null>(null);
+  const [view, setView] = useState<View>('prereq');
 
   useEffect(() => {
     bridge()
@@ -22,7 +31,15 @@ export function App() {
       <nav className="sidebar">
         <div className="brand">Flavian</div>
         <ul className="nav">
-          <li className="nav-item active">Prerequisites</li>
+          {VIEWS.map((v) => (
+            <li
+              key={v.id}
+              className={`nav-item${view === v.id ? ' active' : ''}`}
+              onClick={() => setView(v.id)}
+            >
+              {v.label}
+            </li>
+          ))}
           {COMING_SOON.map((label) => (
             <li key={label} className="nav-item disabled" title="Coming soon">
               {label}
@@ -37,9 +54,7 @@ export function App() {
           )}
         </div>
       </nav>
-      <main className="content">
-        <PrereqPanel />
-      </main>
+      <main className="content">{view === 'prereq' ? <PrereqPanel /> : <WizardPanel />}</main>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import type { InitInput, InitResult } from './init';
 import type { PrereqReport } from './prerequisites';
 import type { ProjectRef } from './project';
 import type { TaskEvent, TaskSnapshot } from './task';
@@ -26,6 +27,12 @@ export interface FlavianBridge {
 
   /** Fetch the parsed report once the prereq task reaches a terminal state. */
   getPrereqResult(taskId: string): Promise<PrereqReport>;
+
+  /** Run project setup (the init wizard); returns the task id to subscribe to. */
+  runInit(input: InitInput): Promise<{ taskId: string }>;
+
+  /** Fetch the init outcome once the init task reaches a terminal state. */
+  getInitResult(taskId: string): Promise<InitResult>;
 
   /** Snapshot any task (state + bounded log tail). */
   getTaskSnapshot(taskId: string): Promise<TaskSnapshot | null>;

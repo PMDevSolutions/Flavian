@@ -71,8 +71,13 @@ body {
   padding: 9px 10px;
   border-radius: 6px;
   color: var(--text-dim);
-  cursor: default;
+  cursor: pointer;
   user-select: none;
+}
+
+.nav-item:not(.active):not(.disabled):hover {
+  background: var(--bg-elev-2);
+  color: var(--text);
 }
 
 .nav-item.active {
@@ -83,6 +88,7 @@ body {
 
 .nav-item.disabled {
   opacity: 0.45;
+  cursor: default;
 }
 
 .project-info {
@@ -267,4 +273,83 @@ button:disabled {
   cursor: pointer;
   color: var(--text-dim);
   margin-bottom: 8px;
+}
+
+/* Wizard form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 540px;
+  margin-top: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field > span {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.field > span em {
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.field input,
+.field select {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+}
+
+.field-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.form-actions {
+  margin-top: 6px;
+}
+
+.next-steps {
+  margin-top: 8px;
+}
+
+.next-steps h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.next-steps code,
+.panel-intro code,
+.next-steps li code {
+  background: var(--bg-elev-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12.5px;
 }

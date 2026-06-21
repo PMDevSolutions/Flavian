@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
+import type { InitInput, InitResult } from '../../shared/types/init';
 import type { PrereqReport } from '../../shared/types/prerequisites';
 import type { ProjectRef } from '../../shared/types/project';
 import type { TaskSnapshot } from '../../shared/types/task';
@@ -8,6 +9,7 @@ import { ChildProcessRunner } from '../../core/process/process-runner';
 import { CommandBuilder } from '../../core/shell/command-builder';
 import { DefaultShellResolver } from '../../core/shell/shell-resolver';
 import { createPrereqRun } from '../../core/prerequisites/run-prerequisites';
+import { createInitRun } from '../../core/init/run-init';
 import { getScriptsDir } from '../paths';
 import type { TaskBridge } from './task-bridge';
 
@@ -25,8 +27,9 @@ export interface HandlerDeps {
 export function registerHandlers(deps: HandlerDeps): void {
   const runner = new ChildProcessRunner();
   const commands = new CommandBuilder(new DefaultShellResolver());
-  // Parsed prereq reports keyed by task id, awaited by getPrereqResult.
+  // Results keyed by task id, awaited by the matching get*Result handler.
   const prereqResults = new Map<string, Promise<PrereqReport>>();
+  const initResults = new Map<string, Promise<InitResult>>();
 
   ipcMain.handle(IPC.projectGet, (): ProjectRef => deps.projectRef);
 
@@ -52,6 +55,23 @@ export function registerHandlers(deps: HandlerDeps): void {
   ipcMain.handle(IPC.prereqResult, async (_event, taskId: string): Promise<PrereqReport> => {
     const result = prereqResults.get(taskId);
     if (!result) throw new Error(`Unknown prereq task: ${taskId}`);
+    return result;
+  });
+
+  ipcMain.handle(IPC.initRun, async (_event, input: InitInput): Promise<{ taskId: string }> => {
+    // createInitRun validates via resolveDefaults and throws on bad input — that
+    // rejection surfaces to the renderer before any task is created.
+    const init = await createInitRun({ repoRoot: deps.projectRef.root, input });
+    const task = deps.taskManager.create({ kind: 'init', run: init.run });
+    deps.bridge.attach(task);
+    initResults.set(task.id, init.result);
+    task.start();
+    return { taskId: task.id };
+  });
+
+  ipcMain.handle(IPC.initResult, async (_event, taskId: string): Promise<InitResult> => {
+    const result = initResults.get(taskId);
+    if (!result) throw new Error(`Unknown init task: ${taskId}`);
     return result;
   });
 

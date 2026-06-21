@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 import type {
+  DesignComparison,
   LighthouseSummary,
   QaArtifacts,
   VisualReport,
@@ -80,6 +81,31 @@ export function mapLighthouse(raw: RawAssertion[]): LighthouseSummary {
   };
 }
 
+/** Pair design screenshots (figma/) with rendered results (wordpress/chromium/) by page stem. */
+export function pairDesignResults(designs: string[], results: string[]): DesignComparison[] {
+  return designs
+    .filter((d) => /\.png$/i.test(d))
+    .map((d) => {
+      const stem = d.replace(/\.png$/i, '');
+      const match =
+        results.find((r) => r.startsWith(`${stem}-`) && /desktop/i.test(r)) ??
+        results.find((r) => r.startsWith(`${stem}-`) || r.startsWith(`${stem}.`) || r === d);
+      return {
+        name: stem,
+        designRel: `.claude/visual-qa/screenshots/figma/${d}`,
+        resultRel: match ? `.claude/visual-qa/screenshots/wordpress/chromium/${match}` : undefined,
+      };
+    });
+}
+
+async function listPngs(dir: string): Promise<string[]> {
+  try {
+    return (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.png')).sort();
+  } catch {
+    return [];
+  }
+}
+
 /** Discover whatever QA artifacts exist on disk for the project. */
 export async function discoverQaArtifacts(repoRoot: string): Promise<QaArtifacts> {
   const rawVisual = await readJson<RawVisualReport>(
@@ -93,9 +119,15 @@ export async function discoverQaArtifacts(repoRoot: string): Promise<QaArtifacts
     ? qaReport
     : null;
 
+  const design = pairDesignResults(
+    await listPngs(join(repoRoot, '.claude', 'visual-qa', 'screenshots', 'figma')),
+    await listPngs(join(repoRoot, '.claude', 'visual-qa', 'screenshots', 'wordpress', 'chromium')),
+  );
+
   return {
     visual: rawVisual ? mapVisualReport(rawVisual) : null,
     lighthouse: Array.isArray(rawLh) ? mapLighthouse(rawLh) : null,
+    design,
     qaReportPath,
   };
 }

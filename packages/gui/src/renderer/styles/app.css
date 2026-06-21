@@ -378,6 +378,11 @@ button:disabled {
   font-size: 12px;
 }
 
+.activate-note {
+  color: var(--ok);
+  font-size: 13px;
+}
+
 .field-check {
   display: flex;
   align-items: center;

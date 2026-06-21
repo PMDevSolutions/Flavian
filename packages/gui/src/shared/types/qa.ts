@@ -36,11 +36,20 @@ export interface LighthouseSummary {
   failures: LighthouseFailure[];
 }
 
+/** A design screenshot paired with its rendered result (visual-qa-agent output). */
+export interface DesignComparison {
+  name: string;
+  designRel: string;
+  resultRel?: string;
+}
+
 export interface QaArtifacts {
   /** Parsed tests/visual/report.json (pixel-diff results), or null if absent. */
   visual: VisualReport | null;
   /** Parsed .lighthouseci/assertion-results.json summary, or null if absent. */
   lighthouse: LighthouseSummary | null;
+  /** Design-vs-result pairs from .claude/visual-qa/screenshots (empty if none). */
+  design: DesignComparison[];
   /** Repo-relative path to .claude/visual-qa/report.md if present. */
   qaReportPath: string | null;
 }

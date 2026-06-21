@@ -12,6 +12,18 @@ const LIFECYCLE: { command: DockerCommand; label: string }[] = [
   { command: 'install', label: 'Install WP' },
 ];
 
+/** Turn a failed docker run's log into an actionable message (cf. docs/docker-troubleshooting.md). */
+function dockerErrorHint(lines: string[]): string {
+  const text = lines.join('\n').toLowerCase();
+  if (/cannot connect to the docker daemon|docker daemon|daemon running/.test(text)) {
+    return "Docker doesn't appear to be running. Start Docker Desktop, then retry.";
+  }
+  if (/port is already allocated|address already in use|bind for|already in use/.test(text)) {
+    return 'A required port (8080 or 8081) is already in use. Stop the conflicting service or free the port, then retry.';
+  }
+  return 'The command failed — see the log above.';
+}
+
 export function DockerPanel() {
   const [status, setStatus] = useState<DockerService[] | null>(null);
   const [themes, setThemes] = useState<string[]>([]);
@@ -59,6 +71,10 @@ export function DockerPanel() {
   };
 
   const anyRunning = (status ?? []).some((s) => s.state === 'running');
+  const failed = active !== null && stream.state === 'failed';
+  const openExternal = (url: string): void => {
+    void bridge().openExternal(url);
+  };
 
   return (
     <section className="panel">
@@ -71,12 +87,6 @@ export function DockerPanel() {
       <p className="panel-intro">
         Drives the local Docker WordPress lifecycle via <code>wordpress-local.sh</code> and{' '}
         <code>docker compose</code>.
-        {anyRunning && (
-          <>
-            {' '}
-            Site: <span className="prereq-url">http://localhost:8080</span>
-          </>
-        )}
       </p>
 
       <div className="group">
@@ -113,8 +123,29 @@ export function DockerPanel() {
         )}
       </div>
 
+      {anyRunning && (
+        <div className="group">
+          <h2>Open</h2>
+          <div className="button-row">
+            <button type="button" onClick={() => openExternal('http://localhost:8080')}>
+              Site
+            </button>
+            <button type="button" onClick={() => openExternal('http://localhost:8080/wp-admin')}>
+              wp-admin
+            </button>
+            <button type="button" onClick={() => openExternal('http://localhost:8081')}>
+              Database (phpMyAdmin)
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="group">
         <h2>Lifecycle</h2>
+        <p className="hint-note">
+          First run: <strong>Build → Start → Install</strong> (creates the WordPress site) →{' '}
+          <strong>Activate theme</strong>. After that, just Start / Stop.
+        </p>
         <div className="button-row">
           {LIFECYCLE.map((l) => (
             <button key={l.command} type="button" disabled={busy} onClick={() => run(l.command, l.label)}>
@@ -158,6 +189,19 @@ export function DockerPanel() {
               </button>
             )}
           </div>
+          {failed && (
+            <div className="banner banner-error">
+              <strong>{active.label} failed</strong>
+              <span>{dockerErrorHint(stream.lines)}</span>
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => void bridge().openPath('docs/docker-troubleshooting.md')}
+              >
+                Open the Docker troubleshooting guide
+              </button>
+            </div>
+          )}
           <LogStream lines={stream.lines} />
         </div>
       )}

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0](https://github.com/PMDevSolutions/Flavian/compare/v1.7.0...v1.8.0) (2026-06-21)
+
+
+### Added
+
+* **multisite:** cache the network recent-posts aggregation ([#115](https://github.com/PMDevSolutions/Flavian/issues/115)) ([f8537d8](https://github.com/PMDevSolutions/Flavian/commit/f8537d8cbbacb8fcc8fa0d88845ceba91fe228c7))
+* **multisite:** cache the network recent-posts aggregation ([#115](https://github.com/PMDevSolutions/Flavian/issues/115)) ([0ee30fb](https://github.com/PMDevSolutions/Flavian/commit/0ee30fbb7fc64235d23dbf0ee110044c01094b16))
+
 ## [1.7.0](https://github.com/PMDevSolutions/Flavian/compare/v1.6.0...v1.7.0) (2026-06-21)
 
 

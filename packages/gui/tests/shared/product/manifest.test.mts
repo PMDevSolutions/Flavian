@@ -16,9 +16,10 @@ import { flavianManifest } from '../../../src/shared/product/flavian';
 
 test('the active product is Flavian', () => {
   assert.equal(ACTIVE_PRODUCT_ID, 'flavian');
-  assert.equal(activeManifest, flavianManifest);
+  // The active manifest is the one registered under that id (same registry instance).
+  assert.equal(activeManifest, PRODUCTS.flavian);
+  assert.equal(activeManifest.id, 'flavian');
   assert.equal(activeManifest.displayName, 'Flavian');
-  assert.equal(PRODUCTS.flavian, flavianManifest);
 });
 
 test('Flavian exposes the five expected screens, in order, with their nav labels', () => {

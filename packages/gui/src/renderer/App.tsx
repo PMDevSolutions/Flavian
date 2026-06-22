@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { activeManifest, type ScreenId } from '../shared/product';
 import type { ProjectRef } from '../shared/types/project';
 import { bridge } from './api/bridge';
 import { DockerPanel } from './components/DockerPanel';
@@ -8,19 +9,19 @@ import { ProjectGate } from './components/ProjectGate';
 import { QaPanel } from './components/QaPanel';
 import { WizardPanel } from './components/WizardPanel';
 
-type View = 'prereq' | 'wizard' | 'docker' | 'pipeline' | 'qa';
+// The shell is generic: the brand and the nav come from the active manifest, not
+// from hard-coded Flavian specifics. The screenId → panel map below is the only
+// per-product-specifics binding the shell keeps (each panel is its own bespoke UI).
+type View = ScreenId;
 
-const VIEWS: { id: View; label: string }[] = [
-  { id: 'prereq', label: 'Prerequisites' },
-  { id: 'wizard', label: 'Setup wizard' },
-  { id: 'docker', label: 'WordPress' },
-  { id: 'pipeline', label: 'Convert design' },
-  { id: 'qa', label: 'Visual QA' },
-];
+const VIEWS: { id: View; label: string }[] = activeManifest.screens.map((s) => ({
+  id: s.id,
+  label: s.navLabel,
+}));
 
 export function App() {
   const [project, setProject] = useState<ProjectRef | null>(null);
-  const [view, setView] = useState<View>('prereq');
+  const [view, setView] = useState<View>(VIEWS[0]?.id ?? 'prereq');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export function App() {
   return (
     <div className="app">
       <nav className="sidebar">
-        <div className="brand">Flavian</div>
+        <div className="brand">{activeManifest.displayName}</div>
         <ul className="nav">
           {VIEWS.map((v) => (
             <li
@@ -78,7 +79,11 @@ export function App() {
       </nav>
       <main className="content" key={project?.root ?? 'none'}>
         {!valid ? (
-          <ProjectGate reason={project?.reason} onChoose={chooseProject} />
+          <ProjectGate
+            productName={activeManifest.displayName}
+            reason={project?.reason}
+            onChoose={chooseProject}
+          />
         ) : (
           <>
             {view === 'prereq' && <PrereqPanel />}

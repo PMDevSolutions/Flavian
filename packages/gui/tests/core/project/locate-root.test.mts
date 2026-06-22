@@ -4,6 +4,9 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { locateRepoRoot, validateRepoRoot } from '../../../src/core/project/locate-root';
+import { flavianManifest } from '../../../src/shared/product/flavian';
+
+const project = flavianManifest.project;
 
 async function makeFlavianRoot(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'flavian-gui-test-'));
@@ -19,7 +22,7 @@ test('locateRepoRoot walks up to find the project root', async () => {
   try {
     const nested = join(root, 'a', 'b', 'c');
     await mkdir(nested, { recursive: true });
-    const ref = await locateRepoRoot(nested);
+    const ref = await locateRepoRoot(nested, project);
     assert.equal(ref.valid, true);
     assert.equal(ref.root, root);
   } finally {
@@ -30,7 +33,7 @@ test('locateRepoRoot walks up to find the project root', async () => {
 test('validateRepoRoot rejects a non-Flavian directory', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'not-flavian-'));
   try {
-    const ref = await validateRepoRoot(dir);
+    const ref = await validateRepoRoot(dir, project);
     assert.equal(ref.valid, false);
     assert.ok(ref.reason);
   } finally {

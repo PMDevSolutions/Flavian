@@ -1,47 +1,19 @@
-import { join } from 'node:path';
+import type { CommandDescriptor } from '../../shared/product/manifest';
 import type { PipelineInput, PipelineResult } from '../../shared/types/pipeline';
-import type { ProcessEvent, ProcessRunner, RunHandle, RunSpec } from '../process/runner-types';
+import type { ProcessEvent, ProcessRunner, RunHandle } from '../process/runner-types';
 import type { CommandBuilder } from '../shell/command-builder';
+import { buildCommandSpec } from '../product/command-spec';
 import { createInitRun } from '../init/run-init';
-
-/** The instruction handed to a headless Claude Code session for a Figma conversion. */
-export function figmaPrompt(figmaUrl: string, slug: string): string {
-  return (
-    `Convert the Figma design at ${figmaUrl} into a WordPress FSE block theme using ` +
-    `the figma-to-fse-autonomous-workflow. Use the theme slug "${slug}" and write the ` +
-    `theme to themes/${slug}. Work autonomously through to a validated theme.`
-  );
-}
-
-/** Build the spec for the Figma pipeline: a headless `claude -p` session. */
-export async function figmaSpec(
-  commands: CommandBuilder,
-  repoRoot: string,
-  input: PipelineInput,
-): Promise<RunSpec> {
-  if (!input.figmaUrl?.trim()) throw new Error('A Figma file URL is required.');
-  return commands.claude(['-p', figmaPrompt(input.figmaUrl.trim(), input.slug)], repoRoot);
-}
-
-/** Build the spec for the InDesign pipeline: the deterministic `flavian pipeline indesign` CLI. */
-export function indesignSpec(
-  commands: CommandBuilder,
-  repoRoot: string,
-  input: PipelineInput,
-): RunSpec {
-  if (!input.indesignFile?.trim()) throw new Error('An .idml or .pdf file is required.');
-  return commands.nodeBin(
-    join(repoRoot, 'bin', 'flavian.mjs'),
-    ['pipeline', 'indesign', input.indesignFile.trim(), '--slug', input.slug],
-    repoRoot,
-  );
-}
 
 export interface PipelineDeps {
   repoRoot: string;
   input: PipelineInput;
   runner: ProcessRunner;
   commands: CommandBuilder;
+  /** The pipeline step's command descriptor, from the manifest. */
+  command: CommandDescriptor;
+  /** Repo-relative init module dir, for the Canva ⇒ wizard delegate path. */
+  initModuleDir: string;
 }
 
 export interface PipelineRun {
@@ -50,17 +22,21 @@ export interface PipelineRun {
 }
 
 /**
- * Prepare a conversion run. Figma spawns a headless Claude session; InDesign runs
- * the deterministic CLI; Canva reuses the init wizard's canva path (createInitRun)
- * so there's a single Canva code path. Validation errors throw before any task.
+ * Prepare a conversion run from a manifest-declared command descriptor:
+ *   - `claude`  (Figma)    → a headless `claude -p "<prompt>"` session;
+ *   - `nodeBin` (InDesign) → the deterministic `node bin/flavian.mjs pipeline indesign …`;
+ *   - `delegate` (Canva)   → the wizard's Canva path (createInitRun), so there is one
+ *     Canva code path.
+ * Required-input validation runs first and throws before any task is created.
  */
 export async function createPipelineRun(deps: PipelineDeps): Promise<PipelineRun> {
   const { kind, slug } = deps.input;
 
-  if (kind === 'canva') {
+  if (deps.command.exec === 'delegate') {
     if (!deps.input.canvaExport?.trim()) throw new Error('A Canva export directory is required.');
     const init = await createInitRun({
       repoRoot: deps.repoRoot,
+      moduleDir: deps.initModuleDir,
       input: {
         name: slug,
         title: '',
@@ -80,10 +56,18 @@ export async function createPipelineRun(deps: PipelineDeps): Promise<PipelineRun
     };
   }
 
-  const spec =
-    kind === 'figma'
-      ? await figmaSpec(deps.commands, deps.repoRoot, deps.input)
-      : indesignSpec(deps.commands, deps.repoRoot, deps.input);
+  if (kind === 'figma' && !deps.input.figmaUrl?.trim()) throw new Error('A Figma file URL is required.');
+  if (kind === 'indesign' && !deps.input.indesignFile?.trim())
+    throw new Error('An .idml or .pdf file is required.');
+
+  // One vars bag for every conversion descriptor; fillTemplate uses whichever
+  // placeholders the manifest's argsTemplate actually references.
+  const vars = {
+    figmaUrl: deps.input.figmaUrl?.trim() ?? '',
+    file: deps.input.indesignFile?.trim() ?? '',
+    slug,
+  };
+  const spec = await buildCommandSpec(deps.commands, deps.repoRoot, deps.command, vars);
 
   let resolveResult!: (result: PipelineResult) => void;
   const result = new Promise<PipelineResult>((resolve) => {

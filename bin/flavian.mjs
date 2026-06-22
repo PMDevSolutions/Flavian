@@ -77,7 +77,7 @@ async function runIndesign(args) {
 			case '--quiet': case '-q': opts.quiet = true; break;
 			case '-h': case '--help': printIndesignUsage(); process.exit(0); break;
 			default:
-				if (!input && !arg.startsWith('-')) input = arg;
+				if (!input && (arg === '-' || !arg.startsWith('-'))) input = arg;
 				else { fail(`Unknown argument: ${arg}`); printIndesignUsage(); process.exit(2); }
 		}
 	}

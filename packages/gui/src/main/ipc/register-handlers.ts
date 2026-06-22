@@ -1,6 +1,8 @@
 import { BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { IPC } from '../../shared/ipc-channels';
+import type { ProductManifest } from '../../shared/product/manifest';
+import { getScreen, getStep, initModuleDir, soleStep } from '../../shared/product';
 import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import type { InitInput, InitResult } from '../../shared/types/init';
 import type { PipelineInput, PipelineResult } from '../../shared/types/pipeline';
@@ -13,17 +15,16 @@ import { ChildProcessRunner } from '../../core/process/process-runner';
 import { CommandBuilder } from '../../core/shell/command-builder';
 import { DefaultShellResolver } from '../../core/shell/shell-resolver';
 import { collectOutput } from '../../core/process/collect';
+import { buildCommandSpec } from '../../core/product/command-spec';
+import { streamResultParser } from '../../core/product/parsers';
 import { createPrereqRun } from '../../core/prerequisites/run-prerequisites';
 import { createInitRun } from '../../core/init/run-init';
 import { createPipelineRun } from '../../core/pipelines/pipeline-run';
-import { dockerCommandSpec } from '../../core/docker/docker-commands';
 import { parseComposePs } from '../../core/docker/docker-status';
 import { listThemeDirs } from '../../core/project/list-themes';
 import { validateRepoRoot } from '../../core/project/locate-root';
-import { qaCommandSpec } from '../../core/qa/qa-commands';
 import { discoverQaArtifacts } from '../../core/qa/discover';
 import { readImageDataUrl, readTextArtifact } from '../../core/fs/read-artifact';
-import { getScriptsDir } from '../paths';
 import { saveSettings } from '../settings';
 import type { TaskBridge } from './task-bridge';
 
@@ -36,16 +37,21 @@ export interface HandlerDeps {
   taskManager: TaskManager;
   project: ProjectContext;
   bridge: TaskBridge;
+  /** The active product manifest — the ONLY source of product-specific knowledge. */
+  manifest: ProductManifest;
 }
 
 /**
- * Wires the typed IPC surface to core. The renderer can only invoke these named
- * operations — never an arbitrary command. Sub-issues 2–6 add a handler here per
- * new typed FlavianBridge method.
+ * Wires the typed IPC surface to core. Every product specific — which script a step
+ * runs, how its output is parsed, the project-detection copy — is read from
+ * `deps.manifest`; this file is generic engine. A different product is driven by
+ * injecting a different manifest (see main/index.ts), not by editing this file.
  */
 export function registerHandlers(deps: HandlerDeps): void {
   const runner = new ChildProcessRunner();
   const commands = new CommandBuilder(new DefaultShellResolver());
+  const { manifest } = deps;
+  const root = (): string => deps.project.current.root;
   // Results keyed by task id, awaited by the matching get*Result handler.
   const prereqResults = new Map<string, Promise<PrereqReport>>();
   const initResults = new Map<string, Promise<InitResult>>();
@@ -61,13 +67,13 @@ export function registerHandlers(deps: HandlerDeps): void {
 
   ipcMain.handle(IPC.projectSelect, async (): Promise<ProjectRef> => {
     const result = await showOpen({
-      title: 'Select your Flavian project folder',
-      message: 'Choose the directory that contains wordpress-local.sh and scripts/.',
+      title: manifest.project.selectTitle,
+      message: manifest.project.selectMessage,
       properties: ['openDirectory'],
     });
     if (result.canceled || result.filePaths.length === 0) return deps.project.current;
 
-    const ref = await validateRepoRoot(result.filePaths[0]);
+    const ref = await validateRepoRoot(result.filePaths[0], manifest.project);
     if (ref.valid) {
       deps.project.current = ref;
       await saveSettings({ projectRoot: ref.root });
@@ -89,17 +95,14 @@ export function registerHandlers(deps: HandlerDeps): void {
   });
 
   ipcMain.handle(IPC.prereqRun, async (): Promise<{ taskId: string }> => {
-    const prereq = await createPrereqRun({
-      runner,
-      commands,
-      scriptsDir: getScriptsDir(deps.project.current.root),
-      repoRoot: deps.project.current.root,
-    });
+    const step = soleStep(manifest, 'prereq');
+    const spec = await buildCommandSpec(commands, root(), step.command);
+    const prereq = createPrereqRun({ runner, spec, parse: streamResultParser(step.parser) });
     const task = deps.taskManager.create({
-      kind: 'prereq-check',
+      kind: step.taskKind,
       run: prereq.run,
       // Exit 1 ("requirements missing") is a valid result, not a task failure.
-      isSuccess: (result) => result.code === 0 || result.code === 1,
+      isSuccess: (result) => (step.successExitCodes ?? [0]).includes(result.code ?? -1),
     });
     deps.bridge.attach(task);
     prereqResults.set(task.id, prereq.result);
@@ -116,8 +119,12 @@ export function registerHandlers(deps: HandlerDeps): void {
   ipcMain.handle(IPC.initRun, async (_event, input: InitInput): Promise<{ taskId: string }> => {
     // createInitRun validates via resolveDefaults and throws on bad input — that
     // rejection surfaces to the renderer before any task is created.
-    const init = await createInitRun({ repoRoot: deps.project.current.root, input });
-    const task = deps.taskManager.create({ kind: 'init', run: init.run });
+    const init = await createInitRun({
+      repoRoot: root(),
+      moduleDir: initModuleDir(manifest),
+      input,
+    });
+    const task = deps.taskManager.create({ kind: soleStep(manifest, 'wizard').taskKind, run: init.run });
     deps.bridge.attach(task);
     initResults.set(task.id, init.result);
     task.start();
@@ -133,9 +140,10 @@ export function registerHandlers(deps: HandlerDeps): void {
   ipcMain.handle(
     IPC.dockerRun,
     async (_event, command: DockerCommand, arg?: string): Promise<{ taskId: string }> => {
-      const spec = await dockerCommandSpec(commands, deps.project.current.root, command, arg);
+      const step = getStep(getScreen(manifest, 'docker'), command);
+      const spec = await buildCommandSpec(commands, root(), step.command, arg !== undefined ? { theme: arg } : {});
       const task = deps.taskManager.create({
-        kind: `docker:${command}`,
+        kind: step.taskKind,
         run: (onEvent) => runner.run(spec, onEvent),
       });
       deps.bridge.attach(task);
@@ -145,21 +153,24 @@ export function registerHandlers(deps: HandlerDeps): void {
   );
 
   ipcMain.handle(IPC.dockerStatus, async (): Promise<DockerService[]> => {
-    const spec = await commands.dockerCompose(['ps', '--format', 'json'], deps.project.current.root);
+    const spec = await commands.dockerCompose(['ps', '--format', 'json'], root());
     const { stdout } = await collectOutput(runner, spec);
     return parseComposePs(stdout);
   });
 
-  ipcMain.handle(IPC.listThemes, (): Promise<string[]> => listThemeDirs(deps.project.current.root));
+  ipcMain.handle(IPC.listThemes, (): Promise<string[]> => listThemeDirs(root()));
 
   ipcMain.handle(IPC.pipelineRun, async (_event, input: PipelineInput): Promise<{ taskId: string }> => {
+    const step = getStep(getScreen(manifest, 'pipeline'), input.kind);
     const pipeline = await createPipelineRun({
-      repoRoot: deps.project.current.root,
+      repoRoot: root(),
       input,
       runner,
       commands,
+      command: step.command,
+      initModuleDir: initModuleDir(manifest),
     });
-    const task = deps.taskManager.create({ kind: `pipeline:${input.kind}`, run: pipeline.run });
+    const task = deps.taskManager.create({ kind: step.taskKind, run: pipeline.run });
     deps.bridge.attach(task);
     pipelineResults.set(task.id, pipeline.result);
     task.start();
@@ -173,9 +184,10 @@ export function registerHandlers(deps: HandlerDeps): void {
   });
 
   ipcMain.handle(IPC.qaRun, async (_event, script: QaScript): Promise<{ taskId: string }> => {
-    const spec = await qaCommandSpec(commands, deps.project.current.root, script);
+    const step = getStep(getScreen(manifest, 'qa'), script);
+    const spec = await buildCommandSpec(commands, root(), step.command);
     const task = deps.taskManager.create({
-      kind: `qa:${script}`,
+      kind: step.taskKind,
       run: (onEvent) => runner.run(spec, onEvent),
     });
     deps.bridge.attach(task);
@@ -183,14 +195,14 @@ export function registerHandlers(deps: HandlerDeps): void {
     return { taskId: task.id };
   });
 
-  ipcMain.handle(IPC.qaArtifacts, (): Promise<QaArtifacts> => discoverQaArtifacts(deps.project.current.root));
+  ipcMain.handle(IPC.qaArtifacts, (): Promise<QaArtifacts> => discoverQaArtifacts(root()));
 
   ipcMain.handle(IPC.qaImage, (_event, relPath: string): Promise<string | null> =>
-    readImageDataUrl(deps.project.current.root, relPath),
+    readImageDataUrl(root(), relPath),
   );
 
   ipcMain.handle(IPC.qaText, (_event, relPath: string): Promise<string | null> =>
-    readTextArtifact(deps.project.current.root, relPath),
+    readTextArtifact(root(), relPath),
   );
 
   ipcMain.handle(IPC.openExternal, async (_event, url: string): Promise<void> => {
@@ -199,8 +211,8 @@ export function registerHandlers(deps: HandlerDeps): void {
 
   ipcMain.handle(IPC.openPath, async (_event, relPath: string): Promise<string> => {
     // Open a project-relative doc; refuse traversal and non-text targets.
-    const target = resolve(deps.project.current.root, relPath);
-    const rel = relative(deps.project.current.root, target).replace(/\\/g, '/');
+    const target = resolve(root(), relPath);
+    const rel = relative(root(), target).replace(/\\/g, '/');
     if (rel === '' || rel.startsWith('../') || isAbsolute(rel) || !/\.(md|txt)$/i.test(rel)) {
       return 'Path not allowed';
     }

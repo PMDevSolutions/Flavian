@@ -1,24 +1,17 @@
 import { useState } from 'react';
+import { activeManifest, getScreen } from '../../shared/product';
 import type { PipelineInput, PipelineKind } from '../../shared/types/pipeline';
 import { bridge } from '../api/bridge';
 import { usePipeline } from '../hooks/usePipeline';
 import { useTaskStream } from '../hooks/useTaskStream';
 import { LogStream } from './LogStream';
 
-const KINDS: { value: PipelineKind; label: string }[] = [
-  { value: 'figma', label: 'Figma' },
-  { value: 'canva', label: 'Canva' },
-  { value: 'indesign', label: 'InDesign' },
-];
+// The conversion kinds and their reference docs come from the manifest.
+const PIPELINE_SCREEN = getScreen(activeManifest, 'pipeline');
+const KINDS = PIPELINE_SCREEN.steps.map((s) => ({ value: s.id as PipelineKind, label: s.label }));
+const DOCS = (PIPELINE_SCREEN.extras?.docs ?? {}) as Record<PipelineKind, string>;
 
 const FIGMA_URL = /^https?:\/\/(www\.)?figma\.com\//i;
-
-/** Per-pipeline reference docs (opened from the panel). */
-const DOCS: Record<PipelineKind, string> = {
-  figma: 'docs/figma-to-wordpress/README.md',
-  canva: 'docs/canva-to-wordpress/README.md',
-  indesign: 'docs/pipelines/indesign.md',
-};
 
 export function PipelinePanel() {
   const [kind, setKind] = useState<PipelineKind>('figma');

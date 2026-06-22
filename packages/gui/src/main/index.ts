@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'node:path';
+import { activeManifest } from '../shared/product';
 import { TaskManager } from '../core/task/task-manager';
 import { resolveInitialProject } from './env';
 import { createTaskBridge } from './ipc/task-bridge';
@@ -21,11 +22,17 @@ app.whenReady().then(
   async () => {
     // The project context is mutable: the renderer's "Open project folder" action
     // updates `current`, and every handler reads it live.
-    const project = { current: await resolveInitialProject() };
+    const project = { current: await resolveInitialProject(activeManifest) };
 
     installCsp(app.isPackaged);
     // Registered once (handlers are global); windows are created/recreated freely.
-    registerHandlers({ taskManager: new TaskManager(), project, bridge: createTaskBridge() });
+    // The active manifest is injected here — the single point that names the product.
+    registerHandlers({
+      taskManager: new TaskManager(),
+      project,
+      bridge: createTaskBridge(),
+      manifest: activeManifest,
+    });
 
     await openWindow();
     app.on('activate', () => {
@@ -33,7 +40,7 @@ app.whenReady().then(
     });
   },
   (err: unknown) => {
-    console.error('Failed to start Flavian GUI:', err);
+    console.error(`Failed to start ${activeManifest.displayName} GUI:`, err);
     app.quit();
   },
 );

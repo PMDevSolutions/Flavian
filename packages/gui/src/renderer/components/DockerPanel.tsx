@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
+import { activeManifest, getScreen, getStep } from '../../shared/product';
 import type { DockerCommand, DockerService } from '../../shared/types/docker';
 import { bridge } from '../api/bridge';
 import { useTaskStream } from '../hooks/useTaskStream';
 import { LogStream } from './LogStream';
 
-const LIFECYCLE: { command: DockerCommand; label: string }[] = [
-  { command: 'build', label: 'Build' },
-  { command: 'start', label: 'Start' },
-  { command: 'stop', label: 'Stop' },
-  { command: 'restart', label: 'Restart' },
-  { command: 'install', label: 'Install WP' },
-];
+// Catalog from the manifest: the lifecycle button row, the log streamer, and the
+// external links surfaced when a container is up.
+const DOCKER_SCREEN = getScreen(activeManifest, 'docker');
+const LIFECYCLE = DOCKER_SCREEN.steps
+  .filter((s) => s.group === 'lifecycle')
+  .map((s) => ({ command: s.id as DockerCommand, label: s.label }));
+const LOGS_STEP = getStep(DOCKER_SCREEN, 'logs');
+const LINKS = DOCKER_SCREEN.extras?.links ?? [];
 
 /** Turn a failed docker run's log into an actionable message (cf. docs/docker-troubleshooting.md). */
 function dockerErrorHint(lines: string[]): string {
@@ -127,15 +129,11 @@ export function DockerPanel() {
         <div className="group">
           <h2>Open</h2>
           <div className="button-row">
-            <button type="button" onClick={() => openExternal('http://localhost:8080')}>
-              Site
-            </button>
-            <button type="button" onClick={() => openExternal('http://localhost:8080/wp-admin')}>
-              wp-admin
-            </button>
-            <button type="button" onClick={() => openExternal('http://localhost:8081')}>
-              Database (phpMyAdmin)
-            </button>
+            {LINKS.map((l) => (
+              <button key={l.url} type="button" onClick={() => openExternal(l.url)}>
+                {l.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -152,8 +150,8 @@ export function DockerPanel() {
               {l.label}
             </button>
           ))}
-          <button type="button" disabled={busy} onClick={() => run('logs', 'Streaming logs')}>
-            Stream logs
+          <button type="button" disabled={busy} onClick={() => run('logs', LOGS_STEP.label)}>
+            {LOGS_STEP.cta}
           </button>
         </div>
       </div>

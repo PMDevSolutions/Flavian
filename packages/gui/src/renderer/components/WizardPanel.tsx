@@ -1,16 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { activeManifest, getScreen } from '../../shared/product';
 import type { InitInput, MultisiteMode, ThemeStarter } from '../../shared/types/init';
 import { bridge } from '../api/bridge';
 import { useInit } from '../hooks/useInit';
 import { LogStream } from './LogStream';
 
-const THEMES: { value: ThemeStarter; label: string }[] = [
-  { value: 'blank', label: 'Blank FSE theme' },
-  { value: 'flavian-shop', label: 'flavian-shop (WooCommerce-ready)' },
-  { value: 'canva', label: 'Canva export → FSE theme' },
-  { value: 'figma', label: 'Figma import placeholder' },
-  { value: 'indesign', label: 'InDesign import placeholder' },
-];
+// The offered theme starters come from the manifest's wizard screen.
+const THEMES = getScreen(activeManifest, 'wizard').extras?.themeStarters ?? [];
 
 const DEFAULT_INPUT: InitInput = {
   name: '',

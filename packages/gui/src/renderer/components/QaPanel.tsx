@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
+import { activeManifest, getScreen } from '../../shared/product';
 import type { QaArtifacts, QaScript, VisualResult } from '../../shared/types/qa';
 import { bridge } from '../api/bridge';
 import { useTaskStream } from '../hooks/useTaskStream';
 import { ArtifactImage } from './ArtifactImage';
 import { LogStream } from './LogStream';
+
+// The runnable QA scripts come from the manifest (`label` = heading, `cta` = button).
+const QA_STEPS = getScreen(activeManifest, 'qa').steps;
 
 function VisualDiffRow({ result }: { result: VisualResult }) {
   return (
@@ -99,12 +103,16 @@ export function QaPanel() {
       </p>
 
       <div className="button-row">
-        <button type="button" disabled={busy} onClick={() => runQa('visual:diff', 'Visual diff')}>
-          Run visual diff
-        </button>
-        <button type="button" disabled={busy} onClick={() => runQa('lighthouse:run', 'Lighthouse')}>
-          Run Lighthouse
-        </button>
+        {QA_STEPS.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            disabled={busy}
+            onClick={() => runQa(s.id as QaScript, s.label)}
+          >
+            {s.cta}
+          </button>
+        ))}
       </div>
 
       {active && (

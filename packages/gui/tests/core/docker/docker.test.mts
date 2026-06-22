@@ -1,14 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseComposePs } from '../../../src/core/docker/docker-status';
-import { dockerCommandSpec, isDockerCommand } from '../../../src/core/docker/docker-commands';
-import { CommandBuilder } from '../../../src/core/shell/command-builder';
-import type { ShellResolver } from '../../../src/core/shell/shell-resolver';
 
-const fakeShell: ShellResolver = {
-  resolveBash: async () => 'bash',
-  resolveTool: async () => null,
-};
+// NOTE: building the `wordpress-local.sh <subcommand>` spec is now manifest-driven and
+// covered in tests/core/product/command-spec.test.mts (docker steps). This file keeps
+// the `docker compose ps` JSON parsing, which is generic engine.
 
 test('parseComposePs handles a JSON array (Publishers → ports)', () => {
   const raw = JSON.stringify([
@@ -49,22 +45,4 @@ test('parseComposePs handles newline-delimited JSON (Ports string)', () => {
 test('parseComposePs returns [] for empty or non-JSON input', () => {
   assert.deepEqual(parseComposePs(''), []);
   assert.deepEqual(parseComposePs('not json'), []);
-});
-
-test('dockerCommandSpec builds a bash wordpress-local.sh invocation', async () => {
-  const spec = await dockerCommandSpec(new CommandBuilder(fakeShell), '/repo', 'start');
-  assert.equal(spec.command, 'bash');
-  assert.ok(spec.args[0].endsWith('wordpress-local.sh'));
-  assert.equal(spec.args[1], 'start');
-});
-
-test('dockerCommandSpec forwards an argument (activate-theme)', async () => {
-  const spec = await dockerCommandSpec(new CommandBuilder(fakeShell), '/repo', 'activate-theme', 'my-theme');
-  assert.deepEqual(spec.args.slice(1), ['activate-theme', 'my-theme']);
-});
-
-test('isDockerCommand validates the command set', () => {
-  assert.ok(isDockerCommand('start'));
-  assert.ok(isDockerCommand('activate-theme'));
-  assert.ok(!isDockerCommand('rm -rf'));
 });

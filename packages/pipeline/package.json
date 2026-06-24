@@ -12,13 +12,13 @@
     "flavian-ingest": "./bin/ingest.mjs",
     "flavian-parse-idml": "./bin/parse-idml.mjs",
     "flavian-parse-pdf": "./bin/parse-pdf.mjs",
-    "flavian-ingest": "./bin/ingest.mjs",
+    "flavian-stage-assets": "./bin/stage-assets.mjs",
     "flavian-map-tokens": "./bin/map-tokens.mjs",
     "flavian-generate-theme": "./bin/generate-theme.mjs"
   },
   "scripts": {
     "test": "node --test",
-    "ingest": "node bin/ingest.mjs"
+    "stage-assets": "node bin/stage-assets.mjs"
   },
   "dependencies": {
     "fast-xml-parser": "^5.7.0",

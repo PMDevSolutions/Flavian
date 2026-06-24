@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0](https://github.com/PMDevSolutions/Flavian/compare/v1.11.0...v1.12.0) (2026-06-24)
+
+
+### Added
+
+* **pipeline:** add asset-staging stage and repair [#152](https://github.com/PMDevSolutions/Flavian/issues/152) merge fallout ([26c6c72](https://github.com/PMDevSolutions/Flavian/commit/26c6c723992d43107203c988a3436d7827ec281c))
+* **pipeline:** add asset-staging stage and repair [#152](https://github.com/PMDevSolutions/Flavian/issues/152) merge fallout ([3d84d5f](https://github.com/PMDevSolutions/Flavian/commit/3d84d5f80a4ace6d7195de2c09acf82d1ec8265b)), closes [#154](https://github.com/PMDevSolutions/Flavian/issues/154)
+* **pipeline:** add IDML/PDF ingest stage to the build pipeline ([9a9ed9a](https://github.com/PMDevSolutions/Flavian/commit/9a9ed9aabf396fd563f7d5d8fbcdec2341159031))
+* **pipeline:** add IDML/PDF ingest stage to the build pipeline ([93a5c96](https://github.com/PMDevSolutions/Flavian/commit/93a5c9651854f42a9e98cf46c7e622d2194caeb4)), closes [#117](https://github.com/PMDevSolutions/Flavian/issues/117)
+
 ## [1.11.0](https://github.com/PMDevSolutions/Flavian/compare/v1.10.0...v1.11.0) (2026-06-22)
 
 

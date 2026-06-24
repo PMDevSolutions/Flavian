@@ -22,6 +22,7 @@
   },
   "scripts": {
     "flavian": "node bin/flavian.mjs",
+    "pipeline:ingest": "node bin/flavian.mjs pipeline ingest",
     "init": "node scripts/init.mjs",
     "test:init": "node --test \"tests/init/**/*.test.mjs\"",
     "test:pipeline": "pnpm --filter @flavian/pipeline test",

@@ -11,11 +11,13 @@
   "bin": {
     "flavian-parse-idml": "./bin/parse-idml.mjs",
     "flavian-parse-pdf": "./bin/parse-pdf.mjs",
+    "flavian-ingest": "./bin/ingest.mjs",
     "flavian-map-tokens": "./bin/map-tokens.mjs",
     "flavian-generate-theme": "./bin/generate-theme.mjs"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "ingest": "node bin/ingest.mjs"
   },
   "dependencies": {
     "fast-xml-parser": "^5.7.0",

@@ -2,6 +2,7 @@
 // Flavian CLI — the first-class entry point for Flavian's conversion pipelines.
 //
 //   flavian pipeline indesign <input> [options]
+//   flavian pipeline ingest   <input> --out-dir <dir> [options]
 //
 // Today it exposes the InDesign pipeline (#62–#65): parse an .idml/.pdf (or a
 // pre-parsed IR JSON), map design tokens, and generate a complete FSE theme.
@@ -36,13 +37,19 @@ async function main() {
 		process.exit(command ? 0 : 2);
 	}
 
-	if (command !== 'indesign') {
-		fail(`Unknown pipeline: ${command}`);
-		printPipelineUsage();
-		process.exit(2);
+	if (command === 'indesign') {
+		await runIndesign(rest);
+		return;
 	}
 
-	await runIndesign(rest);
+	if (command === 'ingest') {
+		await runIngestCommand(rest);
+		return;
+	}
+
+	fail(`Unknown pipeline: ${command}`);
+	printPipelineUsage();
+	process.exit(2);
 }
 
 async function runIndesign(args) {
@@ -125,6 +132,71 @@ async function runIndesign(args) {
 	process.exit(result.report.data.valid ? 0 : 1);
 }
 
+async function runIngestCommand(args) {
+	const opts = { quiet: false };
+	let input;
+
+	let i = 0;
+	const value = (flag) => {
+		const next = args[i + 1];
+		if (next === undefined || next.startsWith('-')) {
+			fail(`${flag} requires a value`);
+			process.exit(2);
+		}
+		i += 1;
+		return next;
+	};
+
+	for (; i < args.length; i += 1) {
+		const arg = args[i];
+		switch (arg) {
+			case '--out-dir': case '-o': opts.outDir = value(arg); break;
+			case '--dpi': opts.dpi = Number(value(arg)); break;
+			case '--name': opts.name = value(arg); break;
+			case '--quiet': case '-q': opts.quiet = true; break;
+			case '-h': case '--help': printIngestUsage(); process.exit(0); break;
+			default:
+				if (!input && !arg.startsWith('-')) input = arg;
+				else { fail(`Unknown argument: ${arg}`); printIngestUsage(); process.exit(2); }
+		}
+	}
+
+	if (!input) {
+		fail('an input is required (an .idml/.pdf file or an IR JSON)');
+		printIngestUsage();
+		process.exit(2);
+	}
+	if (!opts.outDir) {
+		fail('--out-dir is required');
+		printIngestUsage();
+		process.exit(2);
+	}
+
+	// Lazy import so `--help` never pays for loading the pipeline.
+	const { runIngest } = await import(PIPELINE('ingest/index.js'));
+
+	const summary = await runIngest({
+		input,
+		outDir: path.resolve(opts.outDir),
+		dpi: opts.dpi,
+		name: opts.name,
+	});
+
+	if (!opts.quiet) {
+		const c = summary.counts;
+		process.stderr.write(
+			[
+				`ingest: ${summary.format} → ${path.relative(process.cwd(), summary.dir) || '.'}`,
+				`assets: ${c.assetsResolved}/${c.imageFrames} resolved (staged ${summary.assetsWritten})`,
+				'bundle: ir.json, assets/, assets.manifest.json',
+				summary.warnings.length ? `warnings: ${summary.warnings.length}` : null,
+			].filter(Boolean).join('\n') + '\n',
+		);
+	}
+
+	process.exit(0);
+}
+
 /** Resolve the theme output directory from --output, config.output, or default. */
 function resolveOutDir(outputFlag, configOutput, slug) {
 	if (outputFlag) return path.resolve(outputFlag);            // explicit theme dir
@@ -193,6 +265,7 @@ function printRootUsage() {
 			'',
 			'Commands:',
 			'  pipeline indesign <input>   Convert an InDesign document to a WordPress FSE theme',
+			'  pipeline ingest <input>     Stage an InDesign source as a generator-ready bundle',
 			'',
 			'Run `flavian pipeline indesign --help` for pipeline options.',
 			'',
@@ -207,8 +280,9 @@ function printPipelineUsage() {
 			'',
 			'Pipelines:',
 			'  indesign <input>   Convert an .idml/.pdf (or IR JSON) to an FSE theme',
+			'  ingest <input>     Stage a source as a generator-ready bundle (ir.json + assets/)',
 			'',
-			'Run `flavian pipeline indesign --help` for options.',
+			'Run `flavian pipeline <name> --help` for options.',
 			'',
 		].join('\n'),
 	);
@@ -249,6 +323,32 @@ function printIndesignUsage() {
 			'  flavian pipeline indesign brochure.idml',
 			'  flavian pipeline indesign brochure.pdf --output themes/brochure --seed-content',
 			'  flavian pipeline indesign - < ir.json --slug my-theme',
+			'',
+		].join('\n'),
+	);
+}
+
+function printIngestUsage() {
+	process.stderr.write(
+		[
+			'Usage: flavian pipeline ingest <input> --out-dir <dir> [options]',
+			'',
+			'Extract an InDesign source into a generator-ready bundle: ir.json (the',
+			'intermediate IR the generator consumes), assets/ (image bytes pulled from the',
+			'source, named to match the generator), and assets.manifest.json.',
+			'',
+			'The bundle feeds straight into generation:',
+			'  flavian pipeline indesign <dir>/ir.json --asset-dir <dir>/assets',
+			'',
+			'Arguments:',
+			'  <input>                An .idml or .pdf file (or a pre-parsed IR JSON)',
+			'',
+			'Options:',
+			'  -o, --out-dir <dir>    Bundle output directory (required)',
+			'      --dpi <n>          DPI when parsing .idml/.pdf (default 96)',
+			'      --name <str>       Override the document name',
+			'  -q, --quiet            Suppress the stderr summary',
+			'  -h, --help             Show this help',
 			'',
 		].join('\n'),
 	);

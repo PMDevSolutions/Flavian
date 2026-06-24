@@ -7,4 +7,4 @@ export { lengthToPx, ptToPx, roundPx } from './units.js';
 export { mapTokens } from './map/index.js';
 export { generateTheme } from './generate/index.js';
 export { extractIdmlAssets } from './assets/idml-assets.js';
-export { resolveAssets, buildIngestBundle, writeIngestBundle, runIngest } from './ingest/index.js';
+export { resolveAssets, buildAssetBundle, writeAssetBundle, runAssetStage } from './assets/stage.js';

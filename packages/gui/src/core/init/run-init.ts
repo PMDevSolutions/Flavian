@@ -31,6 +31,8 @@ type Apply = (
 
 export interface RunInitDeps {
   repoRoot: string;
+  /** Repo-relative dir holding default-resolver.mjs + apply.mjs (from the manifest). */
+  moduleDir: string;
   input: InitInput;
 }
 
@@ -47,10 +49,11 @@ export interface InitRun {
  * with its logger wired to the task's stream.
  */
 export async function createInitRun(deps: RunInitDeps): Promise<InitRun> {
+  const moduleParts = deps.moduleDir.split('/');
   const resolverUrl = pathToFileURL(
-    join(deps.repoRoot, 'scripts', 'init', 'default-resolver.mjs'),
+    join(deps.repoRoot, ...moduleParts, 'default-resolver.mjs'),
   ).href;
-  const applyUrl = pathToFileURL(join(deps.repoRoot, 'scripts', 'init', 'apply.mjs')).href;
+  const applyUrl = pathToFileURL(join(deps.repoRoot, ...moduleParts, 'apply.mjs')).href;
 
   const { resolveDefaults } = (await import(resolverUrl)) as { resolveDefaults: ResolveDefaults };
   const { apply } = (await import(applyUrl)) as { apply: Apply };

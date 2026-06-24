@@ -1,6 +1,6 @@
 {
   "name": "flavian",
-  "version": "1.9.0",
+  "version": "1.11.0",
   "private": true,
   "description": "Claude Code-integrated WordPress development template. The repository version is tracked in git tags + .release-please-manifest.json (source of truth) and mirrored into the version field above by release-please.",
   "license": "MIT",
@@ -26,6 +26,7 @@
     "init": "node scripts/init.mjs",
     "test:init": "node --test \"tests/init/**/*.test.mjs\"",
     "test:pipeline": "pnpm --filter @flavian/pipeline test",
+    "pipeline:ingest": "node packages/pipeline/bin/ingest.mjs",
     "test:canva-e2e": "node --test tests/canva-e2e/*.test.mjs",
     "test:headless-e2e": "node --test tests/headless-e2e/*.test.mjs",
     "visual:capture": "node tests/visual/capture.mjs",

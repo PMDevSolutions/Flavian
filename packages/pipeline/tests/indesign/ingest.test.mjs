@@ -1,149 +1,143 @@
-// The ingest stage: source (.idml/.pdf) → a generator-ready bundle on disk
-// (ir.json + assets/ + assets.manifest.json). These tests pin three things:
-//   1. the transform that joins IR image frames to extracted bytes by href,
-//   2. the manifest shape (provenance, no bytes), and
-//   3. an end-to-end IDML ingest whose staged filenames line up byte-for-byte
-//      with what the generator (planAssets) will reference — i.e. the bundle is
-//      directly consumable by `generate-theme <ir.json> --asset-dir <assets>`.
+// End-to-end ingest stage: auto-detect → parse → validate → enrich → artifact,
+// for both input formats. The emitted artifact must still be consumable by the
+// generator (it's a valid IR plus an additive `content` key) and deterministic.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { promises as fs } from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 
-import { Document } from '../../src/indesign/ir.js';
-import { resolveAssets, buildIngestBundle, runIngest } from '../../src/indesign/ingest/index.js';
+import { ingestBuffer, toArtifact } from '../../src/indesign/ingest/index.js';
 import { generateTheme } from '../../src/indesign/generate/index.js';
+import { Document } from '../../src/indesign/ir.js';
 import { buildIdml } from './helpers/build-idml.js';
+import { buildPdf, solidRgbImage } from './helpers/build-pdf.js';
 
-/** A one-spread IR with one resolvable image frame and one dangling one. */
-function twoImageIr() {
-	return Document.parse({
-		dpi: 96,
-		swatches: [],
-		fonts: [],
-		styles: [],
-		stories: [],
-		masterSpreads: [],
+function sampleIdml() {
+	return buildIdml({
+		name: 'Spring Mini',
+		colors: [{ id: 'c-brand', name: 'Brand', space: 'RGB', values: [0, 102, 204] }],
+		fonts: [{ id: 'f', family: 'Helvetica', style: 'Bold', postScriptName: 'Helvetica-Bold' }],
+		styles: [
+			{ id: 'h1', name: 'Heading 1', kind: 'paragraph', pointSize: 36, appliedFont: 'f', fillColor: 'c-brand' },
+			{ id: 'body', name: 'Body', kind: 'paragraph', pointSize: 12, appliedFont: 'f' },
+		],
+		stories: [
+			{ id: 's-title', runs: [{ text: 'Welcome', paragraphStyle: 'h1' }] },
+			{ id: 's-body', runs: [{ text: 'Browse our spring collection.', paragraphStyle: 'body' }] },
+			{ id: 's-hero', runs: [{ text: 'On Sale Now', paragraphStyle: 'h1' }] },
+		],
 		spreads: [
 			{
-				id: 'sp',
-				source: 'Spreads/Spread_sp.xml',
-				pages: [{ id: 'p', bounds: { x: 0, y: 0, width: 600, height: 400 } }],
+				id: 'cover',
+				pages: [{ id: 'p1', bounds: [0, 0, 792, 612] }],
 				frames: [
-					{ kind: 'image', id: 'img', bounds: { x: 0, y: 0, width: 600, height: 400 }, href: 'file:Resources/hero.jpg', embedded: true },
-					{ kind: 'image', id: 'img2', bounds: { x: 0, y: 0, width: 100, height: 100 }, href: 'file:Links/missing.png', embedded: true },
+					{ kind: 'text', id: 'tf-title', bounds: [60, 60, 150, 540], parentStory: 's-title' },
+					{ kind: 'text', id: 'tf-body', bounds: [170, 60, 320, 540], parentStory: 's-body' },
+				],
+			},
+			{
+				id: 'hero',
+				pages: [{ id: 'p2', bounds: [0, 0, 792, 612] }],
+				frames: [
+					{ kind: 'image', id: 'if-hero', bounds: [0, 0, 612, 792], href: 'file:Links/hero.png' },
+					{ kind: 'text', id: 'tf-hero', bounds: [240, 100, 330, 500], parentStory: 's-hero' },
 				],
 			},
 		],
 	});
 }
 
-function resolverWithHero() {
-	return new Map([
-		['file:Resources/hero.jpg', { bytes: new TextEncoder().encode('JPEGDATA-hero'), ext: 'jpg' }],
-	]);
-}
-
-test('resolveAssets joins image frames to extracted bytes by href', () => {
-	const { assets, counts, warnings } = resolveAssets(twoImageIr(), resolverWithHero());
-
-	assert.equal(assets.length, 2);
-
-	const hero = assets.find((a) => a.frameId === 'img');
-	assert.equal(hero.resolved, true);
-	assert.equal(hero.relPath, 'assets/spread-1-image-1.jpg');
-	assert.ok(hero.bytes instanceof Uint8Array);
-	assert.deepEqual(hero.bytes, new TextEncoder().encode('JPEGDATA-hero'));
-
-	const missing = assets.find((a) => a.frameId === 'img2');
-	assert.equal(missing.resolved, false);
-	assert.equal(missing.relPath, 'assets/spread-1-image-2.png');
-	assert.equal(missing.bytes, undefined);
-
-	assert.deepEqual(counts, { resolved: 1, unresolved: 1 });
-	assert.equal(warnings.filter((w) => w.code === 'asset-unresolved').length, 1);
-});
-
-test('buildIngestBundle records provenance in the manifest without embedding bytes', () => {
-	const bundle = buildIngestBundle({ ir: twoImageIr(), resolver: resolverWithHero(), format: 'idml' });
-
-	assert.equal(bundle.manifest.ingestVersion, 1);
-	assert.equal(bundle.manifest.source.format, 'idml');
-	assert.deepEqual(bundle.manifest.counts, {
-		spreads: 1,
-		imageFrames: 2,
-		assetsResolved: 1,
-		assetsUnresolved: 1,
-	});
-
-	// Manifest entries are provenance only — bytes are written separately.
-	const entry = bundle.manifest.assets.find((a) => a.frameId === 'img');
-	assert.deepEqual(entry, {
-		frameId: 'img',
-		href: 'file:Resources/hero.jpg',
-		embedded: true,
-		relPath: 'assets/spread-1-image-1.jpg',
-		resolved: true,
-	});
-	assert.ok(!('bytes' in entry), 'manifest must not carry raw bytes');
-
-	// The in-memory bundle keeps bytes so the writer can stage them.
-	const live = bundle.assets.find((a) => a.frameId === 'img');
-	assert.ok(live.bytes instanceof Uint8Array);
-
-	// The unresolved frame is surfaced as a warning in the manifest.
-	assert.ok(bundle.manifest.warnings.some((w) => w.code === 'asset-unresolved'));
-});
-
-test('runIngest writes a generator-ready bundle from an .idml (assets aligned with the generator)', async () => {
-	const heroBytes = 'JPEGDATA-hero-frame';
-	const idml = buildIdml({
-		name: 'Ingest Fixture',
-		spreads: [
+function samplePdf() {
+	const unit = ([r, g, b]) => [r / 255, g / 255, b / 255];
+	return buildPdf({
+		title: 'Spring Mini',
+		pages: [
 			{
-				id: 'sp1',
-				pages: [{ id: 'pg1', bounds: [0, 0, 600, 400] }],
-				frames: [{ kind: 'image', id: 'hero', bounds: [0, 0, 600, 400], href: 'file:Resources/hero.jpg' }],
+				width: 612,
+				height: 792,
+				texts: [
+					{ text: 'Welcome', x: 60, y: 96, size: 36, font: 'Helvetica-Bold', color: unit([0, 102, 204]) },
+					{ text: 'Browse our spring collection.', x: 60, y: 150, size: 12, font: 'Helvetica', color: unit([0, 0, 0]) },
+				],
+			},
+			{
+				width: 612,
+				height: 792,
+				images: [{ x: 0, y: 0, width: 612, height: 792, rgb: solidRgbImage(16, 16, [0, 102, 204]) }],
+				texts: [{ text: 'On Sale Now', x: 80, y: 420, size: 36, font: 'Helvetica-Bold', color: unit([255, 255, 255]) }],
 			},
 		],
-		extraFiles: { 'Resources/hero.jpg': heroBytes },
 	});
+}
 
-	const work = await fs.mkdtemp(path.join(os.tmpdir(), 'flavian-ingest-'));
-	const idmlPath = path.join(work, 'fixture.idml');
-	const outDir = path.join(work, 'bundle');
+test('ingests IDML bytes into a validated, content-bearing IR', async () => {
+	const result = await ingestBuffer(sampleIdml());
 
-	try {
-		await fs.writeFile(idmlPath, idml);
+	assert.equal(result.format, 'idml');
+	assert.equal(result.ir.meta.name, 'Spring Mini');
+	assert.equal(result.ir.spreads.length, 2);
 
-		const summary = await runIngest({ input: idmlPath, outDir });
-		assert.equal(summary.format, 'idml');
-		assert.equal(summary.counts.assetsResolved, 1);
+	// Content model: a heading per spread, a paragraph, and the hero figure.
+	assert.equal(result.content.stats.sections, 2);
+	assert.equal(result.content.stats.headings, 2);
+	assert.equal(result.content.stats.figures, 1);
+	assert.deepEqual(result.content.outline.map((h) => h.text), ['Welcome', 'On Sale Now']);
 
-		// ir.json round-trips through the schema — it is the intermediate JSON
-		// the theme generator consumes.
-		const irJson = JSON.parse(await fs.readFile(path.join(outDir, 'ir.json'), 'utf8'));
-		const reparsed = Document.parse(irJson);
-		assert.equal(reparsed.spreads.length, 1);
+	// On the hero spread, the image reads before the overlaid headline.
+	const heroBlocks = result.content.sections[1].blocks.map((b) => b.type);
+	assert.deepEqual(heroBlocks, ['figure', 'heading']);
+});
 
-		// The extracted image landed at the generator's staged filename.
-		const stagedRel = 'assets/spread-1-image-1.jpg';
-		const staged = await fs.readFile(path.join(outDir, stagedRel));
-		assert.deepEqual(new Uint8Array(staged), new TextEncoder().encode(heroBytes));
+test('the artifact is a valid IR the generator consumes unchanged', async () => {
+	const result = await ingestBuffer(sampleIdml());
+	const artifact = toArtifact(result);
 
-		// Manifest written and consistent.
-		const manifest = JSON.parse(await fs.readFile(path.join(outDir, 'assets.manifest.json'), 'utf8'));
-		assert.equal(manifest.counts.assetsResolved, 1);
-		assert.equal(manifest.assets[0].relPath, stagedRel);
+	// Superset of a valid Document: schema still parses (it ignores `content`).
+	assert.doesNotThrow(() => Document.parse(artifact));
+	assert.ok(artifact.content, 'artifact carries the content model');
 
-		// The payoff: feeding ir.json to the generator references the exact path
-		// the ingest stage staged — so `--asset-dir <bundle>/assets` resolves it.
-		const generated = generateTheme(irJson);
-		const planned = generated.assets.find((a) => a.frameId === 'hero');
-		assert.equal(planned.relPath, stagedRel);
-	} finally {
-		await fs.rm(work, { recursive: true, force: true });
-	}
+	// The generator accepts the enriched artifact and produces a valid theme.
+	const theme = generateTheme(artifact);
+	assert.equal(theme.report.data.valid, true);
+	const patterns = theme.files.filter((f) => /^patterns\/spread-\d+\.php$/.test(f.path));
+	assert.equal(patterns.length, result.ir.spreads.length);
+});
+
+test('ingest is deterministic — same bytes yield byte-identical JSON', async () => {
+	const bytes = sampleIdml();
+	const a = JSON.stringify(toArtifact(await ingestBuffer(bytes)));
+	const b = JSON.stringify(toArtifact(await ingestBuffer(bytes)));
+	assert.equal(a, b);
+});
+
+test('--no-content emits the bare IR (no content key)', async () => {
+	const result = await ingestBuffer(sampleIdml(), { content: false });
+	assert.equal(result.content, null);
+	assert.equal(toArtifact(result).content, undefined);
+});
+
+test('ingests PDF bytes via the lossy fallback path', async () => {
+	const result = await ingestBuffer(samplePdf());
+
+	assert.equal(result.format, 'pdf');
+	assert.ok(result.ir.spreads.length >= 1);
+	// PDF reconstruction is always lossy → fidelity warnings are expected.
+	assert.ok((result.ir.warnings ?? []).length > 0);
+
+	const s = result.content.stats;
+	assert.ok(s.sections >= 1);
+	assert.ok(s.blocks >= 1);
+	assert.equal(s.blocks, s.headings + s.paragraphs + s.figures);
+});
+
+test('honors an explicit --format override', async () => {
+	const forced = await ingestBuffer(sampleIdml(), { format: 'idml' });
+	assert.equal(forced.format, 'idml');
+	assert.equal(forced.ir.spreads.length, 2);
+});
+
+test('rejects an unrecognized source', async () => {
+	await assert.rejects(
+		() => ingestBuffer(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])),
+		/Unrecognized source/,
+	);
 });

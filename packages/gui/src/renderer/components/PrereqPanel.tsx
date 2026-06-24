@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { activeManifest } from '../../shared/product';
 import type { PrereqGroup, PrereqReport } from '../../shared/types/prerequisites';
 import { usePrerequisites } from '../hooks/usePrerequisites';
 import { LogStream } from './LogStream';
@@ -50,8 +51,8 @@ export function PrereqPanel() {
       </header>
 
       <p className="panel-intro">
-        Verifies the tools Flavian needs (Claude Code, Docker, Git, Node) by running the
-        repo&rsquo;s <code>check-prerequisites.sh</code> and showing the result here.
+        Verifies the tools {activeManifest.displayName} needs (Claude Code, Docker, Git, Node) by
+        running the repo&rsquo;s <code>check-prerequisites.sh</code> and showing the result here.
       </p>
 
       {error && <div className="banner banner-error">Could not run the check: {error}</div>}

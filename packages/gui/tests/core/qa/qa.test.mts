@@ -1,14 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mapLighthouse, mapVisualReport, pairDesignResults } from '../../../src/core/qa/discover';
-import { isQaScript, qaCommandSpec } from '../../../src/core/qa/qa-commands';
-import { CommandBuilder } from '../../../src/core/shell/command-builder';
-import type { ShellResolver } from '../../../src/core/shell/shell-resolver';
 
-const fakeShell: ShellResolver = {
-  resolveBash: async () => 'bash',
-  resolveTool: async () => null,
-};
+// NOTE: building the `pnpm run <script>` QA spec is now manifest-driven and covered in
+// tests/core/product/command-spec.test.mts (qa steps). This file keeps QA artifact
+// discovery/mapping, which is generic engine.
 
 test('mapVisualReport reconstructs image paths from file names', () => {
   const report = mapVisualReport({
@@ -38,12 +34,6 @@ test('mapLighthouse summarizes pass/fail and collects failures', () => {
   assert.equal(summary.failures[0].expected, '0.9');
 });
 
-test('qaCommandSpec runs a pnpm script via `bash -c`', async () => {
-  const spec = await qaCommandSpec(new CommandBuilder(fakeShell), '/repo', 'visual:diff');
-  assert.equal(spec.command, 'bash');
-  assert.deepEqual(spec.args, ['-c', 'pnpm run visual:diff']);
-});
-
 test('pairDesignResults pairs design shots with desktop results by page stem', () => {
   const pairs = pairDesignResults(
     ['home.png', 'about.png'],
@@ -58,10 +48,4 @@ test('pairDesignResults pairs design shots with desktop results by page stem', (
   );
   const about = pairs.find((p) => p.name === 'about');
   assert.equal(about?.resultRel, undefined); // no matching result render
-});
-
-test('isQaScript validates the script set', () => {
-  assert.ok(isQaScript('visual:diff'));
-  assert.ok(isQaScript('lighthouse:run'));
-  assert.ok(!isQaScript('rm -rf'));
 });

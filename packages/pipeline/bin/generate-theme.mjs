@@ -65,7 +65,7 @@ for (; i < args.length; i += 1) {
 		case '--quiet': opts.quiet = true; break;
 		case '-h': case '--help': printUsage(); process.exit(0); break;
 		default:
-			if (!inputPath && !arg.startsWith('-')) {
+    		if (!inputPath && (arg === '-' || !arg.startsWith('-'))) {
 				inputPath = arg;
 			} else {
 				process.stderr.write(`Unknown argument: ${arg}\n`);

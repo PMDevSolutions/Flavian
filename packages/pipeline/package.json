@@ -9,6 +9,7 @@
     "./indesign": "./src/indesign/index.js"
   },
   "bin": {
+    "flavian-ingest": "./bin/ingest.mjs",
     "flavian-parse-idml": "./bin/parse-idml.mjs",
     "flavian-parse-pdf": "./bin/parse-pdf.mjs",
     "flavian-ingest": "./bin/ingest.mjs",

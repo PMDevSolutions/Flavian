@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0](https://github.com/PMDevSolutions/Flavian/compare/v1.10.0...v1.11.0) (2026-06-22)
+
+
+### Added
+
+* **gui:** introduce product-manifest seam ([038f03b](https://github.com/PMDevSolutions/Flavian/commit/038f03b8d11cb78a7c9c43050f4fb538b9a2d9be))
+* **gui:** introduce product-manifest seam ([3059c2f](https://github.com/PMDevSolutions/Flavian/commit/3059c2fc139f716008320696e85b8822c1ca5931))
+
+
+### Fixed
+
+* **pipeline:** treat bare "-" as stdin sentinel in generate-theme, map-tokens, and flavian indesign ([a8b67d5](https://github.com/PMDevSolutions/Flavian/commit/a8b67d59438bce76f623cb637f8d311f34d83586))
+* **pipeline:** treat bare "-" as stdin sentinel in generate-theme, map-tokens, and flavian indesign ([a6cd778](https://github.com/PMDevSolutions/Flavian/commit/a6cd7781049fd79d40f9ac1250af3394b11a064f)), closes [#148](https://github.com/PMDevSolutions/Flavian/issues/148)
+
+## [1.10.0](https://github.com/PMDevSolutions/Flavian/compare/v1.9.0...v1.10.0) (2026-06-21)
+
+
+### Added
+
+* **pipeline:** add format-detecting ingest stage with content extraction ([082f75d](https://github.com/PMDevSolutions/Flavian/commit/082f75d45dc8fe8e4049cbcb619e527f75ca6dde))
+* **pipeline:** add format-detecting ingest stage with content extraction ([086d757](https://github.com/PMDevSolutions/Flavian/commit/086d75788854fd321e50734e57cfc7e65ae8a5de))
+
 ## [1.9.0](https://github.com/PMDevSolutions/Flavian/compare/v1.8.0...v1.9.0) (2026-06-21)
 
 

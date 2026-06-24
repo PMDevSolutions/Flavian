@@ -1,26 +1,30 @@
 #!/usr/bin/env node
-// CLI: ingest an InDesign source into a generator-ready bundle on disk.
+// CLI: ingest a source asset (IDML or PDF), auto-detecting the format, and write
+// the canonical IR — enriched with a derived content model — as JSON.
 //
-//   flavian-ingest <source.idml | doc.pdf | ir.json> --out-dir <dir> [options]
+//   flavian-ingest <source.idml | source.pdf | -> [options]
 //
-// Parses the source to the IR, extracts its image bytes (embedded in the IDML
-// zip, or decoded from the PDF), and writes a bundle the theme generator can
-// consume directly: ir.json, assets/<staged files>, assets.manifest.json. Then:
-//
-//   flavian-generate-theme <dir>/ir.json --asset-dir <dir>/assets --out-dir theme
+// Reads a file path or stdin (binary-safe), writes the artifact to --out (or
+// stdout), and prints a one-line summary plus parse warnings to stderr. The
+// artifact is a valid IR that flavian-map-tokens / flavian-generate-theme accept
+// directly.
 //
 // Options:
-//   -o, --out-dir <dir>   Bundle output directory (required). Created if missing.
-//       --dpi <n>         DPI for unit normalization when parsing (default 96).
-//       --name <str>      Override the document name.
-//   -q, --quiet           Suppress the stderr summary.
-//   -h, --help            Show this help.
+//   --out <file>     Write the artifact here (default: stdout)
+//   --format <fmt>   idml | pdf | auto (default: auto — sniff the bytes)
+//   --dpi <n>        Unit-normalization DPI (default 96)
+//   --name <str>     Override the document name
+//   --no-content     Emit the bare IR without the content model
+//   --quiet          Suppress the stderr summary and parse warnings
+//   -h, --help       Show this help
 
-import { runIngest } from '../src/indesign/ingest/index.js';
+import { promises as fs } from 'node:fs';
+
+import { ingestBuffer, toArtifact } from '../src/indesign/ingest/index.js';
 
 const args = process.argv.slice(2);
-const opts = { quiet: false };
-let input;
+const opts = { format: 'auto', content: true, quiet: false };
+let inputPath;
 
 let i = 0;
 function wantsValue(flag) {
@@ -29,49 +33,79 @@ function wantsValue(flag) {
 		process.stderr.write(`${flag} requires a value\n`);
 		process.exit(2);
 	}
+	i += 1;
 	return next;
 }
 
 for (; i < args.length; i += 1) {
 	const arg = args[i];
 	switch (arg) {
-		case '--out-dir': case '-o': opts.outDir = wantsValue(arg); i += 1; break;
-		case '--dpi': opts.dpi = Number(wantsValue(arg)); i += 1; break;
-		case '--name': opts.name = wantsValue(arg); i += 1; break;
-		case '--quiet': case '-q': opts.quiet = true; break;
+		case '--out': opts.out = wantsValue(arg); break;
+		case '--format': opts.format = wantsValue(arg); break;
+		case '--dpi': opts.dpi = Number(wantsValue(arg)); break;
+		case '--name': opts.name = wantsValue(arg); break;
+		case '--no-content': opts.content = false; break;
+		case '--quiet': opts.quiet = true; break;
 		case '-h': case '--help': printUsage(); process.exit(0); break;
 		default:
-			if (!input && !arg.startsWith('-')) input = arg;
-			else { process.stderr.write(`Unknown argument: ${arg}\n`); printUsage(); process.exit(2); }
+			// A bare "-" is the explicit stdin sentinel; any other dash-prefixed
+			// token is an unknown flag.
+			if (!inputPath && (arg === '-' || !arg.startsWith('-'))) {
+				inputPath = arg;
+			} else {
+				process.stderr.write(`Unknown argument: ${arg}\n`);
+				printUsage();
+				process.exit(2);
+			}
 	}
 }
 
-if (!input) {
-	process.stderr.write('an input is required (an .idml/.pdf file or an IR JSON)\n');
-	printUsage();
+if (!['auto', 'idml', 'pdf'].includes(opts.format)) {
+	process.stderr.write('--format must be one of: auto, idml, pdf\n');
 	process.exit(2);
 }
-if (!opts.outDir) {
-	process.stderr.write('--out-dir is required\n');
-	printUsage();
+if (opts.dpi !== undefined && (Number.isNaN(opts.dpi) || opts.dpi <= 0)) {
+	process.stderr.write('--dpi must be a positive number\n');
 	process.exit(2);
+}
+
+async function readStdin() {
+	const chunks = [];
+	for await (const chunk of process.stdin) chunks.push(chunk);
+	return Buffer.concat(chunks);
 }
 
 try {
-	const summary = await runIngest({ input, outDir: opts.outDir, dpi: opts.dpi, name: opts.name });
-	if (!opts.quiet) {
-		const c = summary.counts;
-		process.stderr.write(
-			[
-				`ingest: ${summary.format} → ${opts.outDir}`,
-				`assets: ${c.assetsResolved}/${c.imageFrames} resolved (staged ${summary.assetsWritten})`,
-				`bundle: ir.json, assets/, assets.manifest.json`,
-				summary.warnings.length ? `warnings: ${summary.warnings.length}` : null,
-			]
-				.filter(Boolean)
-				.join('\n') + '\n',
-		);
+	const bytes = inputPath && inputPath !== '-' ? await fs.readFile(inputPath) : await readStdin();
+	if (bytes.length === 0) {
+		process.stderr.write('error: empty input\n');
+		process.exit(1);
 	}
+
+	const result = await ingestBuffer(bytes, {
+		format: opts.format,
+		dpi: opts.dpi,
+		name: opts.name,
+		content: opts.content,
+	});
+
+	const json = `${JSON.stringify(toArtifact(result), null, 2)}\n`;
+	if (opts.out) await fs.writeFile(opts.out, json);
+	else process.stdout.write(json);
+
+	if (!opts.quiet) {
+		const { ir, content } = result;
+		const warnings = ir.warnings ?? [];
+		for (const w of warnings) process.stderr.write(`[${w.code}] ${w.message}\n`);
+		const lines = [`format: ${result.format}  spreads: ${ir.spreads.length}  warnings: ${warnings.length}`];
+		if (content) {
+			const s = content.stats;
+			lines.push(`content: ${s.sections} sections, ${s.headings} headings, ${s.paragraphs} paragraphs, ${s.figures} figures`);
+		}
+		lines.push(`written: ${opts.out ?? '<stdout>'}`);
+		process.stderr.write(`${lines.join('\n')}\n`);
+	}
+
 	process.exit(0);
 } catch (err) {
 	process.stderr.write(`error: ${err.message}\n`);
@@ -81,14 +115,16 @@ try {
 function printUsage() {
 	process.stderr.write(
 		[
-			'Usage: flavian-ingest <source.idml | doc.pdf | ir.json> --out-dir <dir> [options]',
+			'Usage: flavian-ingest <source.idml | source.pdf | -> [options]',
 			'',
 			'Options:',
-			'  -o, --out-dir <dir>   Bundle output directory (required)',
-			'      --dpi <n>         DPI for unit normalization when parsing (default 96)',
-			'      --name <str>      Override the document name',
-			'  -q, --quiet           Suppress the stderr summary',
-			'  -h, --help            Show this help',
+			'  --out <file>     Write the artifact here (default: stdout)',
+			'  --format <fmt>   idml | pdf | auto (default: auto — sniff the bytes)',
+			'  --dpi <n>        Unit-normalization DPI (default 96)',
+			'  --name <str>     Override the document name',
+			'  --no-content     Emit the bare IR without the content model',
+			'  --quiet          Suppress the stderr summary and parse warnings',
+			'  -h, --help       Show this help',
 			'',
 		].join('\n'),
 	);

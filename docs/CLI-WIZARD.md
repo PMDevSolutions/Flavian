@@ -45,7 +45,7 @@ node scripts/init.mjs
 | `flavian-shop` | The bundled WooCommerce-ready theme, copied and renamed to your slug |
 | `canva` | A **working** FSE theme converted from a Canva HTML/CSS export (requires `--canva-export`). See [Canva starter](#canva-starter) |
 | `figma` | No theme generated. Writes `docs/NEXT-STEPS.md` pointing at the `figma-to-fse-autonomous-workflow` skill |
-| `indesign` | Placeholder only — the InDesign-to-FSE pipeline is not yet implemented |
+| `indesign` | Wizard starter is a placeholder (no theme generated). The standalone InDesign→FSE pipeline *does* ship separately — run `flavian pipeline indesign` (see `packages/pipeline/`) |
 
 ## Non-interactive flags
 
@@ -213,7 +213,9 @@ runs this on every push/PR that touches the wizard code.
 
 ## Known limitations
 
-- The InDesign starter is a placeholder; no pipeline ships yet.
+- The InDesign *wizard starter* is a placeholder — it scaffolds no theme. (The
+  standalone InDesign→FSE pipeline does ship: `flavian pipeline indesign`, backed
+  by `packages/pipeline/`.)
 - Re-running the wizard against an existing `themes/<slug>/` directory fails
   cleanly — there's no in-place upgrade path.
 - Verification is static-only. Docker isn't booted; if Docker is missing or

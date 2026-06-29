@@ -489,7 +489,7 @@ If you see agents named "code-reviewer" from different plugins, refer to `.claud
 ## 🎯 WordPress Development Skills (NEW)
 
 **Installed:** 2026-01-18
-**Total Skills:** 8 comprehensive WordPress workflows
+**Total Skills:** 12 comprehensive WordPress workflows
 
 This template includes custom WordPress development skills that complement the plugins and agents.
 
@@ -550,6 +550,10 @@ This template includes custom WordPress development skills that complement the p
     - WP-CLI automation with safe workflows and backups
     - Triggers: "scaffold theme", "wp command", "database export"
 
+12. **indesign-conversion**
+    - Orchestrator for converting Adobe InDesign documents (`.idml` or PDF) to FSE block themes
+    - Triggers: "InDesign to WordPress", "IDML", "convert InDesign", "print to web"
+
 ### Skills vs Plugins
 
 | Type | Purpose | Invocation | Example |
@@ -587,4 +591,4 @@ wordpress-testing-workflows skill guides:
 **Last Updated:** 2026-01-18
 **Template Version:** 1.0.0
 **Architecture Status:** ✅ Optimized and Windows-compatible
-**WordPress Skills:** ✅ 8 comprehensive workflows installed
+**WordPress Skills:** ✅ 12 comprehensive workflows installed

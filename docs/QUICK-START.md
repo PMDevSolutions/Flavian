@@ -49,7 +49,7 @@ All items required. If missing any, see the **[complete prerequisites guide](./P
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/Flavian.git
+git clone https://github.com/PMDevSolutions/Flavian.git
 cd Flavian
 ```
 
@@ -92,9 +92,11 @@ Claude works autonomously for 5-90 minutes. No prompts, no interruptions. Watch 
 
 ### Step 5: View in WordPress
 
-Start the local WordPress environment:
+Start the local WordPress environment. **First time only**, create your `.env` file first — Docker reads the database credentials from it and has no built-in defaults, so the containers fail to start without it:
 
 ```bash
+cp .env.example .env              # or run: pnpm run init
+
 ./wordpress-local.sh start
 ./wordpress-local.sh install      # First time only
 ./wordpress-local.sh activate-theme your-theme-name
@@ -103,7 +105,7 @@ Start the local WordPress environment:
 Open your browser:
 
 - **Site:** http://localhost:8080
-- **Admin:** http://localhost:8080/wp-admin (username: `admin`, password: `admin`)
+- **Admin:** http://localhost:8080/wp-admin (username: `admin`, password: `changeme` — `WP_ADMIN_PASSWORD` in `.env`)
 
 ---
 

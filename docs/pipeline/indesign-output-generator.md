@@ -20,6 +20,7 @@ It turns the design into a finished WordPress product:
 | `bin/import-media.sh` | WP-CLI script that imports staged assets into the media library. |
 | `bin/seed-content.sh` | (optional, `--seed-content`) one draft page per spread, populated with its pattern. |
 | `indesign-pipeline-report.md` | Produced files, unmapped IR nodes, and manual follow-ups. |
+| `indesign-pipeline-report.json` | Machine-readable counterpart of the report (for tooling/CI). |
 
 ## Usage
 
@@ -111,8 +112,8 @@ follow-up.
 | End-to-end on a fixture `.idml` produces a theme that loads in the Site Editor without PHP errors. | `generate-theme.mjs` writes a full theme dir; PHP files are a standard header + bootstrap and block markup with only `esc_url( get_theme_file_uri() )` interpolation. |
 | ≥1 pattern per spread appears under an "InDesign Imports" category. | One `patterns/spread-N.php` per spread, each `Categories: indesign-imports`; `functions.php` registers the category with the label **InDesign Imports**. |
 | `theme.json` round-trips through validation. | It is the token mapper's `merged` output, already validated against the WordPress schema (ajv + zod). |
-| Report enumerates produced files and unmapped IR nodes. | `indesign-pipeline-report.md` — see the **Produced artifacts** and **Unmapped IR nodes** sections. |
-| Snapshot tests cover two fixture spreads (text-heavy, image-heavy). | `tests/indesign/generate.test.mjs` snapshots `patterns/spread-1.php` (text) and `spread-2.php` (image), stored in `tests/indesign/__snapshots__/`. |
+| Report enumerates produced files and unmapped IR nodes. | `indesign-pipeline-report.md` (plus a machine-readable `indesign-pipeline-report.json`) — see the **Produced artifacts** and **Unmapped IR nodes** sections. |
+| Snapshot tests cover two fixture spreads (text-heavy, image-heavy). | `packages/pipeline/tests/indesign/generate.test.mjs` snapshots `patterns/spread-1.php` (text) and `spread-2.php` (image), stored in `packages/pipeline/tests/indesign/__snapshots__/`. |
 | Patterns are deterministic given the same IR. | `generateTheme` is pure; a determinism test asserts two runs are byte-identical. |
 
 ## Testing

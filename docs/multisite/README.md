@@ -17,10 +17,13 @@ The repo ships an opt-in multisite installer that converts the local WordPress i
 # 1. Bring up WordPress (if not already running)
 docker compose up -d
 
-# 2. Convert to multisite (subdirectory mode + sample second site)
+# 2. Install WordPress (first run only — the installer below needs it)
+./wordpress-local.sh install
+
+# 3. Convert to multisite (subdirectory mode + sample second site)
 docker compose --profile multisite up multisite-installer
 
-# 3. Visit the network admin
+# 4. Visit the network admin
 open http://localhost:8080/wp-admin/network/
 ```
 
@@ -86,7 +89,7 @@ Subdomain mode (e.g. `site2.localhost`) needs the request to actually arrive at 
 - A `/etc/hosts` entry per sub-site (`127.0.0.1 site2.localhost`). Easy but unmaintainable as you create more sites.
 - `dnsmasq` configured to wildcard-resolve `.localhost`.
 
-The script bails out on `--subdomain` rather than silently producing a broken setup. If you need subdomain mode, set up wildcard DNS first, then in `wp-config.php`:
+The script has no `--subdomain` flag — passing one is rejected as an unknown argument (the installer exits 2 with "Unknown argument"), rather than silently producing a broken setup. If you need subdomain mode, set up wildcard DNS first, then in `wp-config.php`:
 
 ```php
 define( 'SUBDOMAIN_INSTALL', true );  // was false

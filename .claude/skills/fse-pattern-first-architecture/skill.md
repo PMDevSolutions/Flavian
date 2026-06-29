@@ -260,17 +260,17 @@ If you catch yourself:
 
 ---
 
-## Validation Hook
+## Validation Script
 
 This skill is enforced by:
 ```bash
 scripts/figma-fse/validate-pattern-architecture.sh
 ```
 
-Called automatically by `figma-fse-converter` agent's PostToolUse hook.
+Run manually, or invoked by the `figma-fse-converter` agent during conversion. It is not registered as an automatic PostToolUse hook in `.claude/settings.json`.
 
 ---
 
 **Last Updated:** 2026-01-23
 **Status:** ✅ Production Ready
-**Enforcement:** Automatic via PostToolUse hooks
+**Enforcement:** Manual / agent-run via `validate-pattern-architecture.sh`

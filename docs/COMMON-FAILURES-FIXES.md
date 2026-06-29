@@ -223,7 +223,7 @@ Node.js is not installed or not in system PATH.
    ```bash
    node -v
    ```
-   Expected: Version number (v18.0.0 or higher)
+   Expected: Version number (v20.0.0 or higher)
 
 2. If not installed, install Node.js:
    - Windows: Download from https://nodejs.org/ or use `winget install OpenJS.NodeJS.LTS`
@@ -1030,7 +1030,7 @@ Design tokens were not extracted correctly, or templates use wrong color slugs. 
 **Prevention**
 
 - Verify design token extraction before template generation
-- Run token compliance check: `./scripts/figma-fse/extract-design-tokens.sh`
+- Run the token-compliance auditor (`scripts/theme-token-auditor/audit-tokens.sh`) over templates/patterns
 - Never use hardcoded colors in templates
 
 ---
@@ -1373,9 +1373,11 @@ Templates or patterns contain hardcoded values instead of theme.json token refer
 
 **Fix**
 
-1. Run token compliance check:
+1. Run the token-compliance auditor. It's a PostToolUse hook that reads a file
+   path from stdin (`tool_input.file_path`), so feed it each template/pattern:
    ```bash
-   ./scripts/figma-fse/extract-design-tokens.sh themes/[theme-name]/theme.json
+   echo '{"tool_input":{"file_path":"themes/[theme-name]/templates/front-page.html"}}' \
+     | ./scripts/theme-token-auditor/audit-tokens.sh
    ```
 
 2. Find hardcoded values in templates:
@@ -1864,7 +1866,7 @@ How to recover from major issues.
 - [Figma-to-WordPress README](./figma-to-wordpress/README.md) - Overview of conversion workflow
 - [Implementation Guide](./figma-to-wordpress/IMPLEMENTATION.md) - Technical implementation details
 - [Pattern-First Architecture](./architecture/PATTERN-FIRST-ARCHITECTURE.md) - Image handling in FSE themes
-- [Testing Guide](./.claude/skills/figma-to-fse-autonomous-workflow/TESTING-GUIDE.md) - Step-by-step testing procedures
+- [Testing Guide](../.claude/skills/figma-to-fse-autonomous-workflow/TESTING-GUIDE.md) - Step-by-step testing procedures
 
 ---
 

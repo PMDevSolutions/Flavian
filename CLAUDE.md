@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Claude Code-integrated WordPress development template** providing a clean `wp-content` directory structure with WordPress-specific development tools and scripts.
+This is a **Claude Code-integrated WordPress development template** providing a clean, root-level WordPress content layout (`themes/`, `plugins/`, and `mu-plugins/` live at the project root) with WordPress-specific development tools and scripts.
 
 The template is designed for:
 - WordPress FSE (Full Site Editing) block theme development
 - Custom WordPress plugin development
 - WordPress security, performance, and accessibility auditing
 - Integration with Claude Code for WordPress development workflows
+- Automated design-to-WordPress pipelines (Figma · Canva · InDesign) via the `flavian` CLI and Claude Code
 
 ## ⚠️ CRITICAL: File Location Requirements
 
@@ -281,7 +282,7 @@ This project uses a lean, WordPress-optimized plugin configuration with 6 plugin
 
 ### Custom Agents (53 Total)
 
-53 specialized agents: 28 WordPress-focused development agents plus 25 generic cross-domain agents (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `indesign-to-wordpress`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`, `headless-developer`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`.
+53 specialized agents spanning WordPress-focused development and generic cross-domain work (meta/ops, business, marketing/social, engineering). Key WordPress agents include `frontend-developer`, `plugin-developer`, `test-writer-fixer`, `ui-designer`, `figma-fse-converter`, `canva-fse-converter`, `indesign-to-wordpress`, `security-audit-agent`, `deployment-agent`, `woocommerce-agent`, `headless-developer`. Key generic agents include `agent-expert`, `backend-architect`, `migration-specialist`, `content-creator`, `devops-automator`. See the catalog for the full WordPress/generic breakdown.
 
 Agents are invoked automatically based on task context.
 
@@ -291,14 +292,11 @@ Agents are invoked automatically based on task context.
 
 ### Agent Naming Conflicts
 
-**⚠️ Important:** Multiple agents share the name "code-reviewer"
+**⚠️ Note:** If you install additional Claude Code plugins beyond the bundled set, more than one may provide a similarly-named agent (for example, a `code-reviewer`).
 
-Use this guide to select the right one:
-- **feature-dev/code-reviewer** - General development code reviews
-- **pr-review-toolkit/code-reviewer** - Pull request reviews before merge
-- **superpowers/code-reviewer** - Plan alignment verification
+**Quick rule:** When names collide, pick the agent most specific to your task — a PR-focused reviewer before merge, a plan-alignment reviewer for verifying work against a plan, or a general reviewer otherwise.
 
-**Quick rule:** Use the most specific agent for your context (PR → pr-review-toolkit, plan verification → superpowers, general → feature-dev)
+The bundled 6-plugin set (see `.claude/PLUGINS-REFERENCE.md`) does not itself ship duplicate agent names; this guidance applies only once you add plugins that do.
 
 **Full guide:** See `.claude/AGENT-NAMING-GUIDE.md`
 
@@ -463,7 +461,7 @@ Result: themes/[theme-name]/ ready for WordPress
 - All plugins serve WordPress development
 
 **Agent Philosophy:**
-- 53 custom agents available (28 WordPress-focused + 25 generic cross-domain)
+- 53 custom agents available (WordPress-focused + generic cross-domain; see CUSTOM-AGENTS-GUIDE.md for the breakdown)
 - Agents invoked contextually by Claude Code
 - No action required - automatic selection
 
@@ -475,6 +473,10 @@ Result: themes/[theme-name]/ ready for WordPress
   - `README.md` - User guide and quick start
   - `IMPLEMENTATION.md` - Technical implementation details
   - `EXAMPLES.md` - FSE template syntax examples
+- `docs/CLI-WIZARD.md` - The `flavian` CLI and interactive setup wizard
+- `docs/pipelines/indesign.md` - InDesign (.idml/PDF) → FSE pipeline (CLI)
+- `docs/GUI.md` - Cross-platform desktop GUI (`@flavian/gui`)
+- `docs/RELEASING.md` - Release-please versioning and release flow
 - `.claude/PLUGINS-REFERENCE.md` - Plugin commands and detailed usage
 - `.claude/CUSTOM-AGENTS-GUIDE.md` - Complete agent catalog
 - `.claude/AGENT-NAMING-GUIDE.md` - Agent name disambiguation
@@ -484,7 +486,7 @@ Result: themes/[theme-name]/ ready for WordPress
 
 **Troubleshooting:**
 - `docs/TROUBLESHOOTING.md` - General troubleshooting guide
-- `docs/docker-troubleshooting.md` - Docker & container issues (15 common problems)
+- `docs/docker-troubleshooting.md` - Docker & container issues (incl. Apple Silicon / M-series)
 - `docs/COMMON-FAILURES-FIXES.md` - Figma-to-WordPress workflow issues
 - `docs/MCP-TROUBLESHOOTING.md` - MCP server debugging
 - `docs/E2E-VALIDATION.md` - End-to-end validation procedures
@@ -500,6 +502,34 @@ wp theme activate my-theme    # Activate theme
 wp plugin list                # List plugins
 wp db export backup.sql       # Backup database
 ```
+
+**Flavian CLI & setup wizard:**
+```bash
+pnpm install                                          # install workspace deps (pnpm 9.x)
+pnpm run init                                         # interactive setup wizard: writes .env, scaffolds a
+                                                      # starter theme, optional WooCommerce, makes an initial commit
+pnpm run init -- --yes --name=my-site --theme=blank   # non-interactive
+node bin/flavian.mjs --help                            # the `flavian` CLI entry point
+```
+Full guide: `docs/CLI-WIZARD.md`.
+
+**Design-to-WordPress pipelines:**
+```bash
+# InDesign (.idml preferred, or PDF) → FSE theme, via the CLI
+node bin/flavian.mjs pipeline indesign <input> --output themes/<slug>
+pnpm pipeline:ingest            # ingest stage (packages/pipeline)
+pnpm pipeline:stage-assets      # asset-staging stage
+# Figma / Canva conversions are driven through Claude Code — see docs/figma-to-wordpress/ and docs/canva-to-wordpress/
+```
+Full guide: `docs/pipelines/indesign.md`.
+
+**Desktop GUI (`@flavian/gui`):**
+```bash
+pnpm gui:dev                   # run the cross-platform desktop GUI from source
+pnpm gui:build                 # build the renderer
+pnpm gui:package               # build a distributable installer
+```
+Full guide: `docs/GUI.md`.
 
 **Git Workflows (via commit-commands):**
 ```bash
@@ -637,5 +667,5 @@ Full guide: `docs/blocks/README.md`. Tests: `tests/unit/scaffold-block.bats`.
 
 ---
 
-**Last Updated:** 2026-05-06
+**Last Updated:** 2026-06-28
 **Architecture Status:** ✅ Lean, WordPress-optimized configuration (6 plugins + 53 agents)

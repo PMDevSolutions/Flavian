@@ -1,6 +1,6 @@
-# Pattern-First FSE Architecture (UPDATE FOR figma-fse-converter)
+# Pattern-First FSE Architecture
 
-## CRITICAL: This should be added to figma-fse-converter agent at line 377 (after Component Mapping Strategy)
+This document defines the pattern-first image architecture for WordPress FSE themes: images are rendered through PHP block patterns, never via inline `<img>` tags in `.html` templates. It is the reference the figma-fse-converter agent follows during template generation, and the rule enforced by `scripts/figma-fse/validate-pattern-architecture.sh`.
 
 ---
 

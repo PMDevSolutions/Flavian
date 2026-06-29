@@ -32,11 +32,13 @@ The Release PR is the human gate: no tag is created until it is merged.
 
 Section mapping is defined in [`release-please-config.json`](../release-please-config.json).
 
-## Baseline
+## Baseline (historical)
 
-The manifest is seeded at `1.1.0`. Before merging the first release-please PR,
-ensure a matching `v1.1.0` git tag exists on `main` so release-please has a clean
-starting point for changelog generation.
+The manifest was originally seeded at `1.1.0`, with a matching `v1.1.0` git tag on
+`main` to give release-please a clean starting point for changelog generation.
+That baseline is long established — the manifest now tracks the current release and
+both `v1.0.0` and `v1.1.0` tags exist — so no action is needed here for normal
+releases.
 
 ## Overrides
 
@@ -67,10 +69,11 @@ theme `style.css` headers.
 ## Files involved
 
 - `release-please-config.json` — section mapping, release type, package config,
-  and the `extra-files` entry that mirrors the version into `package.json`.
+  and the `extra-files` entries that mirror the version into both `package.json`
+  and `packages/gui/package.json`.
 - `.release-please-manifest.json` — current version state.
-- `package.json` — `version` field is kept in sync with the manifest by
-  release-please; never hand-edited.
+- `package.json` (and `packages/gui/package.json`) — `version` field is kept in
+  sync with the manifest by release-please; never hand-edited.
 - `.github/workflows/release-please.yml` — opens / updates the Release PR and
   tags on merge.
 - `.github/workflows/commitlint.yml` — lints PR commit messages.

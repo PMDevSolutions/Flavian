@@ -307,7 +307,7 @@ When adding new hooks:
 ### `setup-playwright.sh`
 - **Purpose**: One-time setup — installs Playwright and Chromium, Firefox, WebKit browser engines
 - **Run**: `./scripts/setup-playwright.sh`
-- **Requirements**: Node.js 18+
+- **Requirements**: Node.js 20+
 
 ### `cross-browser-test.sh`
 - **Purpose**: Captures screenshots at 4 breakpoints (1920, 1440, 768, 375px) for a given browser engine

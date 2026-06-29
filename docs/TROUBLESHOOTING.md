@@ -218,38 +218,33 @@ Common issues and solutions for the Claude Code WordPress Template.
 
 ---
 
-## Chrome DevTools MCP
+## Lighthouse Audits
 
-### Chrome DevTools MCP not connecting
-
-**Symptoms:** Chrome DevTools tools fail or time out
-
-**Prerequisites:**
-- Google Chrome must be running with remote debugging enabled
-- The Chrome DevTools MCP server must be configured
-
-**Solutions:**
-1. Launch Chrome with debugging:
-   ```bash
-   # Windows
-   "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222
-   # macOS
-   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
-   ```
-2. Verify Chrome is listening:
-   ```bash
-   curl http://localhost:9222/json
-   ```
-3. Check your Chrome DevTools MCP server is running and configured in `.mcp.json`
+Lighthouse runs through the project's Lighthouse CI tooling. There is **no
+chrome-devtools MCP server configured** in [`.mcp.json`](../.mcp.json) — it ships
+only `figma-desktop`, `figma`, and `playwright`. For browser automation use the
+Playwright MCP (see the section above and
+[MCP-TROUBLESHOOTING.md](./MCP-TROUBLESHOOTING.md)).
 
 ### Lighthouse audit fails
 
-**Symptoms:** `mcp__chrome-devtools__lighthouse_audit` errors out
+**Symptoms:** A Lighthouse run errors out or returns incomplete results
 
 **Solutions:**
-1. Ensure the target page is loaded first: use `navigate_page` before `lighthouse_audit`
-2. Give the page time to fully load (especially Docker WordPress sites)
-3. Check Chrome has enough memory (close other tabs)
+1. Make sure WordPress is running and seeded first:
+   ```bash
+   docker compose up -d wordpress db && bash tests/visual/seed.sh
+   ```
+2. Run the audit + budget gate locally:
+   ```bash
+   pnpm lighthouse:run
+   ```
+3. Give the page time to fully load (especially Docker WordPress sites)
+4. If Chrome runs out of memory during the audit, close other applications/tabs
+
+> **Optional:** a Chrome DevTools MCP (Chrome launched with
+> `--remote-debugging-port=9222`) is **not configured by default**. Only wire one
+> into `.mcp.json` if you add such a server yourself.
 
 ---
 
@@ -415,6 +410,6 @@ ls -la themes/<theme-name>/
 ./vendor/bin/phpcs --standard=WordPress themes/<theme-name>/functions.php
 
 # Check MCP connections
-curl -s http://127.0.0.1:3845/mcp | head -c 100  # Figma
-curl -s http://localhost:9222/json | head -c 100   # Chrome
+curl -s http://127.0.0.1:3845/mcp | head -c 100   # Figma Desktop
+curl -s https://mcp.figma.com/mcp | head -c 100   # Figma Remote
 ```

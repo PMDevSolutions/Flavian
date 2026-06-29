@@ -75,6 +75,27 @@ Or download from: https://claude.ai/code
 
 ---
 
+### pnpm
+
+Package manager for the project's Node tooling (init wizard, tests, GUI, conversion pipelines).
+
+| | |
+|---|---|
+| **Required Version** | 9.x (project pins `pnpm@9.15.0`) |
+| **Verify** | `pnpm --version` |
+| **Expected** | `9.x.x` |
+
+**Install:**
+```bash
+npm install -g pnpm@9
+```
+
+Or enable via Corepack (ships with Node.js): `corepack enable && corepack prepare pnpm@9.15.0 --activate`
+
+**Note:** pnpm requires Node.js 20+ (see Node.js below).
+
+---
+
 ## 2. Required Accounts & Access
 
 External services needed for full functionality.
@@ -128,9 +149,9 @@ Required for Playwright MCP (browser automation and testing) configured in `.mcp
 
 | | |
 |---|---|
-| **Minimum Version** | 18.0.0 (LTS) |
+| **Minimum Version** | 20.0.0 (LTS) |
 | **Verify** | `node --version` |
-| **Expected** | `v18.x.x` or `v20.x.x` |
+| **Expected** | `v20.x.x` or higher |
 
 **Install:**
 - **All platforms:** https://nodejs.org/
@@ -405,17 +426,22 @@ Once all prerequisites are met:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-org/Flavian.git
+   git clone https://github.com/PMDevSolutions/Flavian.git
    cd Flavian
    ```
 
-2. **Start WordPress:**
+2. **Create your `.env` file** (Docker DB credentials have no defaults, so this is required):
+   ```bash
+   cp .env.example .env       # or run: pnpm run init
+   ```
+
+3. **Start WordPress:**
    ```bash
    ./wordpress-local.sh start
    ./wordpress-local.sh install
    ```
 
-3. **Begin conversion:**
+4. **Begin conversion:**
    Open Claude Code and provide your Figma URL
 
 See [QUICK-START.md](./QUICK-START.md) for the full getting started guide.

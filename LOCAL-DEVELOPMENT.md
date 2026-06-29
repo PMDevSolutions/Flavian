@@ -1,30 +1,36 @@
 # Local WordPress Development with Docker
 
-## Quick Start (4 steps)
+## Quick Start (6 steps)
 
-**1. Build the Docker image (first time only):**
+**1. Create your `.env` file (first time only):**
+```bash
+cp .env.example .env       # or run: pnpm run init
+```
+> Docker reads the database credentials from `.env` and has no built-in defaults, so the containers fail to start without it.
+
+**2. Build the Docker image (first time only):**
 ```bash
 ./wordpress-local.sh build
 ```
 
-**2. Start WordPress:**
+**3. Start WordPress:**
 ```bash
 ./wordpress-local.sh start
 ```
 
-**3. Install WordPress (first time only):**
+**4. Install WordPress (first time only):**
 ```bash
 ./wordpress-local.sh install
 ```
 
-**4. Activate your theme:**
+**5. Activate your theme:**
 ```bash
 ./wordpress-local.sh activate-theme your-theme
 ```
 
-**5. Open in browser:**
+**6. Open in browser:**
 - **Site:** http://localhost:8080
-- **Admin:** http://localhost:8080/wp-admin (admin/admin)
+- **Admin:** http://localhost:8080/wp-admin (admin/changeme)
 - **Database:** http://localhost:8081 (phpMyAdmin)
 
 ---

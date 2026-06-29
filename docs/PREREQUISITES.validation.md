@@ -219,7 +219,7 @@ WP-CLI 2.x.x
 
 **Required:** No (optional, for JavaScript tooling)
 
-**Minimum Version:** 18.0.0 (LTS)
+**Minimum Version:** 20.0.0 (LTS)
 
 **Verification Command:**
 ```bash
@@ -228,12 +228,12 @@ node --version
 
 **Expected Output Pattern:**
 ```
-v18.x.x or v20.x.x
+v20.x.x or higher
 ```
 
 **Validation Logic:**
 1. Command must execute successfully
-2. Major version >= 18
+2. Major version >= 20
 
 **Install Links:**
 - All platforms: https://nodejs.org/

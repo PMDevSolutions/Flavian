@@ -101,7 +101,7 @@ docker compose exec wordpress wp option update home "http://localhost:9090" --al
 4. **Verify credentials match.** The `WORDPRESS_DB_*` variables in `docker-compose.yml` (or `.env`) must match the `MYSQL_*` variables:
    | WordPress var | Must match MySQL var |
    |---|---|
-   | `WORDPRESS_DB_HOST` | Service name (`db`) |
+   | `WORDPRESS_DB_HOST` | Service name (`db`, or `db:3306`) |
    | `WORDPRESS_DB_USER` | `MYSQL_USER` |
    | `WORDPRESS_DB_PASSWORD` | `MYSQL_PASSWORD` |
    | `WORDPRESS_DB_NAME` | `MYSQL_DATABASE` |
@@ -382,9 +382,9 @@ docker-compose --version  # V1 (standalone, legacy)
    ```bash
    docker compose ps db
    ```
-2. **Verify phpMyAdmin environment variables in `.env`:**
-   - `PMA_HOST` should be `db` (the Docker service name)
-   - `PMA_USER` and `PMA_PASSWORD` must match `MYSQL_USER` / `MYSQL_PASSWORD`
+2. **Verify the phpMyAdmin connection settings:**
+   - `PMA_HOST` is hardcoded to `db` (the Docker service name) in `docker-compose.yml` — it is **not** a `.env` variable.
+   - `PMA_USER` and `PMA_PASSWORD` come from `.env` and must match `MYSQL_USER` / `MYSQL_PASSWORD`.
 3. **Wait for MySQL to finish initialising** (30-60 seconds on first run).
 4. **Restart phpMyAdmin:**
    ```bash
@@ -404,7 +404,7 @@ docker-compose --version  # V1 (standalone, legacy)
 1. **Verify `.env` exists** in the project root alongside `docker-compose.yml`.
 2. **Check syntax.** Each line should be `KEY=value` with no spaces around `=`:
    ```env
-   WORDPRESS_DB_HOST=db
+   WORDPRESS_DB_HOST=db:3306
    WORDPRESS_DB_USER=wordpress
    WORDPRESS_DB_PASSWORD=wordpress
    WORDPRESS_DB_NAME=wordpress

@@ -78,7 +78,7 @@ This project uses the following MCP servers (defined in `.mcp.json`):
 - Capture screenshots
 - Execute JavaScript on pages
 - Test across Chromium, Firefox, WebKit
-- Requires: Node.js 18+, Playwright browsers installed
+- Requires: Node.js 20+, Playwright browsers installed
 
 ### How Claude Code Uses MCP
 
@@ -929,7 +929,7 @@ The Playwright MCP server command failed to execute.
    ```bash
    node -v
    ```
-   Required: v18.0.0 or higher
+   Required: v20.0.0 or higher
 
 2. Install Node.js if needed:
    - Windows: `winget install OpenJS.NodeJS.LTS`
@@ -963,7 +963,7 @@ The Playwright MCP server command failed to execute.
    ```
 
 **Prevention**
-- Maintain Node.js 18+ in development environment
+- Maintain Node.js 20+ in development environment
 - Run `./scripts/check-mcp.sh` regularly
 - Document Node.js version requirements
 
@@ -999,7 +999,7 @@ Playwright MCP defaults to Chromium. Other browsers require configuration.
 
 3. Use cross-browser test script:
    ```bash
-   ./scripts/cross-browser-test.sh http://localhost:8080
+   ./scripts/cross-browser-test.sh chromium http://localhost:8080
    ```
 
 4. Ensure all browsers are installed:

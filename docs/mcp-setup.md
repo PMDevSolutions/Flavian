@@ -26,7 +26,7 @@
 Before configuring MCP servers, ensure you have:
 
 - **Claude Desktop** installed and running ([download](https://claude.ai/download))
-- **Node.js 18+** installed (required for Playwright MCP)
+- **Node.js 20+** installed (required for Playwright MCP)
 - **npx** available (ships with Node.js)
 - **Figma Desktop** installed (required for Figma Desktop MCP only)
 
@@ -88,6 +88,15 @@ If the file doesn't exist, create it with an empty MCP servers object:
 
 Flavian uses three MCP servers. Add each one inside the `"mcpServers"` object in your `claude_desktop_config.json`.
 
+> **⚠️ Verified vs. unverified config.** The **verified** Figma MCP configuration is the
+> HTTP transport in this project's `.mcp.json` (used by Claude Code): `figma-desktop` →
+> `http://127.0.0.1:3845/mcp` and `figma` (remote) → `https://mcp.figma.com/mcp`. The
+> `@anthropic-ai/figma-mcp-server` npm package shown in the Figma examples below is an
+> **unverified** stdio wrapper (the package name is not confirmed to exist). If your
+> Claude Desktop build supports HTTP/remote MCP servers, prefer the `.mcp.json` URLs
+> above; otherwise treat the npx examples as a starting point and substitute a wrapper
+> you have verified.
+
 ### 1. Figma Desktop MCP (Local)
 
 Connects to the Figma Desktop app running on your machine. This is the **preferred** Figma MCP server for development because it provides direct access to open files without authentication tokens.
@@ -141,7 +150,7 @@ Connects to Figma's cloud MCP service. Use this as a **fallback** when Figma Des
 Enables browser automation for visual QA, screenshot capture, accessibility auditing, and end-to-end testing.
 
 **Requirements:**
-- Node.js 18+
+- Node.js 20+
 - Playwright browsers installed (auto-installed on first run, or manually via `npx playwright install`)
 
 **Configuration:**
@@ -211,6 +220,11 @@ Here is a full `claude_desktop_config.json` with all three Flavian MCP servers:
   }
 }
 ```
+
+> **Figma servers:** the `figma-desktop` / `figma` entries above use the unverified
+> `@anthropic-ai/figma-mcp-server` package — see the warning under
+> [Configuring MCP Servers](#configuring-mcp-servers). The verified transport is the HTTP
+> config in `.mcp.json` (`http://127.0.0.1:3845/mcp`, `https://mcp.figma.com/mcp`).
 
 > **Merging with existing servers:** If your `claude_desktop_config.json` already has other MCP servers configured, add the Flavian servers alongside them inside the existing `"mcpServers"` object. Do not create a second `"mcpServers"` key.
 

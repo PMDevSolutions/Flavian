@@ -63,11 +63,11 @@ Take screenshots at standard breakpoints and compare against the Figma source.
 | Wide | 1440px | Design canvas (Figma default) |
 | Extra-large | 1920px | Full HD monitors / large displays |
 
-**Using Chrome DevTools MCP (Chromium — primary):**
+**Using Playwright MCP (Chromium — primary):**
 
 ```
-1. Navigate to local WordPress URL
-2. Take screenshot at each breakpoint (resize page, then screenshot)
+1. Navigate to local WordPress URL (mcp__playwright__browser_navigate)
+2. Take screenshot at each breakpoint (mcp__playwright__browser_resize, then mcp__playwright__browser_take_screenshot)
 3. Compare visually against Figma source (get_screenshot from Figma MCP)
 ```
 
@@ -139,9 +139,9 @@ Run Lighthouse to catch performance and accessibility issues.
 | Best Practices | 90 | 100 |
 | SEO | 90 | 100 |
 
-**Using Chrome DevTools MCP:**
+**Using the Lighthouse CI CLI:**
 ```
-Run lighthouse_audit on the theme's front page
+pnpm lighthouse:run    # runs lhci autorun against lighthouserc.json
 ```
 
 **Common issues in converted themes:**
@@ -224,7 +224,7 @@ This skill works with:
 - **visual-qa-agent** — Performs visual comparison
 - **accessibility-auditor agent** — Runs accessibility checks
 - **figma-fse-completion.sh hook** — Structural validation (complements visual QA)
-- **chrome-devtools MCP** — Screenshots, Lighthouse, responsive testing
+- **Playwright MCP** — Screenshots and responsive testing (Lighthouse via `pnpm lighthouse:run`)
 - **figma MCP** — Source design screenshots for comparison
 
 ## Verification Report Template

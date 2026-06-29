@@ -19,17 +19,20 @@ Run WordPress as a content API (REST + WPGraphQL) and consume it from a decouple
 # 1. Bring up WordPress (if not already running)
 docker compose up -d
 
-# 2. Install WPGraphQL + configure headless mode
+# 2. Install WordPress (first run only — the installer below needs it)
+./wordpress-local.sh install
+
+# 3. Install WPGraphQL + configure headless mode
 docker compose --profile headless up headless-installer
 # → prints WORDPRESS_PREVIEW_SECRET and JWT secret
 
-# 3. Scaffold a Next.js frontend
+# 4. Scaffold a Next.js frontend
 bash scripts/scaffold-frontend.sh my-app --name "My Site"
 
-# 4. Configure and run the frontend
+# 5. Configure and run the frontend
 cd frontend/my-app
 cp .env.local.example .env.local
-# paste the values from step 2 into .env.local
+# paste the values from step 3 into .env.local
 pnpm install && pnpm dev
 # → http://localhost:3000
 ```

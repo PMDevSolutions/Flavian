@@ -1,145 +1,56 @@
 # Agent Naming Guide
 
-This guide clarifies naming conflicts and helps you choose the right agent for your task.
+This guide helps you choose the right agent when more than one agent shares the same name. Name collisions happen when an installed Claude Code plugin ships an agent whose name matches another plugin's agent — or a local agent in `.claude/agents/`.
 
-## Code Reviewer Variants
+> **The `plugin/agent` references below are illustrative, not a claim about what is installed.** This template's own agents live in `.claude/agents/`; any additional agents come from whatever plugins you have installed (see `.claude/PLUGINS-REFERENCE.md` for the plugins this project documents). There is **no** local `code-reviewer` agent in this template. Verify what is actually available with `/plugin list` before assuming a specific `plugin/agent` exists.
 
-There are **three agents** named "code-reviewer" with different purposes. Use this guide to select the correct one:
+## Resolving "code-reviewer" (and similar) collisions
 
-### 1. feature-dev/code-reviewer
-**When to use:** General code quality review during active development
+If you have multiple plugins installed that each provide a similarly-named agent (for example, a `code-reviewer`), prefer the one most specific to your task. The common review situations are:
 
-**Focus:**
-- Bug detection
-- Security vulnerabilities
-- Code smells and anti-patterns
-- Best practices compliance
+### General development review
+For bug detection, security smells, code smells, and best-practice checks during active development. Favor a fast, read-only reviewer.
 
-**Model:** Sonnet (faster reviews)
+### Pull-request / merge review
+For PR-specific analysis: cross-file impact, integration concerns, and merge readiness before shipping. Favor a comprehensive reviewer that can run tests and check dependencies.
 
-**Tools:** Read-only (Glob, Grep, Read)
+### Plan-alignment review
+For verifying that an implementation matches an agreed plan or architecture: requirement traceability and completeness. Favor a reviewer that can read both the plan and the diff.
 
-**Confidence:** Reports issues ≥80% confidence
-
-**Example scenarios:**
-- "Review this function for bugs"
-- "Check if this code is secure"
-- "Is this following best practices?"
-
----
-
-### 2. pr-review-toolkit/code-reviewer
-**When to use:** Pull request reviews before merging
-
-**Focus:**
-- PR-specific analysis
-- Cross-file impact assessment
-- Merge readiness
-- Integration concerns
-
-**Model:** Opus (comprehensive reviews)
-
-**Tools:** Full access (can run tests, check dependencies)
-
-**Confidence:** Reports issues ≥80% confidence
-
-**Example scenarios:**
-- "Review this PR for merge"
-- "What's the impact of these changes?"
-- "Is this PR ready to ship?"
-
----
-
-### 3. superpowers/code-reviewer
-**When to use:** Verifying implementation matches the plan
-
-**Focus:**
-- Plan alignment verification
-- Architectural decision validation
-- Implementation completeness
-- Requirement traceability
-
-**Model:** Inherits from parent (flexible)
-
-**Tools:** Full access
-
-**Example scenarios:**
-- "Does this implementation match our plan?"
-- "Did we follow the architecture we agreed on?"
-- "Are all planned features implemented?"
-
----
+**Quick rule:** match the agent to the moment — general coding vs. PR/merge vs. plan verification — and pick the most specific reviewer your installed plugins provide.
 
 ## Quick Decision Tree
 
 ```
 Need to review code?
 │
-├─ Is there an implementation plan? ────> superpowers/code-reviewer
+├─ Is there an implementation plan? ────> plan-alignment reviewer
 │
-├─ Is this for a PR/merge? ────────────> pr-review-toolkit/code-reviewer
+├─ Is this for a PR/merge? ────────────> PR / merge reviewer
 │
-└─ General development review ─────────> feature-dev/code-reviewer
+└─ General development review ─────────> general-purpose reviewer
 ```
 
----
+## Other Name Collisions
 
-## Code Simplifier Location
+The same "prefer the most specific" principle applies whenever agents overlap:
 
-**Previously:** Had both standalone `code-simplifier` plugin AND `pr-review-toolkit/code-simplifier` agent (duplicate)
+### Code simplifiers / refactorers
+If more than one refactoring agent is available, use the one intended to run **after** a review — it refactors the flagged code while preserving behavior.
 
-**Now:** Only `pr-review-toolkit/code-simplifier` remains (standalone plugin removed)
+### Test agents
+This template ships a local **test-writer-fixer** (writes tests, runs them, fixes failures). If a plugin also provides a test-coverage analyzer, treat them as complementary: active fixing vs. passive analysis.
 
-**When to use:** After code review suggests simplification, invoke this agent to refactor complex code while preserving functionality.
-
----
-
-## Other Naming Clarifications
-
-### Test Agents
-- **test-writer-fixer** (custom): Writes tests, runs them, fixes failures
-- **pr-test-analyzer** (pr-review-toolkit): Analyzes test coverage in PRs
-- **Use both:** They're complementary (active vs. passive testing)
-
-### Frontend Agents
-- **frontend-developer** (custom): Full-stack frontend implementation
-- **frontend-design** (plugin): UI/UX design and prototyping
-- **Use both:** Design first, then implement
-
----
-
-## WordPress FSE Development Stack
-
-For WordPress block theme development, your core agents are:
-
-**Code Quality:**
-- feature-dev/code-reviewer (development reviews)
-- pr-review-toolkit/code-reviewer (PR reviews)
-
-**Development:**
-- frontend-developer (JS/CSS implementation)
-- test-writer-fixer (PHP unit tests)
-
-**Performance:**
-- performance-benchmarker (optimization)
-
-**Design:**
-- ui-designer (block patterns, theme design)
-- ux-researcher (usability testing)
-
-**Infrastructure:**
-- php-lsp (code intelligence)
-- security-guidance (WordPress security)
-
----
+### Frontend agents
+This template ships a local **frontend-developer** (full-stack FSE implementation). If a plugin also provides a UI/UX design agent, design first, then implement.
 
 ## When in Doubt
 
-If you're unsure which agent to use:
-1. Check this guide's decision tree
-2. Use the more specific agent (e.g., pr-review-toolkit for PRs)
-3. Ask Claude Code: "Which code-reviewer should I use for [task]?"
+1. Run `/plugin list` to see which plugins — and therefore which plugin agents — are actually installed.
+2. Check the decision tree above.
+3. Prefer the more specific agent for your task (e.g., a PR reviewer for PRs).
+4. Ask Claude Code: "Which agent should I use for [task]?"
 
 ---
 
-**Last Updated:** 2026-01-18
+**Last Updated:** 2026-06-28

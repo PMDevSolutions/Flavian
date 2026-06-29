@@ -91,7 +91,7 @@ node packages/pipeline/bin/generate-theme.mjs ir.json --out-dir themes/brochure
 ## Common gotchas
 
 - **CMYK/LAB → sRGB shifts.** Print color spaces don't map 1:1 to screen. The mapper converts and flags any out-of-gamut swatch in the report; expect brand colors to look slightly different on screen and confirm them with the designer.
-- **Missing / substituted fonts.** InDesign fonts that aren't web-safe fall back via `config/font-map.json` (often a Google font). The report lists every fallback — confirm each, or self-host the real font and update the font map.
+- **Missing / substituted fonts.** InDesign fonts that aren't web-safe fall back via `packages/pipeline/config/font-map.json` (often a Google font). The report lists every fallback — confirm each, or self-host the real font and update the font map.
 - **Oversized print images.** Print assets are often huge (300 DPI, CMYK). Resize/recompress for web and convert CMYK images to sRGB before importing, or they'll bloat the page and render with muddy color.
 - **PDF fidelity.** A PDF parse always carries warnings — text reconstructed from glyphs, synthesized styles, dropped vector art. Prefer `.idml`; treat PDF output as a starting point that needs review.
 - **Empty alt text.** Generated images have `alt=""`. Add meaningful alt text (the agent proposes some from surrounding story text) before shipping.

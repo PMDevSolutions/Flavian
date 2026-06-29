@@ -1,11 +1,12 @@
 # Claude Code Plugins Setup - Complete ✅
 
 **Setup Date:** 2026-01-18
+**Last Reviewed:** 2026-06-28 — reflects current config (6 plugins, 53 agents, 12 skills, 4 commands)
 **Status:** All plugins installed and configured
 
 ---
 
-## ✅ Installed Plugins
+## ✅ Installed Plugins (6 Total)
 
 ### 1. php-lsp (PHP Language Server)
 - **Status:** Installed
@@ -24,6 +25,24 @@
 - **Purpose:** Structured commits, PR creation, branch cleanup
 - **Prerequisite:** Git configured
 - **Next Step:** Test with `/commit` command
+
+### 4. episodic-memory (Conversation Memory)
+- **Status:** Installed
+- **Purpose:** Conversation search and recall across sessions
+- **Prerequisite:** None
+- **Next Step:** Search prior conversations as you work
+
+### 5. superpowers (Advanced Workflows)
+- **Status:** Installed
+- **Purpose:** Advanced development workflows and tooling
+- **Prerequisite:** None
+- **Next Step:** Invoke superpowers workflows as needed
+
+### 6. ai-taskmaster (Task Management — local)
+- **Status:** Installed
+- **Purpose:** Task management and planning
+- **Prerequisite:** None
+- **Next Step:** Track tasks for your project
 
 ---
 
@@ -88,7 +107,7 @@ which intelephense
 ```
 
 **2. Test Autocomplete in WordPress File**
-- Open: `wp-content/themes/*/functions.php` (or create test file)
+- Open: `themes/*/functions.php` (or create test file)
 - Type: `wp_enqueue_`
 - **Expected:** Autocomplete suggestions appear with WordPress functions
 - **Expected:** Hover shows function documentation
@@ -168,9 +187,12 @@ git add .
 **Expected Output:**
 ```
 Installed plugins:
-- php-lsp
-- github
+- episodic-memory
 - commit-commands
+- github
+- php-lsp
+- superpowers
+- ai-taskmaster
 ```
 
 ---
@@ -243,7 +265,7 @@ See `.claude/PLUGINS-REFERENCE.md` > "WordPress FSE Development Workflows"
 
 ### WordPress Development Setup
 1. Install WordPress locally (if not already)
-2. Create or clone FSE theme in `wp-content/themes/`
+2. Create or clone FSE theme in `themes/` (root-level — never `wp-content/themes/` during development)
 3. Test PHP LSP in theme files
 4. Set up GitHub repository for theme
 5. Configure development workflow with new plugins
@@ -253,7 +275,7 @@ See `.claude/PLUGINS-REFERENCE.md` > "WordPress FSE Development Workflows"
 # 1. Start new feature
 git checkout -b feature/new-block-pattern
 
-# 2. Develop in wp-content/themes/your-theme/
+# 2. Develop in themes/your-theme/
 #    - PHP LSP provides autocomplete
 #    - Real-time error detection
 
@@ -278,8 +300,8 @@ git pull
 - [x] GitHub integration installed
 - [x] Git workflows automated
 - [x] WordPress CLI available
-- [x] Custom agents configured (49 agents)
-- [x] Custom commands available (test, lint, create-blog-article)
+- [x] Custom agents configured (53 agents)
+- [x] Custom commands available (create-blog-article, lint, test, scaffold-block)
 - [x] Permissions properly scoped
 
 ### ⏭️ To Configure
@@ -319,4 +341,4 @@ Your environment is now optimized for:
 
 **Setup completed successfully! Ready for WordPress FSE development.**
 
-*Last updated: 2026-01-18*
+*Last updated: 2026-06-28*

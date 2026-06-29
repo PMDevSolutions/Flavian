@@ -25,7 +25,7 @@ Before starting validation:
 
 - [ ] Docker Desktop running
 - [ ] Theme exists in `themes/<theme-name>/`
-- [ ] Node.js 18+ installed (for Playwright)
+- [ ] Node.js 20+ installed (for Playwright)
 - [ ] Playwright installed (`npm install -g playwright && npx playwright install`)
 
 ---
@@ -207,7 +207,7 @@ Enable WordPress debugging to catch PHP errors:
 
 ```bash
 # Enter WordPress container
-docker-compose exec wordpress bash
+docker compose exec wordpress bash
 
 # Add debug constants to wp-config.php (inside container)
 wp config set WP_DEBUG true --raw --allow-root
@@ -220,10 +220,10 @@ exit
 
 ```bash
 # View debug log
-docker-compose exec wordpress cat /var/www/html/wp-content/debug.log 2>/dev/null || echo "No debug.log (good - no errors)"
+docker compose exec wordpress cat /var/www/html/wp-content/debug.log 2>/dev/null || echo "No debug.log (good - no errors)"
 
 # Check for fatal errors
-docker-compose exec wordpress grep -i "fatal\|error\|warning" /var/www/html/wp-content/debug.log 2>/dev/null | head -20 || echo "PASS: No PHP errors found"
+docker compose exec wordpress grep -i "fatal\|error\|warning" /var/www/html/wp-content/debug.log 2>/dev/null | head -20 || echo "PASS: No PHP errors found"
 ```
 
 **Expected output:**
@@ -728,7 +728,7 @@ See `scripts/validate-theme-e2e.sh` for full automation of these checks.
 ### Getting Help
 
 - **Debug log location:** `/var/www/html/wp-content/debug.log` (in container)
-- **View logs:** `docker-compose exec wordpress cat /var/www/html/wp-content/debug.log`
+- **View logs:** `docker compose exec wordpress cat /var/www/html/wp-content/debug.log`
 - **Troubleshooting guide:** See `docs/TROUBLESHOOTING.md`
 - **Common failures:** See `docs/COMMON-FAILURES-FIXES.md`
 

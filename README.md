@@ -21,7 +21,7 @@ Typical runtime: 5–30 minutes. No manual `theme.json` authoring.
 
 ## Desktop GUI (experimental)
 
-Prefer not to use a terminal? A cross-platform **desktop GUI** (v3.0.0, epic #100) wraps the whole workflow behind a graphical interface — five screens: **Prerequisites**, **Setup wizard**, **WordPress (Docker)**, **Convert design** (Figma/Canva/InDesign), and **Visual QA**. It's a thin orchestration layer over the existing scripts and pipelines — it invokes them, it doesn't replace them. Run it from source with `pnpm gui:dev` (or build an installer with `pnpm gui:package`). See **[docs/GUI.md](docs/GUI.md)**.
+Prefer not to use a terminal? A cross-platform **desktop GUI** wraps the whole workflow behind a graphical interface — five screens: **Prerequisites**, **Setup wizard**, **WordPress (Docker)**, **Convert design** (Figma/Canva/InDesign), and **Visual QA**. It's a thin orchestration layer over the existing scripts and pipelines — it invokes them, it doesn't replace them. Run it from source with `pnpm gui:dev` (or build an installer with `pnpm gui:package`). See **[docs/GUI.md](docs/GUI.md)**.
 
 ## Prerequisites
 
@@ -29,7 +29,8 @@ Prefer not to use a terminal? A cross-platform **desktop GUI** (v3.0.0, epic #10
 |---|---|---|
 | **[Claude Code](https://claude.ai/code)** | The conversion engine | `npm install -g @anthropic-ai/claude-code` |
 | **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** | Local WordPress (WordPress + MySQL + phpMyAdmin) | [docker.com/download](https://www.docker.com/products/docker-desktop/) |
-| **[Node.js](https://nodejs.org/) 18+** | Playwright MCP for visual QA | [nodejs.org](https://nodejs.org/) |
+| **[Node.js](https://nodejs.org/) 20+** | Tooling: pnpm, setup wizard, pipelines, Playwright MCP | [nodejs.org](https://nodejs.org/) |
+| **[pnpm](https://pnpm.io/) 9.x** | Package manager (workspace scripts, init wizard, GUI/pipeline) | `corepack enable` (bundled with Node) |
 | **[Git](https://git-scm.com/)** | Version control | [git-scm.com](https://git-scm.com/) |
 | **[Figma Professional+](https://www.figma.com/pricing/)** | Dev Mode — required to extract design tokens (skip if using Canva input only) | [figma.com](https://www.figma.com/) |
 
@@ -79,7 +80,7 @@ Site at http://localhost:8080 · Admin at /wp-admin · Database UI at :8081.
 
 **More docs:** [docs/QUICK-START.md](docs/QUICK-START.md) · [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) · [docs/docker-troubleshooting.md](docs/docker-troubleshooting.md)
 
-> **Versioning:** `package.json` declares `0.0.0` on purpose — the real version lives in git tags + `.release-please-manifest.json`. See [Versioning](CONTRIBUTING.md#versioning) in CONTRIBUTING.md.
+> **Versioning:** the source of truth is git tags + `.release-please-manifest.json`; release-please mirrors that version into `package.json` (currently `1.12.0`) — don't bump it by hand. See [Versioning](CONTRIBUTING.md#versioning) in CONTRIBUTING.md.
 
 <details>
 <summary>Alternative: use as a wp-content directory in an existing WordPress install</summary>

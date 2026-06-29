@@ -11,60 +11,60 @@ This directory contains custom WordPress development skills for Claude Code, opt
    - Triggers: "convert Figma", "Figma to WordPress", "FSE conversion"
    - Role: Main workflow skill that coordinates all other skills
 
-   **indesign-conversion**
+2. **indesign-conversion**
    - Convert an Adobe InDesign document (`.idml` or PDF) into an FSE block theme
    - Triggers: "InDesign to WordPress", "IDML", "convert InDesign", "print to web"
    - Role: Drives the `@flavian/pipeline` InDesign pipeline; pairs with the `indesign-to-wordpress` agent
 
-2. **fse-block-theme-development**
+3. **fse-block-theme-development**
    - theme.json syntax, template hierarchy, and FSE structure
    - Triggers: "create block theme", "add template", "theme.json"
    - Complements: frontend-developer agent, ui-designer agent
 
-3. **fse-pattern-first-architecture**
+4. **fse-pattern-first-architecture**
    - Enforces PHP patterns for images (not inline HTML)
    - Triggers: auto-triggered when creating FSE templates with images
    - Role: Architecture enforcement during conversion
 
-4. **block-pattern-creation**
+5. **block-pattern-creation**
    - Pattern registration, structure, and reusable UI patterns
    - Triggers: "create pattern", "register pattern", "pattern category"
    - Complements: fse-block-theme-development skill, ui-designer agent
 
-5. **wordpress-security-hardening**
+6. **wordpress-security-hardening**
    - Security validation during theme generation
    - Triggers: "security review", "sanitize input", "escape output", "nonce verification"
    - Complements: security-scan.sh script
 
 ### Pipeline Support Skills (Priority 2)
 
-6. **visual-qa-verification** *(NEW)*
+7. **visual-qa-verification** *(NEW)*
    - Post-conversion verification: screenshots, responsive checks, Lighthouse, accessibility
    - Triggers: "verify theme", "visual QA", "compare to Figma", "check screenshots"
-   - Complements: visual-qa-agent, accessibility-auditor agent, chrome-devtools MCP
+   - Complements: visual-qa-agent, accessibility-auditor agent, Playwright MCP
 
-7. **wordpress-internationalization**
+8. **wordpress-internationalization**
    - i18n/l10n for themes and plugins, including FSE pattern generation
    - Triggers: "translate", "i18n", "generate pattern", "create pattern"
    - Complements: figma-fse-converter agent, theme/plugin development workflows
 
-8. **wordpress-hook-integration**
+9. **wordpress-hook-integration**
    - Creating and managing Claude Code agent hooks
    - Triggers: "create hook", "agent hook", "PreToolUse", "PostToolUse"
    - Documents the 3 actual hooks in `.claude/hooks/`
 
 ### Supporting Skills
 
-9. **wp-cli-workflows**
-   - WP-CLI commands for local testing (theme activation, content seeding, cache flush)
-   - Triggers: "scaffold theme", "create plugin", "export database", "search-replace"
+10. **wp-cli-workflows**
+    - WP-CLI commands for local testing (theme activation, content seeding, cache flush)
+    - Triggers: "scaffold theme", "create plugin", "export database", "search-replace"
 
-10. **wordpress-testing-workflows**
+11. **wordpress-testing-workflows**
     - PHPUnit test creation and execution for WordPress
     - Triggers: "write tests", "run phpunit", "test coverage", "integration tests"
     - Complements: test-writer-fixer agent
 
-11. **canva-to-fse-autonomous-workflow**
+12. **canva-to-fse-autonomous-workflow**
     - Orchestrator for the Canva-to-FSE conversion pipeline (parallel entry point to Figma)
     - Triggers: "convert Canva", "Canva to WordPress", "Canva HTML export"
     - Role: Alternate entry point when design source is Canva rather than Figma
@@ -103,7 +103,7 @@ Verified Theme Ready for WordPress
 
 ## Integration with Custom Agents
 
-Each skill works with the 49 custom agents in this template:
+Each skill works with the 53 custom agents in this template:
 
 - **figma-fse-converter** + figma-to-fse-autonomous-workflow + fse-pattern-first-architecture
 - **frontend-developer** + fse-block-theme-development
@@ -140,4 +140,4 @@ Skills are version-controlled and updated when:
 ---
 
 **Last Updated:** 2026-03-06
-**Total Skills:** 11
+**Total Skills:** 12

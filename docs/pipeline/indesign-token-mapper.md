@@ -125,7 +125,7 @@ block-theme JSON Schema (via ajv) and a zod schema for the emitted subset.
 | Palette includes all distinct swatches, deduped by hex within tolerance | `map/colors.js`. |
 | Each typography entry referenced by ≥1 paragraph style | The scale is built from paragraph styles; `report.provenance.styleToSlug` records the mapping. |
 | Font fallback warnings emitted and listed in the report | `map/fonts.js` → `report.fontFallbacks`. |
-| Tests cover CMYK→sRGB, clustering, merge-with-base | `tests/indesign/color.test.mjs`, `map-typography.test.mjs`, `map-theme-json.test.mjs`. |
+| Tests cover CMYK→sRGB, clustering, merge-with-base | `packages/pipeline/tests/indesign/color.test.mjs`, `map-typography.test.mjs`, `map-theme-json.test.mjs`. |
 | Works on either IR | Source-agnostic; the end-to-end test runs on both an IDML- and a PDF-built IR. |
 
 ## Known limitations

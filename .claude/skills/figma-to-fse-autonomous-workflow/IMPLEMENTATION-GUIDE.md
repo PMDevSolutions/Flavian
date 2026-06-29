@@ -158,7 +158,7 @@ async function createThemeJsonFoundation(figmaFileKey, themeName) {
 async function extractDesignSystem(nodeId, fileKey) {
   try {
     // Try desktop MCP first (more reliable)
-    const variables = await mcp__figma_desktop__get_variable_defs({
+    const variables = await mcp__figma-desktop__get_variable_defs({
       nodeId: nodeId,
       fileKey: fileKey
     });
@@ -569,7 +569,7 @@ async function generateThemeJson(figmaVariables, themeName) {
 ```javascript
 async function surveyTemplates(figmaFileKey) {
   // 1. Use get_metadata to get file structure
-  const metadata = await mcp__figma_desktop__get_metadata({
+  const metadata = await mcp__figma-desktop__get_metadata({
     nodeId: "0:1", // Root page
     fileKey: figmaFileKey
   });
@@ -586,7 +586,7 @@ async function surveyTemplates(figmaFileKey) {
   // 4. Capture screenshot of each template
   const templateData = [];
   for (const template of templates) {
-    const screenshot = await mcp__figma_desktop__get_screenshot({
+    const screenshot = await mcp__figma-desktop__get_screenshot({
       nodeId: template.nodeId,
       fileKey: figmaFileKey
     });
@@ -652,7 +652,7 @@ function figmaNameToWpTemplate(figmaName) {
 async function extractTemplateStructure(nodeId, fileKey) {
   try {
     // Try get_design_context first (most detailed)
-    const designContext = await mcp__figma_desktop__get_design_context({
+    const designContext = await mcp__figma-desktop__get_design_context({
       nodeId: nodeId,
       fileKey: fileKey,
       clientLanguages: "html,css",
@@ -678,7 +678,7 @@ async function extractTemplateStructure(nodeId, fileKey) {
 ```javascript
 async function extractFromScreenshot(nodeId, fileKey) {
   // Get screenshot
-  const screenshot = await mcp__figma_desktop__get_screenshot({
+  const screenshot = await mcp__figma-desktop__get_screenshot({
     nodeId: nodeId,
     fileKey: fileKey
   });
@@ -1025,7 +1025,7 @@ async function autonomousExecution(plan) {
 ### Pattern 1: Figma MCP Unreachable
 
 ```
-Try: mcp__figma_desktop__* (local)
+Try: mcp__figma-desktop__* (local)
 Catch: Connection refused
 → Try: mcp__figma__* (remote)
 → Catch: Both fail

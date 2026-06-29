@@ -100,6 +100,24 @@ These agents directly support WordPress block theme development:
 - **WordPress relevance:** Critical - turns the scaffold into an e-commerce-ready store
 - **Backed by:** `themes/flavian-shop/` and `scripts/wordpress-install/setup-woocommerce.sh`
 
+### **headless-developer** (NEW)
+- **Purpose:** Headless WordPress setup and decoupled-frontend integration
+- **Use for:** Installing/configuring WPGraphQL, wiring CORS and preview links via the `flavian-headless` mu-plugin, scaffolding Next.js frontends, troubleshooting GraphQL/REST endpoints
+- **WordPress relevance:** High - turns the scaffold into a headless content API for decoupled frontends
+- **Backed by:** `scripts/wordpress-install/setup-headless.sh` and `scripts/scaffold-frontend.sh`
+
+### **figma-fse-converter** (NEW)
+- **Purpose:** Autonomous Figma-to-WordPress FSE theme conversion
+- **Use for:** Extracting design systems from Figma, generating theme.json, creating pixel-perfect FSE templates with WordPress blocks
+- **WordPress relevance:** Critical - primary engine of the Figma-to-FSE conversion pipeline
+- **Backed by:** `scripts/figma-fse/` and the `figma-to-fse-autonomous-workflow` skill
+
+### **canva-fse-converter** (NEW)
+- **Purpose:** Convert Canva HTML/CSS exports into WordPress FSE block themes
+- **Use for:** Parsing design tokens from Canva CSS, converting HTML elements to WordPress blocks, generating theme.json and templates
+- **WordPress relevance:** Critical - alternate design-source entry point to the FSE pipeline
+- **Backed by:** `scripts/canva-fse/` and the `canva-to-fse-autonomous-workflow` skill
+
 ### **indesign-to-wordpress** (NEW)
 - **Purpose:** Convert an Adobe InDesign document (`.idml` or PDF) into a WordPress FSE block theme
 - **Use for:** Orchestrating the `@flavian/pipeline` InDesign stages (parse → map design tokens → generate patterns/templates/parts/theme.json), reviewing the generation report, and proposing concrete follow-ups (unmapped frames, font fallbacks, alt text). Non-destructive — works on a feature branch, never on `main`
@@ -140,7 +158,7 @@ These agents can be useful but aren't WordPress-specific:
 
 ---
 
-## Generic/Cross-Domain Agents (25 total)
+## Generic/Cross-Domain Agents (27 total)
 
 These agents are domain-agnostic and useful across all project types. Backported from the Coding Framework project.
 
@@ -212,7 +230,7 @@ User: "Use the frontend-developer agent to help me build this block pattern"
 
 ## How Agents Work with WordPress Skills
 
-**NEW:** This template includes 8 custom WordPress development skills that complement the agents.
+**NEW:** This template includes 12 custom WordPress development skills that complement the agents.
 
 ### Skills vs Agents
 
@@ -242,9 +260,9 @@ User: "Use the frontend-developer agent to help me build this block pattern"
 ### Complete WordPress Development Stack
 
 ```
-WordPress Skills (8)
+WordPress Skills (12)
     ↓ Provide workflows and best practices
-Agents (45)
+Agents (53)
     ↓ Execute specialized tasks
 Plugins (6)
     ↓ Provide tooling and memory
@@ -259,7 +277,7 @@ Automation Scripts (4)
 ## Current Architecture Status
 
 **Plugins:** ✅ Already optimized (5 user + 1 local)
-**Custom Agents:** 45 total (20 WordPress-focused + 25 generic cross-domain)
+**Custom Agents:** 53 total (26 WordPress-focused + 27 generic cross-domain)
 
 ---
 
@@ -328,7 +346,7 @@ Ready for release
 
 ## Agent Hook Configurations
 
-Agents with automated hooks (17 of 20):
+Agents with automated hooks (18 of the 26 WordPress-focused agents):
 
 ### WordPress Core Quality Hooks (shared scripts)
 These scripts are shared across multiple agents:
@@ -351,7 +369,7 @@ These scripts are shared across multiple agents:
 | seo-schema-agent | PostToolUse | validate-block-markup.sh | Block markup and heading hierarchy |
 | asset-cataloger | PreToolUse | validate-theme-location.sh | Blocks wp-content/ writes |
 
-### Agents Without Hooks (3)
+### Research/Audit-Only Agents (no hooks needed)
 These agents are research/audit-only and don't need automated hooks:
 - accessibility-auditor (runs Lighthouse on demand)
 - visual-qa-agent (captures screenshots on demand)
@@ -359,4 +377,4 @@ These agents are research/audit-only and don't need automated hooks:
 
 ---
 
-**Architecture Assessment:** 49 custom agents provide comprehensive development coverage — 24 WordPress-specific agents for visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, and SEO, plus 25 generic cross-domain agents for business, marketing, engineering, and meta/ops tasks.
+**Architecture Assessment:** 53 custom agents provide comprehensive development coverage — 26 WordPress-focused agents for design-source conversion (Figma/Canva/InDesign), visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, SEO, security, deployment, e-commerce, and headless integration, plus 27 generic cross-domain agents for business, marketing, engineering, and meta/ops tasks.

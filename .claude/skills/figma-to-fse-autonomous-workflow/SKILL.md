@@ -62,7 +62,7 @@ Before creating or modifying ANY theme files, verify:
 2. [ ] NO files being created in `wp-content/themes/` (NEVER use this path)
 3. [ ] Theme name slug is valid (lowercase, hyphens only, no spaces)
 
-**Auto-validation script:** `scripts/figma-fse/validate-theme-location.sh` will block incorrect paths.
+**Auto-validation:** the registered PreToolUse hook `.claude/hooks/validate-theme-location.sh` blocks incorrect paths (a copy also lives at `scripts/figma-fse/validate-theme-location.sh`).
 
 **Why root-level?**
 - Clean development structure (no nested wp-content)
@@ -545,8 +545,8 @@ If failures occur: Log them but complete remaining templates.
 2. **For EACH page template, run the verification loop:**
    ```
    For each page (home, about, contact, etc.):
-     a. Navigate browser to page URL (chrome-devtools MCP: navigate_page)
-     b. Take full-page screenshot (chrome-devtools MCP: take_screenshot fullPage=true)
+     a. Navigate browser to page URL (mcp__playwright__browser_navigate)
+     b. Take full-page screenshot (mcp__playwright__browser_take_screenshot fullPage=true)
      c. Get Figma screenshot of same page (figma MCP: get_screenshot)
      d. View both screenshots side-by-side (Read tool on screenshot file)
      e. Compare section-by-section:
@@ -921,21 +921,21 @@ After each template:
 
 ## Quality Gates
 
-**Automated checks run during/after conversion:**
+**Checks the agent runs during/after conversion** (invoked manually — these scripts exist but are NOT auto-registered in `.claude/settings.json`):
 
-### Post-Template Hook
+### Post-Template Script
 File: `.claude/hooks/figma-fse-post-template.sh`
 
-Runs after each template creation:
+The agent runs this after each template creation (if present):
 - Validate block syntax
 - Check for hardcoded hex colors
 - Verify theme.json token references
 - Scan for security issues
 
-### Completion Hook
+### Completion Script
 File: `.claude/hooks/figma-fse-completion.sh`
 
-Runs when all templates complete:
+The agent runs this when all templates complete (if present):
 - Generate comparison report
 - Run full security scan
 - Check coding standards

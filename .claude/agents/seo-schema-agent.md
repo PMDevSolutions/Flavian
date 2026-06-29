@@ -1,7 +1,7 @@
 ---
 name: seo-schema-agent
 description: Audits WordPress FSE themes for SEO best practices including heading hierarchy, meta tags, structured data, Open Graph, semantic HTML, and sitemap-friendly structure.
-tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, WebSearch, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__evaluate_script, mcp__chrome-devtools__take_screenshot
+tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, WebSearch, mcp__playwright__browser_navigate, mcp__playwright__browser_evaluate, mcp__playwright__browser_take_screenshot
 model: opus
 permissionMode: bypassPermissions
 hooks:
@@ -61,7 +61,7 @@ WordPress FSE handles meta through:
 - SEO plugins (Yoast, Rank Math, etc.)
 - Theme.json `templateParts` area definitions
 
-**Verify in rendered HTML (via Chrome DevTools):**
+**Verify in rendered HTML (via Playwright MCP):**
 ```html
 <title>[Page Title] - [Site Name]</title>
 <meta name="description" content="...">

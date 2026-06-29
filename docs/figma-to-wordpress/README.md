@@ -260,9 +260,9 @@ WordPress FSE templates are `.html` files where **PHP code doesn't execute**.
 - Page-specific layouts
 - Template structure (header/footer references)
 
-### Automatic Enforcement
+### Pattern Validation
 
-**Validation hook:** `scripts/figma-fse/validate-pattern-architecture.sh`
+**Validation script:** `scripts/figma-fse/validate-pattern-architecture.sh`
 
 **Checks:**
 - ❌ No PHP code in `.html` templates
@@ -271,9 +271,9 @@ WordPress FSE templates are `.html` files where **PHP code doesn't execute**.
 - ✅ Verifies referenced patterns exist
 
 **When it runs:**
-- Automatically after every Write/Edit operation
-- Blocks invalid changes before saving
-- Agent sees validation errors and self-corrects
+- Run manually, or invoked by the figma-fse-converter agent during conversion
+- Not auto-registered in `.claude/settings.json` (the only PreToolUse Write|Edit hook is `validate-theme-location.sh`)
+- Surfaces validation errors so the agent can self-correct
 
 ---
 

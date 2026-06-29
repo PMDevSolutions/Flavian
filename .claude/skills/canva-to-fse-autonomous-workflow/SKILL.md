@@ -73,14 +73,14 @@ Before creating or modifying ANY theme files, verify:
 2. [ ] NO files being created in `wp-content/themes/` (NEVER use this path)
 3. [ ] Theme name slug is valid (lowercase, hyphens only, no spaces)
 
-**Auto-validation script:** `scripts/canva-fse/validate-theme-location.sh` will block incorrect paths.
+**Auto-validation:** the registered PreToolUse hook `.claude/hooks/validate-theme-location.sh` blocks incorrect paths (a copy also lives at `scripts/canva-fse/validate-theme-location.sh`).
 
 **Why root-level?**
 - Clean development structure (no nested wp-content)
 - Easier version control
 - Testing copies files to WordPress `wp-content/` separately
 
-**Deployment Note:** During testing, files are copied from `themes/` to WordPress `wp-content/themes/`. See TESTING-GUIDE.md for deployment procedures.
+**Deployment Note:** During testing, files are copied from `themes/` to WordPress `wp-content/themes/`. See [TESTING-GUIDE.md](../figma-to-fse-autonomous-workflow/TESTING-GUIDE.md) for deployment procedures.
 
 ## Fallback Design Tokens (Default Design System)
 

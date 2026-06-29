@@ -5,7 +5,7 @@ block patterns (one per spread), templates, header/footer parts, a schema-valid
 `theme.json`, asset-import scripts, and a generation report.
 
 This is the user-facing guide. For the internals, see the package docs:
-[IDML parser & IR](../pipeline/indesign-pdf-fidelity.md),
+[IDML parser & IR](../../packages/pipeline/README.md),
 [token mapper](../pipeline/indesign-token-mapper.md), and
 [output generator](../pipeline/indesign-output-generator.md).
 

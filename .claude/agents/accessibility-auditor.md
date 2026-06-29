@@ -1,7 +1,7 @@
 ---
 name: accessibility-auditor
 description: WCAG 2.1 AA compliance auditor for WordPress FSE themes. Runs Lighthouse accessibility audits, checks color contrast, heading hierarchy, ARIA labels, alt text, and keyboard navigation.
-tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, AskUserQuestion, mcp__chrome-devtools__navigate_page, mcp__chrome-devtools__take_screenshot, mcp__chrome-devtools__lighthouse_audit, mcp__chrome-devtools__evaluate_script, mcp__chrome-devtools__list_pages, mcp__chrome-devtools__new_page, mcp__chrome-devtools__select_page, mcp__chrome-devtools__press_key
+tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, AskUserQuestion, mcp__playwright__browser_navigate, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_snapshot, mcp__playwright__browser_evaluate, mcp__playwright__browser_resize, mcp__playwright__browser_press_key, mcp__playwright__browser_tabs
 model: opus
 permissionMode: bypassPermissions
 ---
@@ -16,8 +16,8 @@ Run Lighthouse accessibility audits on every page:
 
 ```
 For each page URL:
-1. Navigate to page via Chrome DevTools MCP
-2. Run lighthouse_audit with category: "accessibility"
+1. Navigate to page via Playwright MCP (browser_navigate)
+2. Run Lighthouse via lhci — `pnpm lighthouse:run` (configured in lighthouserc.json) — and read the accessibility category
 3. Capture score and individual audit results
 4. Record failures with element selectors
 ```
@@ -86,7 +86,7 @@ Page: front-page
 
 ### 5. Keyboard Navigation Audit
 
-**Test via Chrome DevTools MCP:**
+**Test via Playwright MCP:**
 - Tab through the entire page
 - Verify all interactive elements are reachable
 - Check focus indicators are visible
@@ -183,7 +183,7 @@ WCAG Standard: 2.1 AA
 5. Check color contrast for all used combinations
 6. Check ARIA labels and semantic HTML
 7. If WordPress is running:
-   a. Run Lighthouse accessibility audit per page
+   a. Run the Lighthouse accessibility audit per page (lhci: `pnpm lighthouse:run`)
    b. Test keyboard navigation
    c. Check rendered focus indicators
 8. Generate comprehensive report

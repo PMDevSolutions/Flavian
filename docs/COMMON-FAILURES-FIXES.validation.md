@@ -160,7 +160,7 @@ Each issue must score at least 4/5 on actionability:
 ### Command Completeness
 
 All commands MUST:
-- [x] Use absolute paths (not relative)
+- [x] Use project-relative paths (e.g. `./scripts/…`, `themes/[theme-name]/…`)
 - [x] Include placeholder syntax for variable parts (e.g., `[theme-name]`)
 - [x] Work on Windows (Git Bash) and Linux/macOS
 - [x] Include expected output descriptions
@@ -197,7 +197,7 @@ Before the guide is considered complete, verify:
 
 ### Quality
 - [x] Each issue scores 4+ on actionability
-- [x] All commands are absolute paths
+- [x] All commands use project-relative paths
 - [x] Cross-references present and working
 
 ### Usability

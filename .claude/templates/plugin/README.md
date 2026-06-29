@@ -16,6 +16,7 @@ suffix stripped, and the following tokens replaced:
 | `{{PLUGIN_CLASS}}` | StudlyCase of slug (`flavian-starter` → `FlavianStarter`) |
 | `{{PLUGIN_CONST}}` | UPPER_SNAKE of slug (`FLAVIAN_STARTER`)             |
 | `{{PLUGIN_NS}}`    | `--namespace`, default `Flavian\Plugins\<PluginClass>` |
+| `{{PLUGIN_NS_JSON}}` | JSON-escaped `{{PLUGIN_NS}}` (backslashes doubled), used in composer.json / block.json |
 | `{{TEXT_DOMAIN}}`  | always equals the slug                              |
 | `{{AUTHOR}}`       | `--author`, default = `git config user.name` or `Anonymous` |
 | `{{VERSION}}`      | always `0.1.0`                                      |

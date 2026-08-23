@@ -1,5 +1,5 @@
 {
-  "$comment": "Lighthouse CI config — the SINGLE source of truth for the performance gate. Docs: https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md. Every assertion is `error`-level, so `lhci assert` (pnpm lighthouse:assert) exits non-zero and FAILS CI on any regression. Budgets are split per-URL via `assertMatrix` because a WooCommerce storefront has two page classes: (1) CONTENT pages (home/shop/product) — indexable + light JS, so SEO is gated and script <= 200 KB gz; (2) FUNCTIONAL pages (cart/checkout/my-account) — WooCommerce marks these noindex BY DESIGN, so SEO is intentionally low and NOT asserted, and the Cart/Checkout *blocks* ship a large React bundle, so the script budget is raised to ~800 KB gz. The two matchingUrlPattern regexes are mutually exclusive (the content one negative-lookaheads the functional paths) so each URL is gated by exactly one entry. Category floors are calibrated to the achievable baseline on this stack (observed a11y ~0.91-0.94, content SEO ~0.91-0.92 — meta-description needs an SEO plugin) and set to 0.90; raise toward 0.95 as theme a11y + SEO tooling improve (tracked follow-up in CONTRIBUTING.md -> 'Performance budgets'). RESOURCE BUDGETS use `resource-summary:<type>:size` in BYTES (KB x 1024) — the only budget mechanism compatible with Lighthouse 12, which removed budgets.json/performance-budget. Size = over-the-wire transferSize; the dev/CI stack enables Apache mod_deflate so JS/CSS are gzipped. `skipAudits` drops is-on-https/uses-http2, which only fail because CI serves http://localhost. Mobile preset is the Lighthouse default. Edit budgets here; see CONTRIBUTING.md -> 'Performance budgets'.",
+  "$comment": "Lighthouse CI config — the SINGLE source of truth for the performance gate. Docs: https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md. Every assertion is `error`-level, so `lhci assert` (pnpm lighthouse:assert) exits non-zero and FAILS CI on any regression. Budgets are split per-URL via `assertMatrix` because a WooCommerce storefront has two page classes: (1) CONTENT pages (home/shop/product) — indexable + light JS, so SEO is gated and script <= 200 KB gz; (2) FUNCTIONAL pages (cart/checkout/my-account) — WooCommerce marks these noindex BY DESIGN, so SEO is intentionally low and NOT asserted, and the Cart/Checkout *blocks* ship a large React bundle, so the script budget is raised to ~800 KB gz. The two matchingUrlPattern regexes are mutually exclusive (the content one negative-lookaheads the functional paths) so each URL is gated by exactly one entry. Category floors: a11y and content SEO are 0.95 (issue #125) — the theme emits its own meta description (inc/seo.php) and the nav/heading a11y fixes landed, leaving only WooCommerce-owned dings (mini-cart drawer aria-hidden-focus, ~0.96-0.97 observed headroom); see tests/lighthouse/README.md -> 'Known residual audits'. RESOURCE BUDGETS use `resource-summary:<type>:size` in BYTES (KB x 1024) — the only budget mechanism compatible with Lighthouse 12, which removed budgets.json/performance-budget. Size = over-the-wire transferSize; the dev/CI stack enables Apache mod_deflate so JS/CSS are gzipped. `skipAudits` drops is-on-https/uses-http2, which only fail because CI serves http://localhost. Mobile preset is the Lighthouse default. Edit budgets here; see CONTRIBUTING.md -> 'Performance budgets'.",
   "ci": {
     "collect": {
       "url": [
@@ -19,7 +19,7 @@
           "matchingUrlPattern": "^https?://[^/]+/(?:cart|checkout|my-account)/",
           "assertions": {
             "categories:performance":    ["error", { "minScore": 0.85 }],
-            "categories:accessibility":  ["error", { "minScore": 0.90 }],
+            "categories:accessibility":  ["error", { "minScore": 0.95 }],
             "categories:best-practices": ["error", { "minScore": 0.90 }],
             "cumulative-layout-shift":   ["error", { "maxNumericValue": 0.1 }],
 
@@ -32,9 +32,9 @@
           "matchingUrlPattern": "^https?://[^/]+/(?!(?:cart|checkout|my-account)/)",
           "assertions": {
             "categories:performance":    ["error", { "minScore": 0.85 }],
-            "categories:accessibility":  ["error", { "minScore": 0.90 }],
+            "categories:accessibility":  ["error", { "minScore": 0.95 }],
             "categories:best-practices": ["error", { "minScore": 0.90 }],
-            "categories:seo":            ["error", { "minScore": 0.90 }],
+            "categories:seo":            ["error", { "minScore": 0.95 }],
             "cumulative-layout-shift":   ["error", { "maxNumericValue": 0.1 }],
 
             "resource-summary:script:size":     ["error", { "maxNumericValue": 204800 }],

@@ -254,17 +254,19 @@ ship a heavy Cart/Checkout block bundle (so the script budget is raised).
 | Budget                              | Content pages          | Functional pages    |
 | ----------------------------------- | ---------------------- | ------------------- |
 | `categories:performance`            | ≥ 0.85                 | ≥ 0.85              |
-| `categories:accessibility`          | ≥ 0.90                 | ≥ 0.90              |
+| `categories:accessibility`          | ≥ 0.95                 | ≥ 0.95              |
 | `categories:best-practices`         | ≥ 0.90                 | ≥ 0.90              |
-| `categories:seo`                    | ≥ 0.90                 | — (noindex)         |
+| `categories:seo`                    | ≥ 0.95                 | — (noindex)         |
 | `cumulative-layout-shift`           | ≤ 0.10                 | ≤ 0.10              |
 | `resource-summary:script:size`      | JS ≤ 200 KB (`204800`) | ≤ 800 KB (`819200`) |
 | `resource-summary:stylesheet:size`  | CSS ≤ 50 KB (`51200`)  | CSS ≤ 50 KB (`51200`) |
 | `resource-summary:image:size`       | ≤ 500 KB (`512000`)    | ≤ 500 KB (`512000`) |
 
-The a11y/SEO floors are **0.90**, calibrated to the achievable baseline on the
-CI stack (no SEO plugin → no `meta-description`); raising them toward 0.95 is
-tracked in [issue #125](https://github.com/PMDevSolutions/Flavian/issues/125).
+The a11y/SEO floors are **0.95**
+([issue #125](https://github.com/PMDevSolutions/Flavian/issues/125)): the theme
+emits its own meta description (`inc/seo.php`), and the remaining sub-1.0 a11y
+headroom comes from WooCommerce-owned block markup — see
+`tests/lighthouse/README.md` → "Known residual audits".
 
 Debug locally (WordPress must be running at `http://localhost:8080/` and
 seeded — `docker compose up -d wordpress db && bash tests/visual/seed.sh`):

@@ -26,7 +26,7 @@
 Before configuring MCP servers, ensure you have:
 
 - **Claude Desktop** installed and running ([download](https://claude.ai/download))
-- **Node.js 20+** installed (required for Playwright MCP)
+- **Node.js 22.12+** installed (required for Playwright MCP)
 - **npx** available (ships with Node.js)
 - **Figma Desktop** installed (required for Figma Desktop MCP only)
 
@@ -150,7 +150,7 @@ Connects to Figma's cloud MCP service. Use this as a **fallback** when Figma Des
 Enables browser automation for visual QA, screenshot capture, accessibility auditing, and end-to-end testing.
 
 **Requirements:**
-- Node.js 20+
+- Node.js 22.12+
 - Playwright browsers installed (auto-installed on first run, or manually via `npx playwright install`)
 
 **Configuration:**

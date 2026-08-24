@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0](https://github.com/PMDevSolutions/Flavian/compare/v1.12.1...v2.0.0) (2026-08-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Node.js >=22.12.0 is now required (was >=20.0.0). Node 20 is end-of-life and cannot install the electron-builder 26 toolchain.
+
+### Fixed
+
+* **deps:** resolve node-tar CVE-2026-23745 via electron-builder 26 bump ([66594f5](https://github.com/PMDevSolutions/Flavian/commit/66594f508d12df23d058d8ba7f0f33791e9b6810))
+* **deps:** resolve node-tar CVE-2026-23745 via electron-builder 26 bump ([c84983b](https://github.com/PMDevSolutions/Flavian/commit/c84983b55a758608b16210cd927663cce73d5d0a)), closes [#157](https://github.com/PMDevSolutions/Flavian/issues/157)
+
+
+### Build System
+
+* raise Node.js baseline to &gt;=22.12.0 ([e844c61](https://github.com/PMDevSolutions/Flavian/commit/e844c6116bf90bbac82022f4fe7227391f6596e8))
+
 ## [1.12.1](https://github.com/PMDevSolutions/Flavian/compare/v1.12.0...v1.12.1) (2026-08-24)
 
 

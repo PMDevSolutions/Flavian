@@ -25,7 +25,7 @@ Before starting validation:
 
 - [ ] Docker Desktop running
 - [ ] Theme exists in `themes/<theme-name>/`
-- [ ] Node.js 20+ installed (for Playwright)
+- [ ] Node.js 22.12+ installed (for Playwright)
 - [ ] Playwright installed (`npm install -g playwright && npx playwright install`)
 
 ---

@@ -78,7 +78,7 @@ This project uses the following MCP servers (defined in `.mcp.json`):
 - Capture screenshots
 - Execute JavaScript on pages
 - Test across Chromium, Firefox, WebKit
-- Requires: Node.js 20+, Playwright browsers installed
+- Requires: Node.js 22.12+, Playwright browsers installed
 
 ### How Claude Code Uses MCP
 
@@ -963,7 +963,7 @@ The Playwright MCP server command failed to execute.
    ```
 
 **Prevention**
-- Maintain Node.js 20+ in development environment
+- Maintain Node.js 22.12+ in development environment
 - Run `./scripts/check-mcp.sh` regularly
 - Document Node.js version requirements
 

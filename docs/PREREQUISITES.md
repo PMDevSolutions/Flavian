@@ -92,7 +92,7 @@ npm install -g pnpm@9
 
 Or enable via Corepack (ships with Node.js): `corepack enable && corepack prepare pnpm@9.15.0 --activate`
 
-**Note:** pnpm requires Node.js 20+ (see Node.js below).
+**Note:** pnpm requires Node.js 22.12+ (see Node.js below).
 
 ---
 
@@ -149,9 +149,9 @@ Required for Playwright MCP (browser automation and testing) configured in `.mcp
 
 | | |
 |---|---|
-| **Minimum Version** | 20.0.0 (LTS) |
+| **Minimum Version** | 22.12.0 (LTS) |
 | **Verify** | `node --version` |
-| **Expected** | `v20.x.x` or higher |
+| **Expected** | `v22.12.0` or higher |
 
 **Install:**
 - **All platforms:** https://nodejs.org/

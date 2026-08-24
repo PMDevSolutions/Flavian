@@ -29,7 +29,7 @@ Prefer not to use a terminal? A cross-platform **desktop GUI** wraps the whole w
 |---|---|---|
 | **[Claude Code](https://claude.ai/code)** | The conversion engine | `npm install -g @anthropic-ai/claude-code` |
 | **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** | Local WordPress (WordPress + MySQL + phpMyAdmin) | [docker.com/download](https://www.docker.com/products/docker-desktop/) |
-| **[Node.js](https://nodejs.org/) 20+** | Tooling: pnpm, setup wizard, pipelines, Playwright MCP | [nodejs.org](https://nodejs.org/) |
+| **[Node.js](https://nodejs.org/) 22.12+** | Tooling: pnpm, setup wizard, pipelines, Playwright MCP | [nodejs.org](https://nodejs.org/) |
 | **[pnpm](https://pnpm.io/) 9.x** | Package manager (workspace scripts, init wizard, GUI/pipeline) | `corepack enable` (bundled with Node) |
 | **[Git](https://git-scm.com/)** | Version control | [git-scm.com](https://git-scm.com/) |
 | **[Figma Professional+](https://www.figma.com/pricing/)** | Dev Mode — required to extract design tokens (skip if using Canva input only) | [figma.com](https://www.figma.com/) |

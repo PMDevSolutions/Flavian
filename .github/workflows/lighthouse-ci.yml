@@ -39,7 +39,7 @@ jobs:
       - name: Set up Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       # pnpm via Corepack — pnpm/action-setup isn't on the allowed-actions list.
       - name: Enable Corepack (pnpm)

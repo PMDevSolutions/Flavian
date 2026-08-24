@@ -37,7 +37,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Run scaffold-block bats suite
         run: ./tests/libs/bats-core/bin/bats tests/unit/scaffold-block.bats
 

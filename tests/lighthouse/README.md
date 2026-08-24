@@ -69,6 +69,11 @@ There is **no `budgets.json`.** Lighthouse 12 removed the budgets feature
    the report.
 7. **Annotates** — `annotate-report.mjs` surfaces each violation as a native
    GitHub Check annotation (`::error title=...::`).
+8. **Uploads the reports artifact** — the raw `.lighthouseci/` directory (LHR
+   JSON + HTML reports) is attached to the run as the `lighthouse-reports`
+   artifact (30-day retention). This is the canonical place to read the
+   *specific* failing audits when a category score misses its floor — the
+   temporary-public-storage link expires after ~7 days.
 
 ### URLs covered
 
@@ -99,14 +104,37 @@ by exactly one (mutually exclusive) `matchingUrlPattern`:
 | Assertion                     | Content pages | Functional pages | Severity |
 | ----------------------------- | ------------- | ---------------- | -------- |
 | `categories:performance`      | ≥ 0.85        | ≥ 0.85           | error    |
-| `categories:accessibility`    | ≥ 0.90        | ≥ 0.90           | error    |
+| `categories:accessibility`    | ≥ 0.95        | ≥ 0.95           | error    |
 | `categories:best-practices`   | ≥ 0.90        | ≥ 0.90           | error    |
-| `categories:seo`              | ≥ 0.90        | — (noindex)      | error    |
+| `categories:seo`              | ≥ 0.95        | — (noindex)      | error    |
 | `cumulative-layout-shift`     | ≤ 0.10        | ≤ 0.10           | error    |
 
-The a11y/SEO floors are **0.90**, calibrated to the achievable baseline on this
-stack (observed a11y 0.91–0.94, content SEO 0.91–0.92 — `meta-description` needs
-an SEO plugin). Raising them toward 0.95 is tracked in issue #125.
+The a11y/SEO floors are **0.95** (raised from the 0.90 calibration floor in
+issue #125). Content SEO reaches 1.0 because the theme emits its own
+`meta-description` via `inc/seo.php` — no SEO plugin required. The a11y floor
+sits just under the observed 0.96–0.97 because of WooCommerce-owned markup the
+theme can't fix — see [Known residual audits](#known-residual-audits).
+
+### Known residual audits
+
+These are the audits that keep content-page a11y below 1.0. They come from
+**WooCommerce's own block markup**, not the theme — do not try to "fix" them in
+theme templates, and account for them before tightening the a11y floor further:
+
+- **`aria-hidden-focus`** (weight 7, fails on `/`, `/shop/`, `/product/…`) —
+  the Mini-Cart drawer (`wp:woocommerce/mini-cart` in `parts/header.html`)
+  renders `aria-hidden="true"` with focusable descendants (close button, links)
+  until the Interactivity API hydrates and takes over via
+  `data-wp-bind--aria-hidden`. Lighthouse audits the pre-hydration DOM.
+  Removing the mini-cart from the header would "fix" the score at the cost of a
+  core storefront feature.
+
+The theme-controlled audits that used to fail here (`list` — core's page-list
+fallback nesting `<ul>` inside the navigation `<ul>` when no menu links are
+defined; `heading-order` — `h1 → h3` skips in the product grids and footer)
+were fixed in issue #125 by giving `wp:navigation` explicit inner links and
+normalizing heading levels. Quantity inputs and product-grid image links in
+WooCommerce blocks are also WC-owned, but currently pass.
 
 ### Resource (page-weight) budgets
 
@@ -176,13 +204,15 @@ the **same PR** and explain it in the commit body:
    threshold.
 5. Commit the change and justify it in the body.
 
-> Calibration history: the first hard-gate run showed the seeded `flavian-shop`
-> theme tops out at a11y ~0.94 and content SEO ~0.92 (no SEO plugin → no
-> `meta-description`), and that WooCommerce intentionally `noindex`es the cart
-> (SEO 0.58) and ships a ~684 KB cart-block bundle. Floors were set to 0.90 and
-> the cart was given its own budget class accordingly. Pushing a11y/SEO back to
-> 0.95 is tracked in issue #125. Fix the theme where the signal is real; only
-> adjust a threshold when the miss is an environment artifact, and say so.
+> Calibration history: the first hard-gate run (PR #124) showed the seeded
+> `flavian-shop` theme topping out at a11y ~0.94 and content SEO ~0.92, and that
+> WooCommerce intentionally `noindex`es the cart (SEO 0.58) and ships a large
+> cart-block bundle — so floors were set to 0.90 and the cart got its own budget
+> class. Issue #125 then closed the gaps: the theme's own SEO layer
+> (`inc/seo.php`, PR #116) brought content SEO to 1.0, and nav/heading fixes
+> brought a11y to 0.96–1.0, so the a11y/SEO floors were raised to 0.95. Fix the
+> theme where the signal is real; only adjust a threshold when the miss is an
+> environment artifact, and say so.
 
 ## Debugging a failure
 

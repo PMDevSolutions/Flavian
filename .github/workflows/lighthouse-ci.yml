@@ -116,3 +116,16 @@ jobs:
       - name: Annotate failing budgets
         if: always()
         run: node tests/lighthouse/annotate-report.mjs .lighthouseci/
+
+      # The raw LHRs + HTML reports as a build artifact. Unlike the
+      # temporary-public-storage link (expires ~7 days), this survives with the
+      # run and is the canonical place to read the *specific* failing audits
+      # (e.g. which a11y audit dinged the score) — see issue #125.
+      - name: Upload Lighthouse reports artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 30

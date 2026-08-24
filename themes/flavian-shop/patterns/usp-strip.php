@@ -17,8 +17,8 @@
 	<div class="wp-block-columns">
 	<!-- wp:column -->
 	<div class="wp-block-column">
-		<!-- wp:heading {"textAlign":"center","level":3,"fontSize":"medium"} -->
-		<h3 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Free shipping', 'flavian-shop' ); ?></h3>
+		<!-- wp:heading {"textAlign":"center","level":2,"fontSize":"medium"} -->
+		<h2 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Free shipping', 'flavian-shop' ); ?></h2>
 		<!-- /wp:heading -->
 		<!-- wp:paragraph {"align":"center","textColor":"muted","fontSize":"small"} -->
 		<p class="has-text-align-center has-muted-color has-text-color has-small-font-size"><?php echo esc_html__( 'On orders over $75', 'flavian-shop' ); ?></p>
@@ -28,8 +28,8 @@
 
 	<!-- wp:column -->
 	<div class="wp-block-column">
-		<!-- wp:heading {"textAlign":"center","level":3,"fontSize":"medium"} -->
-		<h3 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Easy returns', 'flavian-shop' ); ?></h3>
+		<!-- wp:heading {"textAlign":"center","level":2,"fontSize":"medium"} -->
+		<h2 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Easy returns', 'flavian-shop' ); ?></h2>
 		<!-- /wp:heading -->
 		<!-- wp:paragraph {"align":"center","textColor":"muted","fontSize":"small"} -->
 		<p class="has-text-align-center has-muted-color has-text-color has-small-font-size"><?php echo esc_html__( '30 days, no questions', 'flavian-shop' ); ?></p>
@@ -39,8 +39,8 @@
 
 	<!-- wp:column -->
 	<div class="wp-block-column">
-		<!-- wp:heading {"textAlign":"center","level":3,"fontSize":"medium"} -->
-		<h3 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Secure checkout', 'flavian-shop' ); ?></h3>
+		<!-- wp:heading {"textAlign":"center","level":2,"fontSize":"medium"} -->
+		<h2 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Secure checkout', 'flavian-shop' ); ?></h2>
 		<!-- /wp:heading -->
 		<!-- wp:paragraph {"align":"center","textColor":"muted","fontSize":"small"} -->
 		<p class="has-text-align-center has-muted-color has-text-color has-small-font-size"><?php echo esc_html__( 'SSL-encrypted payments', 'flavian-shop' ); ?></p>
@@ -50,8 +50,8 @@
 
 	<!-- wp:column -->
 	<div class="wp-block-column">
-		<!-- wp:heading {"textAlign":"center","level":3,"fontSize":"medium"} -->
-		<h3 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Real support', 'flavian-shop' ); ?></h3>
+		<!-- wp:heading {"textAlign":"center","level":2,"fontSize":"medium"} -->
+		<h2 class="wp-block-heading has-text-align-center has-medium-font-size"><?php echo esc_html__( 'Real support', 'flavian-shop' ); ?></h2>
 		<!-- /wp:heading -->
 		<!-- wp:paragraph {"align":"center","textColor":"muted","fontSize":"small"} -->
 		<p class="has-text-align-center has-muted-color has-text-color has-small-font-size"><?php echo esc_html__( 'Talk to a human, fast', 'flavian-shop' ); ?></p>

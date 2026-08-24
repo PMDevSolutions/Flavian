@@ -38,9 +38,12 @@ jobs:
       - name: Install dependencies
         # Skip the ~100 MB Electron binary download — typecheck needs only the
         # bundled types and the core tests never launch Electron.
+        # side-effects-cache off: otherwise pnpm records electron's skipped
+        # (empty) postinstall into the store, the store is cached keyed on the
+        # lockfile, and the smoke job restores a binary-less electron.
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --config.side-effects-cache=false
 
       - name: Lint
         run: pnpm --filter @flavian/gui lint
@@ -69,6 +72,18 @@ jobs:
       - name: Install dependencies
         # No ELECTRON_SKIP here — the smoke needs the real Electron binary.
         run: pnpm install --frozen-lockfile
+
+      - name: Ensure Electron binary present
+        # Repair a store cache poisoned by a skip-binary install (see the gui
+        # job): if electron's postinstall was replayed from the side-effects
+        # cache without its dist/, run its install script directly.
+        working-directory: packages/gui
+        run: |
+          ELECTRON_DIR="$(node -e "console.log(require('path').dirname(require.resolve('electron/package.json')))")"
+          if [ ! -f "$ELECTRON_DIR/path.txt" ] || [ ! -e "$ELECTRON_DIR/dist" ]; then
+            echo "Electron binary missing — running its install script"
+            (cd "$ELECTRON_DIR" && node install.js)
+          fi
 
       - name: Install Electron runtime libraries + Xvfb
         run: |

@@ -253,7 +253,7 @@ ship a heavy Cart/Checkout block bundle (so the script budget is raised).
 
 | Budget                              | Content pages          | Functional pages    |
 | ----------------------------------- | ---------------------- | ------------------- |
-| `categories:performance`            | ≥ 0.85                 | ≥ 0.85              |
+| `categories:performance`            | ≥ 0.85                 | ≥ 0.50              |
 | `categories:accessibility`          | ≥ 0.95                 | ≥ 0.95              |
 | `categories:best-practices`         | ≥ 0.90                 | ≥ 0.90              |
 | `categories:seo`                    | ≥ 0.95                 | — (noindex)         |
@@ -266,7 +266,12 @@ The a11y/SEO floors are **0.95**
 ([issue #125](https://github.com/PMDevSolutions/Flavian/issues/125)): the theme
 emits its own meta description (`inc/seo.php`), and the remaining sub-1.0 a11y
 headroom comes from WooCommerce-owned block markup — see
-`tests/lighthouse/README.md` → "Known residual audits".
+`tests/lighthouse/README.md` → "Known residual audits". Functional-page
+performance is floored at **0.50** because the Cart block renders client-side:
+its LCP waits for ~730 KB of WooCommerce/core JS on every run, which the theme
+can't change — see `tests/lighthouse/README.md` → "Functional-page performance
+floor". Each assertion is checked against the **best** of the 3 runs (lhci's
+default `optimistic` aggregation).
 
 Debug locally (WordPress must be running at `http://localhost:8080/` and
 seeded — `docker compose up -d wordpress db && bash tests/visual/seed.sh`):

@@ -116,6 +116,13 @@ wp_in_container option update woocommerce_demo_store        "no"           >/dev
 
 # 3. Create / verify required pages ------------------------------------------
 log "Ensuring shop / cart / checkout / my-account pages exist"
+# WooCommerce creates its pages on first install; this recreates any that have
+# since gone missing (a no-op for pages that exist). It is the only source of
+# working Cart/Checkout page content: WooCommerce writes the blocks with their
+# full inner-block trees, which the flavian-shop templates render via
+# wp:post-content. A bare <!-- wp:woocommerce/cart /--> renders nothing.
+wp_in_container wc tool run install_pages --user=1 >/dev/null
+
 ensure_page() {
   local slug="$1" title="$2" template="$3" content="$4"
   local existing
@@ -134,8 +141,8 @@ ensure_page() {
   printf '%s' "$existing"
 }
 
-CART_ID="$(ensure_page cart      "Cart"       "page-cart"      '<!-- wp:woocommerce/cart /-->')"
-CHECKOUT_ID="$(ensure_page checkout "Checkout" "page-checkout"  '<!-- wp:woocommerce/checkout /-->')"
+CART_ID="$(ensure_page cart      "Cart"       "page-cart"      '')"
+CHECKOUT_ID="$(ensure_page checkout "Checkout" "page-checkout"  '')"
 ACCOUNT_ID="$(ensure_page my-account "My account" "page-myaccount" '[woocommerce_my_account]')"
 SHOP_ID="$(ensure_page shop      "Shop"       "page-shop"      '')"
 

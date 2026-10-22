@@ -121,6 +121,9 @@ jobs:
       # temporary-public-storage link (expires ~7 days), this survives with the
       # run and is the canonical place to read the *specific* failing audits
       # (e.g. which a11y audit dinged the score) — see issue #125.
+      # include-hidden-files is required: upload-artifact@v4 skips dot-paths by
+      # default, and .lighthouseci/ is one — without it the step warns "No files
+      # were found" and uploads nothing.
       - name: Upload Lighthouse reports artifact
         if: always()
         continue-on-error: true
@@ -128,4 +131,5 @@ jobs:
         with:
           name: lighthouse-reports
           path: .lighthouseci/
+          include-hidden-files: true
           retention-days: 30

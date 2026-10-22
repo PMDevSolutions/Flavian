@@ -61,9 +61,10 @@ There is **no `budgets.json`.** Lighthouse 12 removed the budgets feature
 3. Runs `tests/visual/seed.sh` for deterministic content (shared with visual regression).
 4. **Collects** — `pnpm lighthouse:collect` runs each URL `numberOfRuns: 3`
    times into `.lighthouseci/`.
-5. **Asserts (hard gate)** — `pnpm lighthouse:assert` evaluates the median run
-   against the assertions in `lighthouserc.json`. Any `error`-level miss exits
-   non-zero and **fails the job**.
+5. **Asserts (hard gate)** — `pnpm lighthouse:assert` evaluates the **best** of
+   the 3 runs against the assertions in `lighthouserc.json` (see
+   [URLs covered](#urls-covered)). Any `error`-level miss exits non-zero and
+   **fails the job**.
 6. **Uploads** to LHCI's **temporary-public-storage** — a shareable URL appears
    in the log (viewable ~7 days). Runs even on a red gate so reviewers can open
    the report.
@@ -84,7 +85,11 @@ There is **no `budgets.json`.** Lighthouse 12 removed the budgets feature
 | `/product/test-hoodie/`         | Single-product render — WC adds significant assets |
 | `/cart/`                        | Catches cart-block JS regressions                  |
 
-Each URL is run `numberOfRuns: 3` times; assertions evaluate the median.
+Each URL is run `numberOfRuns: 3` times. `lighthouserc.json` sets no
+`aggregationMethod`, so `lhci assert` uses its default, **`optimistic`**: each
+assertion is checked against the *best* run — the highest score for `minScore`,
+the lowest value for `maxNumericValue`. A failure therefore means **all three
+runs** missed the threshold.
 
 ## Budgets
 
@@ -103,7 +108,7 @@ by exactly one (mutually exclusive) `matchingUrlPattern`:
 
 | Assertion                     | Content pages | Functional pages | Severity |
 | ----------------------------- | ------------- | ---------------- | -------- |
-| `categories:performance`      | ≥ 0.85        | ≥ 0.85           | error    |
+| `categories:performance`      | ≥ 0.85        | ≥ 0.50           | error    |
 | `categories:accessibility`    | ≥ 0.95        | ≥ 0.95           | error    |
 | `categories:best-practices`   | ≥ 0.90        | ≥ 0.90           | error    |
 | `categories:seo`              | ≥ 0.95        | — (noindex)      | error    |
@@ -114,6 +119,36 @@ issue #125). Content SEO reaches 1.0 because the theme emits its own
 `meta-description` via `inc/seo.php` — no SEO plugin required. The a11y floor
 sits just under the observed 0.96–0.97 because of WooCommerce-owned markup the
 theme can't fix — see [Known residual audits](#known-residual-audits).
+
+### Functional-page performance floor
+
+Functional pages are floored at **0.50**, not 0.85, because a working Cart
+block can't reach 0.85 under Lighthouse's mobile simulation — and the theme
+can't change why:
+
+- The Cart block renders **client-side**. Its LCP element (for the empty cart
+  Lighthouse sees: the "New in store" product grid) only paints once
+  WooCommerce's React app has mounted, i.e. after **~730 KB gz** of
+  WooCommerce + WordPress-core JS (including `wp-components`, ~270 KB) has
+  executed. Lantern therefore puts all of that JS on the LCP critical path:
+  simulated LCP is **~7–8 s on every run** (LCP score ≈ 0.05, weight 25).
+- Mounting also swaps the loading skeleton for real content, which nudges the
+  footer (CLS 0.04, occasionally ~0.2).
+
+Measured on a working cart (WooCommerce 11.2.1, WordPress 7.1, 15 runs):
+performance **0.44–0.66** per run (median 0.57), FCP ~2.2 s, TBT 0.3–0.8 s on
+a CPU slower than the CI runners. With best-of-3 aggregation even the three
+lowest of those runs together (0.44, 0.50, 0.51) clear 0.50, so the floor
+passes a healthy cart while still failing a real regression (TBT blow-up,
+sustained CLS, render-blocking CSS). The precise
+cart gates are the budgets that don't depend on simulation: script ≤ 800 KB,
+CSS ≤ 50 KB, CLS ≤ 0.1, a11y/best-practices floors.
+
+Don't raise this floor back toward 0.85 unless the cart's LCP stops depending
+on the Cart block bundle (e.g. the classic `[woocommerce_cart]` shortcode — a
+UX trade-off, see issue #125). Earlier calibrations only cleared 0.85 because
+`page-cart.html` used a bare `<!-- wp:woocommerce/cart /-->`, which renders
+**nothing** — see the calibration history below.
 
 ### Known residual audits
 
@@ -210,9 +245,22 @@ the **same PR** and explain it in the commit body:
 > cart-block bundle — so floors were set to 0.90 and the cart got its own budget
 > class. Issue #125 then closed the gaps: the theme's own SEO layer
 > (`inc/seo.php`, PR #116) brought content SEO to 1.0, and nav/heading fixes
-> brought a11y to 0.96–1.0, so the a11y/SEO floors were raised to 0.95. Fix the
-> theme where the signal is real; only adjust a threshold when the miss is an
-> environment artifact, and say so.
+> brought a11y to 0.96–1.0, so the a11y/SEO floors were raised to 0.95.
+> Then a Dependabot PR that changed nothing on the site failed `/cart/`
+> performance at 0.59 (runs 0.47/0.59/0.59) while a parallel run scored 0.90 on
+> byte-identical pages. Root cause: `page-cart.html` and `page-checkout.html`
+> used bare `<!-- wp:woocommerce/cart /-->` / `<!-- wp:woocommerce/checkout /-->`
+> blocks, which render nothing — the cart page loaded the full Cart bundle but
+> showed no cart, and with no images on the page all 61 blocking scripts got
+> Chrome's "High" priority, so whether Lantern counted ~730 KB of JS as
+> render-blocking depended on whether the runner happened to paint before
+> executing it (simulated FCP 2.6 s vs 6.9 s). The templates now render the
+> page's own content (`wp:post-content`, as WooCommerce's templates do), which
+> fixes the cart and checkout and removes that FCP coin-flip — and the
+> functional-page performance floor was recalibrated to the working cart
+> (see [Functional-page performance floor](#functional-page-performance-floor)).
+> Fix the theme where the signal is real; only adjust a threshold when the miss
+> is an environment artifact or the page under test changed, and say so.
 
 ## Debugging a failure
 
@@ -223,6 +271,13 @@ the **same PR** and explain it in the commit body:
    for an interactive Lighthouse report on the failing URLs.
 3. The GH check annotations on the PR list each violation with the URL, audit,
    expected, and actual values.
+4. Download the `lighthouse-reports` artifact for every run's LHR JSON — the
+   `metrics` audit's `observed*` timings show what the runner actually did, as
+   opposed to the simulated (Lantern) values that are scored. Note that with
+   Lighthouse 12.1 (bundled by `@lhci/cli` 0.14) on current Chrome, the
+   `largest-contentful-paint-element` and `layout-shifts` audits error out
+   (`frame_sequence`), so identify the LCP element / shift sources in a real
+   browser (DevTools Performance panel) instead.
 
 ## Adding a new URL to the suite
 

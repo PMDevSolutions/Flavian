@@ -1,5 +1,7 @@
 # Flavian
 
+[![Patreon](https://img.shields.io/badge/Patreon-Support-orange?logo=patreon)](https://www.patreon.com/PaulMakesThings?utm_source=github)
+
 **Figma designs to working WordPress sites, automatically.**
 
 Flavian is a Claude Code-powered pipeline that converts a Figma design (or a Canva HTML/CSS export) into a complete WordPress FSE block theme running on a local Docker WordPress instance — with a minimum of questions asked. Hand it a design, get back a theme with `theme.json`, templates, block patterns, and images already wired up.

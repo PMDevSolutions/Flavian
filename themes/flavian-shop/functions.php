@@ -109,3 +109,36 @@ function flavian_shop_notice_no_woocommerce() {
 	}
 }
 add_action( 'admin_notices', 'flavian_shop_notice_no_woocommerce' );
+
+/**
+ * Hold a viewport of height for the Cart block when the cart is empty.
+ *
+ * The WooCommerce Cart block renders client-side. The server emits an
+ * `is-loading` placeholder, React replaces it with a loading skeleton of a
+ * different height, and once the Store API cart resolves the skeleton is
+ * swapped for the empty-cart content ("Your cart is currently empty" plus the
+ * "New in store" grid), which is far taller. On a phone-sized viewport each
+ * swap moves the footer while it is on screen, which Lighthouse measures as a
+ * CLS of ~0.22 on /cart/ (see tests/lighthouse/README.md).
+ *
+ * When PHP already knows the cart is empty, flag the block so style.css can
+ * give it `min-height: 100vh` from the first paint. The footer then starts
+ * below the fold and stays there through every swap, so nothing visible
+ * shifts. A cart with items keeps WooCommerce's default behaviour.
+ *
+ * @param string $block_content Rendered Cart block HTML.
+ * @return string
+ */
+function flavian_shop_flag_empty_cart_block( $block_content ) {
+	if ( ! function_exists( 'WC' ) || ! ( WC()->cart instanceof WC_Cart ) || ! WC()->cart->is_empty() ) {
+		return $block_content;
+	}
+
+	$tags = new WP_HTML_Tag_Processor( $block_content );
+	if ( $tags->next_tag( array( 'class_name' => 'wp-block-woocommerce-cart' ) ) ) {
+		$tags->add_class( 'flavian-cart-is-empty' );
+	}
+
+	return $tags->get_updated_html();
+}
+add_filter( 'render_block_woocommerce/cart', 'flavian_shop_flag_empty_cart_block' );

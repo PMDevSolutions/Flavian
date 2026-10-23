@@ -132,8 +132,18 @@ can't change why:
   WooCommerce + WordPress-core JS (including `wp-components`, ~270 KB) has
   executed. Lantern therefore puts all of that JS on the LCP critical path:
   simulated LCP is **~7–8 s on every run** (LCP score ≈ 0.05, weight 25).
-- Mounting also swaps the loading skeleton for real content, which nudges the
-  footer (CLS 0.04, occasionally ~0.2).
+- Mounting swaps the loading skeleton for real content. On the empty cart
+  Lighthouse sees, that used to move the footer twice on a phone viewport: up
+  into view when React's skeleton (~185 px shorter) replaced the server
+  placeholder (0.04), then out again when the "Your cart is currently empty"
+  content landed (0.18), CLS 0.22 in total. Chrome only intermittently flags
+  those shifts as input-adjacent, so with best-of-3 aggregation the CLS gate
+  passed most of the time and failed whenever all three runs counted them.
+  The theme now holds a viewport of height for the block while it hydrates on
+  an empty cart (`flavian_shop_flag_empty_cart_block()` in
+  `themes/flavian-shop/functions.php` plus the matching rule in
+  `style.css`), so the footer starts below the fold and `/cart/` measures
+  CLS 0 on every run. A cart with items keeps WooCommerce's default behaviour.
 
 Measured on a working cart (WooCommerce 11.2.1, WordPress 7.1, 15 runs):
 performance **0.44–0.66** per run (median 0.57), FCP ~2.2 s, TBT 0.3–0.8 s on

@@ -13,3 +13,14 @@ License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: flavian-shop
 */
+
+/*
+ * Cart page: reserve a viewport of height while the Cart block hydrates on an
+ * empty cart. The class is added by flavian_shop_flag_empty_cart_block() in
+ * functions.php; see the docblock there for why. Without it the loading
+ * skeleton -> "Your cart is currently empty" swap pulls the footer into view
+ * and pushes it out again, a CLS of ~0.22 on mobile.
+ */
+.wp-block-woocommerce-cart.flavian-cart-is-empty {
+	min-height: 100vh;
+}

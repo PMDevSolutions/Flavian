@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1](https://github.com/PMDevSolutions/Flavian/compare/v2.0.0...v2.0.1) (2026-10-23)
+
+
+### Fixed
+
+* **theme:** hold Cart block height on an empty cart to stop the CLS flake ([925c845](https://github.com/PMDevSolutions/Flavian/commit/925c845735038e535343c89ca45222ab808cca7a))
+* **theme:** render the Cart and Checkout blocks on flavian-shop pages ([084c58e](https://github.com/PMDevSolutions/Flavian/commit/084c58ea1316a7fce60d9438080e834e8e6dee06))
+
 ## [2.0.0](https://github.com/PMDevSolutions/Flavian/compare/v1.12.1...v2.0.0) (2026-08-24)
 
 

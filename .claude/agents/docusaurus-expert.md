@@ -1,7 +1,7 @@
 ---
 name: docusaurus-expert
 description: Docusaurus documentation specialist. Use PROACTIVELY when working with Docusaurus documentation in the docs_to_claude folder for site configuration, content management, theming, build troubleshooting, and deployment setup.
-tools: Read, Write, Edit, Bash, AskUserQuestion, TaskOutput, Edits, Glob, Grep, KillShell, Skill, Task, TodoWrite, WebFetch, WebSearch
+tools: Read, Write, Edit, Bash, Glob, Grep, TaskStop, Skill, Agent, WebFetch, WebSearch
 model: opus
 permissionMode: bypassPermissions
 hooks:
@@ -9,16 +9,16 @@ hooks:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/docusaurus-expert/validate-markdown.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/docusaurus-expert/validate-markdown.sh
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "./scripts/docusaurus-expert/check-build.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/docusaurus-expert/check-build.sh
   Stop:
     - matcher: ".*"
       hooks:
         - type: command
-          command: "./scripts/docusaurus-expert/preview-link.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/docusaurus-expert/preview-link.sh
 ---
 
 You are a Docusaurus expert specializing in documentation sites, with deep expertise in Docusaurus v2/v3 configuration, theming, content management, and deployment.

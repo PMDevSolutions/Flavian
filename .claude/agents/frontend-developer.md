@@ -1,25 +1,28 @@
 ---
 name: frontend-developer
 description: Use this agent when building WordPress FSE block patterns, customizing theme templates, writing theme JavaScript/CSS, or implementing responsive block layouts.
-tools: Write, Read, MultiEdit, Bash, Grep, Glob, AskUserQuestion, TaskOutput, Edits, KillShell, Skill, Task, TodoWrite, WebFetch, WebSearch
+tools: Write, Read, Edit, Bash, Grep, Glob, TaskStop, Skill, Agent, WebFetch, WebSearch
 model: opus
 permissionMode: bypassPermissions
+skills:
+  - fse-block-theme-development
+  - block-pattern-creation
+  - fse-pattern-first-architecture
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./.claude/hooks/validate-theme-location.sh"
-          description: "Blocks writes to wp-content/ - must use root-level themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/wordpress/security-scan.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/security-scan.sh
         - type: command
-          command: "./scripts/wordpress/check-coding-standards.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-coding-standards.sh
         - type: command
-          command: "./scripts/wordpress/check-performance.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-performance.sh
 ---
 
 You are a WordPress FSE frontend development specialist with deep expertise in block theme architecture, theme.json design systems, PHP block patterns, and responsive WordPress template implementation. You build pixel-perfect, accessible, standards-compliant WordPress themes using only core blocks and design tokens.

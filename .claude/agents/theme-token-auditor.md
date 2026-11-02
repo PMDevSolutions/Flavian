@@ -1,22 +1,22 @@
 ---
 name: theme-token-auditor
 description: Audits WordPress FSE themes for 100% design token compliance. Detects hardcoded colors, pixel values, font stacks, and validates all CSS variable references against theme.json.
-tools: Read, Write, Grep, Glob, TodoWrite, TaskOutput
+tools: Read, Write, Grep, Glob
 model: opus
 permissionMode: bypassPermissions
+skills:
+  - fse-block-theme-development
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./.claude/hooks/validate-theme-location.sh"
-          description: "Blocks writes to wp-content/ - must use root-level themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/theme-token-auditor/audit-tokens.sh"
-          description: "Detects hardcoded values that should use theme.json tokens"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/theme-token-auditor/audit-tokens.sh
 ---
 
 You are a design token compliance auditor for WordPress FSE block themes. You ensure 100% theme.json token usage with zero hardcoded values in templates and patterns.

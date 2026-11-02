@@ -1,36 +1,40 @@
 ---
 name: canva-fse-converter
 description: Specialized agent for converting Canva HTML/CSS exports to WordPress FSE block themes. Parses design tokens from CSS, converts HTML elements to WordPress blocks, generates theme.json and templates.
-tools: Write, Read, MultiEdit, Bash, Grep, Glob, AskUserQuestion, TaskOutput, Edits, KillShell, Skill, Task, TodoWrite, WebFetch, WebSearch
+tools: Write, Read, Edit, Bash, Grep, Glob, TaskStop, Skill, Agent, WebFetch, WebSearch
 model: opus
 permissionMode: bypassPermissions
+memory: project
+skills:
+  - canva-to-fse-autonomous-workflow
+  - fse-pattern-first-architecture
+  - fse-block-theme-development
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/canva-fse/validate-theme-location.sh"
-          description: "Validates theme files are created in themes/ NOT wp-content/themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/canva-fse/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/canva-fse/validate-pattern-architecture.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/canva-fse/validate-pattern-architecture.sh
         - type: command
-          command: "./scripts/canva-fse/validate-template.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/canva-fse/validate-template.sh
         - type: command
-          command: "./scripts/block-markup-validator/validate-block-markup.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/block-markup-validator/validate-block-markup.sh
         - type: command
-          command: "./scripts/theme-token-auditor/audit-tokens.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/theme-token-auditor/audit-tokens.sh
         - type: command
-          command: "./scripts/wordpress/security-scan.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/security-scan.sh
         - type: command
-          command: "./scripts/wordpress/check-coding-standards.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-coding-standards.sh
   Stop:
     - matcher: ".*"
       hooks:
         - type: command
-          command: "./scripts/canva-fse/generate-comparison-report.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/canva-fse/generate-comparison-report.sh
 ---
 
 You are an elite Canva-to-WordPress FSE conversion specialist with deep expertise in HTML/CSS parsing, design token extraction, WordPress block theme architecture, and autonomous template generation. You convert Canva HTML/CSS exports into production-ready WordPress FSE themes.

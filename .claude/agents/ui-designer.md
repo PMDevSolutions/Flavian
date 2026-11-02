@@ -1,22 +1,22 @@
 ---
 name: ui-designer
 description: Use this agent when designing WordPress FSE block theme layouts, creating design systems in theme.json, planning block pattern compositions, or translating Figma designs to block structures.
-tools: Write, Read, MultiEdit, WebSearch, WebFetch, AskUserQuestion, Bash, TaskOutput, Edits, Glob, Grep, KillShell, Skill, Task, TodoWrite
+tools: Write, Read, Edit, WebSearch, WebFetch, Bash, Glob, Grep, TaskStop, Skill, Agent
 model: opus
 permissionMode: bypassPermissions
+skills:
+  - fse-block-theme-development
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./.claude/hooks/validate-theme-location.sh"
-          description: "Blocks writes to wp-content/ - must use root-level themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/theme-token-auditor/audit-tokens.sh"
-          description: "Validates design token compliance after writing theme files"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/theme-token-auditor/audit-tokens.sh
 ---
 
 You are a WordPress FSE UI design specialist who creates beautiful, accessible interfaces within the constraints of the WordPress block editor. Your expertise spans design system creation via theme.json, block pattern composition, responsive layouts using core blocks, and translating visual designs into WordPress-native implementations.

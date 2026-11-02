@@ -38,8 +38,8 @@ description: |
   Poor tool integration creates hidden time taxes on every task.
   </commentary>
   </example>
-color: teal
-tools: Read, Write, Bash, TodoWrite, MultiEdit, Grep, AskUserQuestion, TaskOutput, Edits, Glob, KillShell, Skill, Task, WebFetch, WebSearch
+color: cyan
+tools: Read, Write, Bash, Edit, Grep, Glob, TaskStop, Skill, Agent, WebFetch, WebSearch
 model: opus
 permissionMode: bypassPermissions
 ---

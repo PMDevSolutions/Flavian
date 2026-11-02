@@ -1,7 +1,7 @@
 ---
 name: headless-developer
 description: Use this agent for headless WordPress setup and decoupled-frontend integration. Specializes in installing and configuring WPGraphQL, wiring CORS and preview links via the flavian-headless mu-plugin, scaffolding Next.js frontends, and troubleshooting GraphQL/REST endpoints. Examples - <example>Context: User wants to start a headless project. user: 'Set up headless WordPress with a Next.js frontend.' assistant: 'I'll use headless-developer to run setup-headless.sh, scaffold a Next.js app under frontend/, and wire the preview secret.' <commentary>Headless setup is multi-step and easy to half-finish — the agent runs the canonical scripts and verifies endpoints.</commentary></example> <example>Context: Preview is broken. user: 'My draft posts redirect to a 401 page from the WP preview button.' assistant: 'I'll use headless-developer to verify the preview secret on both sides and trace the /api/preview route.' <commentary>Preview failures usually mean secret drift between wp_options and .env.local — the agent knows where to look.</commentary></example> <example>Context: User wants a custom GraphQL field. user: 'Expose a custom field via WPGraphQL.' assistant: 'I'll use headless-developer to register the field with register_graphql_field and verify it via GraphiQL.' <commentary>WPGraphQL has a specific extension API that's easy to misuse.</commentary></example>
-tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, AskUserQuestion
+tools: Read, Write, Bash, Grep, Glob
 model: opus
 permissionMode: bypassPermissions
 ---

@@ -1,8 +1,10 @@
 # Custom Agents Reference Guide
 
-**Last Updated:** 2026-05-06
+**Last Updated:** 2026-11-02
 **Total Custom Agents:** 53
 **Location:** `.claude/agents/`
+**Ships in the `flavian` plugin:** 27 of the 53 (`.claude-plugin/plugin.json` → `metadata.excludedAgents` lists the rest, with the reason)
+**Frontmatter conventions:** `.claude/rules/claude-code-conventions.md`; check with `node scripts/claude-code-conformance.js`
 
 This guide categorizes all custom agents by relevance to WordPress FSE theme development.
 
@@ -158,7 +160,7 @@ These agents can be useful but aren't WordPress-specific:
 
 ---
 
-## Generic/Cross-Domain Agents (27 total)
+## Generic/Cross-Domain Agents (27 of the 53)
 
 These agents are domain-agnostic and useful across all project types. Backported from the Coding Framework project.
 
@@ -213,11 +215,11 @@ These agents are domain-agnostic and useful across all project types. Backported
 
 ## Using Custom Agents
 
-Custom agents are invoked through Claude Code's Task tool:
+Custom agents are invoked through Claude Code's Agent tool:
 
 ```
 User: "Can you help optimize the theme performance?"
-Claude: [Uses Task tool with subagent_type="performance-benchmarker"]
+Claude: [Uses the Agent tool with subagent_type="performance-benchmarker"]
 ```
 
 Agents are automatically selected based on task context, or you can explicitly request:
@@ -230,14 +232,14 @@ User: "Use the frontend-developer agent to help me build this block pattern"
 
 ## How Agents Work with WordPress Skills
 
-**NEW:** This template includes 12 custom WordPress development skills that complement the agents.
+This template includes 16 custom WordPress skills that complement the agents (`.claude/skills/README.md`).
 
 ### Skills vs Agents
 
 | Type | Purpose | When Triggered | Example |
 |------|---------|----------------|---------|
 | **Skills** | Systematic workflows and best practices | Keyword detection in conversation | "create block theme" triggers `fse-block-theme-development` |
-| **Agents** | Specialized task execution | Task tool invocation | frontend-developer builds block patterns |
+| **Agents** | Specialized task execution | Agent tool invocation | frontend-developer builds block patterns |
 
 ### Agent-Skill Integration
 
@@ -346,7 +348,7 @@ Ready for release
 
 ## Agent Hook Configurations
 
-Agents with automated hooks (18 of the 26 WordPress-focused agents):
+Agents with automated hooks (18 of the WordPress-focused agents), plus the project-level hooks in `.claude/settings.json` that run for every agent (`validate-theme-location.sh`, `deploy-guard.sh`, `pre-commit-token-guard.sh`, `bundle-size-guard.sh`, `post-bash-reminders.sh`, `session-context.sh`; see the `wordpress-hook-integration` skill):
 
 ### WordPress Core Quality Hooks (shared scripts)
 These scripts are shared across multiple agents:
@@ -355,8 +357,8 @@ These scripts are shared across multiple agents:
 - `scripts/wordpress/check-performance.sh` — Used by: frontend-developer, performance-benchmarker, test-writer-fixer
 
 ### Theme Protection Hooks
-- `.claude/hooks/validate-theme-location.sh` — Blocks writes to wp-content/ (project-level, applied to: frontend-developer, block-markup-validator, ui-designer, theme-token-auditor)
-- `scripts/figma-fse/validate-theme-location.sh` — Same protection for figma-fse-converter
+- `.claude/hooks/validate-theme-location.sh` — Denies writes to wp-content/ for every agent (registered in `.claude/settings.json`) and from the frontmatter of frontend-developer, block-markup-validator, ui-designer, theme-token-auditor, asset-cataloger, plugin-developer and seo-schema-agent
+- `scripts/figma-fse/validate-theme-location.sh` — The same protection for figma-fse-converter (a wrapper around the project hook; `scripts/canva-fse/` and `scripts/indesign-fse/` carry the same wrapper for their converters)
 
 ### New Agent Hooks
 | Agent | Hook Type | Script | Purpose |
@@ -377,4 +379,4 @@ These agents are research/audit-only and don't need automated hooks:
 
 ---
 
-**Architecture Assessment:** 53 custom agents provide comprehensive development coverage — 26 WordPress-focused agents for design-source conversion (Figma/Canva/InDesign), visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, SEO, security, deployment, e-commerce, and headless integration, plus 27 generic cross-domain agents for business, marketing, engineering, and meta/ops tasks.
+**Architecture Assessment:** 53 custom agents provide comprehensive development coverage: 26 of them are WordPress-focused, for design-source conversion (Figma/Canva/InDesign), visual QA, asset management, environment management, markup validation, accessibility, token compliance, content seeding, SEO, security, deployment, e-commerce, and headless integration, and 27 are generic (cross-domain), for business, marketing, engineering and meta/ops tasks. The plugin ships the WordPress and engineering ones.

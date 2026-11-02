@@ -23,7 +23,7 @@ Run `node scripts/claude-code-conformance.js` after editing anything under `.cla
 - `memory: project` writes to `.claude/agent-memory/<name>/` (committed; `agent-memory-local/` is ignored). Eight agents use it because their knowledge compounds across conversions and audits: the three converters, `visual-qa-agent`, `asset-cataloger`, `performance-benchmarker`, `security-audit-agent`, `wp-environment-manager`.
 - `color` accepts only red, blue, green, yellow, purple, orange, pink, cyan.
 - Agent-scoped hooks reference their scripts as `bash "$CLAUDE_PROJECT_DIR"/scripts/<agent>/<script>.sh` or `.../.claude/hooks/<name>.sh`, on the stdin JSON contract. Plugin agents ignore `hooks`, `mcpServers` and `permissionMode`, so every rule that must hold in a plugin install is also a settings-level hook (`deploy-guard.sh` denies deploys in any subagent by reading `agent_id`). `deployment-agent` and `devops-automator` carry `agent-no-deploy.sh` in their frontmatter.
-- 28 agents still pin `model: opus` and `permissionMode: bypassPermissions`, a choice from before this pass that the audit record lists for review. In those agents a hook's `ask` becomes `deny`.
+- 28 of the 53 agents still pin `model: opus` and `permissionMode: bypassPermissions`, a choice from before this pass that the audit record lists for review. In those agents a hook's `ask` becomes `deny`.
 - The plugin ships 27 of the 53 agents; `.claude-plugin/plugin.json` → `metadata.excludedAgents` lists the other 26 with the reason. A new agent goes in one list or the other, and the conformance check enforces it.
 
 ## Skills (`.claude/skills/<name>/SKILL.md`)

@@ -6,7 +6,7 @@ This directory contains hook scripts for Claude Code agents. These hooks provide
 
 The hook system consists of:
 - **4 WordPress validation scripts** - Global validation for PHP files
-- **21 agent-specific scripts** - 3 scripts per agent for 7 specialized agents
+- **21 agent-specific scripts** - 3 scripts for each of seven agents
 - **Automated reporting** - All hooks save reports to `.claude/reports/`
 
 ## WordPress Global Hooks
@@ -333,3 +333,10 @@ When adding new hooks:
 **Agents with hooks**: 7
 **Total scripts**: 40
 **WordPress validation scripts**: 4
+
+## Claude Code Configuration Checks
+
+- `claude-code-conformance.js` checks `.claude/` against the Claude Code spec in `lib/claude-code-spec.json`: retired tool names, frontmatter fields, the hook contract, the plugin manifest. `node scripts/claude-code-conformance.js [--json] [--strict] [--root <dir>]`; exit 0 clean, 1 errors, 2 usage. Copied from Maecenas; keep the copies in sync when the spec changes.
+- `check-doc-counts.sh` fails when an "N agents" / "N skills" claim in the live docs disagrees with disk (`--json`, `--root <dir>`); historical records under `docs/plans/`, `docs/audits/` and `archive/` are excluded.
+- `validate-agent-configs.sh` validates agent and skill frontmatter and `settings.json` (bats tests in `tests/validate-agent-configs.bats`); `validate-agent-configs-ci.sh` is the CI form.
+- The project hooks under `.claude/hooks/` follow the stdin JSON contract (`.claude/hooks/lib/hook-io.sh`) and are tested in `tests/claude-code/hooks.test.mjs`. The agent-scoped scripts in this directory read the same event JSON on stdin.

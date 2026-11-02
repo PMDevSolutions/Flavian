@@ -299,6 +299,8 @@ User: "Yes, proceed"
 -> Mode: Autonomous (no checkpoint prompts)
 ```
 
+**Progress and resumability:** as in the Figma pipeline, keep `.claude/pipeline/<theme-name>/state.json` current after every template and phase boundary (schema in `figma-to-fse-autonomous-workflow/SKILL.md` → Progress Tracking, with `"pipeline": "canva-to-fse"`). A fresh session resumes from it; TodoWrite is not used.
+
 **Step 2.2: Verify theme.json Foundation**
 
 theme.json already created in Phase 1.2 - verify it exists:

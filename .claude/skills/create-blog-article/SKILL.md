@@ -1,10 +1,14 @@
 ---
+name: create-blog-article
+disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash(python3:*), Bash(mkdir:*), Bash(rm:*)
 argument-hint: <component-path>
 description: Create an SEO-optimized blog article for a Claude Code component with AI-generated cover image
 ---
 
 # Create Blog Article for Claude Code Component
+
+> **Provenance (2026-11-02):** this skill was imported from the claude-code-templates project's command set. The paths it names (`cli-tool/components/...`, `docs/blog/...`, `scripts/generate_blog_images.py`, the `code-reviewer-agent` template) do not exist in Flavian, so it does not run here as written. Adapt it first: Flavian's agents live in `.claude/agents/<name>.md` and its skills in `.claude/skills/<name>/SKILL.md`. It is user-invoked only (`disable-model-invocation: true`).
 
 You will create a complete, SEO-optimized blog article for a Claude Code component.
 

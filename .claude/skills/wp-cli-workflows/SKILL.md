@@ -627,7 +627,7 @@ This skill works with:
 - **frontend-developer agent** - Theme setup and development
 
 Complements:
-- **commit-commands plugin** - Git workflows after WP-CLI operations
+- **git** - commit the resulting theme or content changes with a Conventional Commits message
 - **github plugin** - Integrating WP-CLI with GitHub workflows
 
 ## WP-CLI Cheat Sheet

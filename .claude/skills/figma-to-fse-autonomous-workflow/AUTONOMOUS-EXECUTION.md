@@ -108,10 +108,10 @@ This hands off to executing-plans skill, which:
    - Complex component → use simpler blocks
    - Log errors but continue
 
-3. **Use TodoWrite for progress tracking**
-   - Mark tasks in_progress before starting
-   - Mark completed after finishing
-   - Update user only at checkpoints (every 3-5 templates)
+3. **Track progress in the state file** (`.claude/pipeline/<theme>/state.json`; TodoWrite is not offered on current models)
+   - Mark a template `running` before starting and `done` after finishing
+   - Rewrite the file after every template and at every phase boundary
+   - Update the user only at checkpoints (every 3-5 templates)
 
 4. **Validate automatically via hooks**
    - Post-template hook runs after each template
@@ -119,10 +119,10 @@ This hands off to executing-plans skill, which:
    - Scans security and coding standards
    - Reports issues but doesn't block
 
-5. **Checkpoint for long sessions**
-   - Save state every 3 templates to episodic memory
-   - If context approaches limit, checkpoint and inform user
-   - Can resume from checkpoint in fresh session
+5. **Resume from the state file in long sessions**
+   - The state file is the checkpoint; nothing is saved to episodic memory
+   - If context approaches the limit, make sure the file is current and inform the user
+   - A fresh session resumes from the first template that is not `done`
 
 ---
 
@@ -532,7 +532,7 @@ Before considering autonomous execution ready:
 - [ ] Verify all validation hooks run automatically
 - [ ] Verify error recovery works (fallback patterns)
 - [ ] Test with multiple templates (6 templates)
-- [ ] Verify episodic memory checkpointing
+- [ ] Verify resumption from the state file
 
 ---
 

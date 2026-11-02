@@ -10,6 +10,11 @@
 !.claude/templates/
 !.claude/*.md
 !.claude/settings.json
+!.claude/rules/
+!.claude/workflows/
+!.claude/agent-memory/
+.claude/agent-memory-local/
+# .claude/pipeline/ (conversion state files) stays local to a checkout: covered by .claude/* above
 
 # Deployment configs: example templates are tracked; real env files are not.
 .claude/config/deployment/*.yml
@@ -219,3 +224,6 @@ playwright-report/
 # Deployment copies in wp-content/ subdirectories are ignored (not tracked)
 # It excludes Claude Code user settings but preserves shared documentation and validation scripts
 # Adjust patterns based on your specific workflow needs
+
+# claude plugin eval output (evals/README.md)
+evals/results/

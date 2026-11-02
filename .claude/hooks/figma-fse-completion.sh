@@ -2,6 +2,11 @@
 # Figma FSE Conversion Completion Hook
 # Runs when all Figma-to-FSE templates are complete
 # Performs final validation, generates comparison report, runs quality checks
+#
+# Run by the figma-fse-converter agent (bash .claude/hooks/figma-fse-completion.sh themes/<slug>)
+# or with the event JSON on stdin. Output to stderr; always exits 0.
+set -u
+trap 'exit 0' ERR
 
 # Colors for output
 RED='\033[0;31m'
@@ -18,13 +23,13 @@ INPUT=$(cat)
 THEME_DIR=$(echo "$INPUT" | jq -r '.tool_input.theme_dir // .theme_dir // empty' 2>/dev/null)
 
 # Allow command-line override
-if [ "$1" ]; then
+if [ -n "${1:-}" ]; then
     THEME_DIR="$1"
 fi
 
 # If no theme directory specified, try to find most recent
 if [ -z "$THEME_DIR" ]; then
-    THEME_DIR=$(find themes/ -maxdepth 1 -type d -not -name "themes" -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+    THEME_DIR=$(ls -td themes/*/ 2>/dev/null | head -n 1 | sed "s#/$##")
 fi
 
 if [ -z "$THEME_DIR" ] || [ ! -d "$THEME_DIR" ]; then
@@ -87,11 +92,11 @@ if [ -d "$THEME_DIR/templates" ]; then
             TEMPLATE_NAME=$(basename "$template")
 
             # Check for hardcoded hex colors
-            COLORS=$(grep -c '#[0-9A-Fa-f]\{6\}' "$template" 2>/dev/null || echo "0")
+            COLORS=$(grep -c '#[0-9A-Fa-f]\{6\}' "$template" 2>/dev/null || true)
             TOTAL_HARDCODED_COLORS=$((TOTAL_HARDCODED_COLORS + COLORS))
 
             # Check for hardcoded pixel sizes (excluding block comments)
-            PIXELS=$(grep -v '<!-- wp:' "$template" | grep -c '"[0-9]\+px"' 2>/dev/null || echo "0")
+            PIXELS=$(grep -v '<!-- wp:' "$template" | grep -c '"[0-9]\+px"' 2>/dev/null || true)
             TOTAL_HARDCODED_PIXELS=$((TOTAL_HARDCODED_PIXELS + PIXELS))
 
             # Check block balance
@@ -135,9 +140,9 @@ echo -e "${BLUE}🎨 Design System Validation:${NC}" >&2
 if [ -f "$THEME_DIR/theme.json" ]; then
     # Check if jq is available for JSON parsing
     if command -v jq &> /dev/null; then
-        COLORS=$(jq '.settings.color.palette | length' "$THEME_DIR/theme.json" 2>/dev/null || echo "0")
-        FONT_SIZES=$(jq '.settings.typography.fontSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || echo "0")
-        SPACING=$(jq '.settings.spacing.spacingSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || echo "0")
+        COLORS=$(jq '.settings.color.palette | length' "$THEME_DIR/theme.json" 2>/dev/null || true)
+        FONT_SIZES=$(jq '.settings.typography.fontSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || true)
+        SPACING=$(jq '.settings.spacing.spacingSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || true)
 
         echo "  Colors: $COLORS" >&2
         echo "  Font Sizes: $FONT_SIZES" >&2
@@ -238,9 +243,9 @@ cat > "$REPORT_FILE" <<EOF
 
 ### Design System
 $(if command -v jq &> /dev/null && [ -f "$THEME_DIR/theme.json" ]; then
-    COLORS=$(jq '.settings.color.palette | length' "$THEME_DIR/theme.json" 2>/dev/null || echo "0")
-    FONT_SIZES=$(jq '.settings.typography.fontSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || echo "0")
-    SPACING=$(jq '.settings.spacing.spacingSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || echo "0")
+    COLORS=$(jq '.settings.color.palette | length' "$THEME_DIR/theme.json" 2>/dev/null || true)
+    FONT_SIZES=$(jq '.settings.typography.fontSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || true)
+    SPACING=$(jq '.settings.spacing.spacingSizes | length' "$THEME_DIR/theme.json" 2>/dev/null || true)
     echo "- Colors: $COLORS"
     echo "- Font Sizes: $FONT_SIZES"
     echo "- Spacing Tokens: $SPACING"

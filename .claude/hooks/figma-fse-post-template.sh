@@ -2,6 +2,11 @@
 # Figma-to-FSE Post-Template Hook
 # Runs after each FSE template creation to validate syntax and quality
 # Part of the figma-fse-converter agent workflow
+#
+# Input: the hook event as JSON on stdin (a Write/Edit event). Output to stderr;
+# always exits 0.
+set -u
+trap 'exit 0' ERR
 
 # Read JSON input from stdin
 INPUT=$(cat)

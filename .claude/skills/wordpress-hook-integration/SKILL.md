@@ -1,217 +1,133 @@
 ---
 name: wordpress-hook-integration
-description: Use when creating Claude Code agent hooks, implementing PreToolUse or PostToolUse patterns, or integrating WordPress workflows with custom agents in this template. Keywords: agent hooks, PreToolUse, PostToolUse, Claude Code hooks, custom agents, workflow automation, WordPress automation
+description: Use when creating or changing Claude Code hooks in this template (PreToolUse guards, PostToolUse reminders, SessionStart context), registering them in settings.json and hooks.json, or testing them. Keywords: agent hooks, PreToolUse, PostToolUse, SessionStart, Claude Code hooks, hook-io, deploy guard, workflow automation
 ---
 
-# WordPress Hook Integration for Claude Code Agents
+# Claude Code Hook Integration
 
 ## Overview
 
-Claude Code agent hooks execute shell scripts before/after tool use. This template uses hooks to enforce project conventions, validate generated themes, and run quality checks during the Figma-to-FSE pipeline.
+Hooks are shell scripts Claude Code runs at lifecycle events. In this template they enforce the root-level layout, stop deploys and data loss for a human, check commits for hardcoded design values, and remind the model to run the quality gate. Every hook follows one contract, lives in `.claude/hooks/`, and has a test in `tests/claude-code/hooks.test.mjs`.
 
-**Core Principle:** Hooks automate quality enforcement and project rules without manual intervention. They warn or block based on severity.
+The authoritative reference is https://code.claude.com/docs/en/hooks. The repo-specific conventions are in `.claude/rules/claude-code-conventions.md`.
 
 ## When to Use
 
-Use this skill when:
-- Creating hooks for custom agents in this template
-- Adding validation to the Figma-to-FSE conversion pipeline
-- Enforcing project conventions (e.g., root-level file locations)
-- Running quality checks after template generation
-- Understanding or modifying existing hook behavior
-
-**Symptoms that trigger this skill:**
-- "create hook"
-- "agent hook"
-- "PreToolUse"
-- "PostToolUse"
-- "validate template"
-- "block markup"
+- Adding a guard or reminder that should run for every agent
+- Changing what a hook catches, or its message
+- Registering a hook for the plugin build (`hooks.json`) as well as the project (`settings.json`)
+- Writing or fixing a hook test
 
 ## Current Hook Architecture
 
-This template has 3 active hooks in `.claude/hooks/`:
+Project hooks, registered in `.claude/settings.json` and mirrored in `.claude/hooks/hooks.json` for plugin installs:
 
-```
-.claude/hooks/
-├── validate-theme-location.sh       # PreToolUse: Blocks writes to wp-content/
-├── figma-fse-post-template.sh       # PostToolUse: Validates each generated template
-└── figma-fse-completion.sh          # PostToolUse: Final conversion report and validation
-```
+| Hook | Event | What it does |
+|------|-------|--------------|
+| `validate-theme-location.sh` | PreToolUse `Write\|Edit\|NotebookEdit` | Denies writes under `wp-content/(themes\|plugins\|mu-plugins)/` with the corrected root-level path. Enforces only in a repo with a root `themes/` and nothing tracked under `wp-content/`. |
+| `deploy-guard.sh` | PreToolUse `Bash` (`onFailure: block`) | Asks before `deploy.sh --env production`, any `rollback.sh`, `wp --ssh=`, remote `ssh`/`scp`/`rsync` writes, `docker compose down -v`, `wp db reset`; reminds on a staging deploy; denies all of it inside a subagent. |
+| `agent-no-deploy.sh` | agent frontmatter PreToolUse `Bash` | `deploy-guard.sh --subagent`, for `deployment-agent` and `devops-automator`. |
+| `pre-commit-token-guard.sh` | PreToolUse `Bash`, `if: "Bash(git commit *)"` | Asks when a theme template, part or pattern the commit carries has a hex colour, pixel spacing, pixel font-size or font-family in a `style` attribute or block JSON. |
+| `bundle-size-guard.sh` | PreToolUse `Bash`, `if: "Bash(git commit *)"` | Reminder when a theme over 5120 KB or a plugin over 10240 KB is in the commit. |
+| `post-bash-reminders.sh <case>` | PostToolUse `Bash`, one `if:` per case | `build-qa`, `coverage`, `dark-mode`, `mutation` reminders after standards checks, PHPUnit/Pest runs and visual diffs. |
+| `session-context.sh` | SessionStart `startup\|resume\|clear\|compact` | Plain-text status: conversion runs in flight, themes, Docker, `.env`, branch, stray `wp-content/` files. Silent outside a Flavian checkout. |
+| `figma-fse-post-template.sh`, `figma-fse-completion.sh` | run by the converter agent through Bash | Per-template validation and the completion report under `.claude/reports/`. |
 
-### Hook 1: validate-theme-location.sh (PreToolUse)
+Agent-scoped hooks live in each agent's frontmatter (`hooks:`) and point at `scripts/<agent>/*.sh` or the project hooks through `bash "$CLAUDE_PROJECT_DIR"/...`. Plugin agents ignore frontmatter hooks, so anything that must hold in a plugin install is registered at the settings level too.
 
-**Purpose:** Enforces root-level file structure. Blocks any Write/Edit targeting `wp-content/themes/`, `wp-content/plugins/`, or `wp-content/mu-plugins/`.
+Shared code: `.claude/hooks/lib/hook-io.sh` (the contract: readers and JSON emitters) and `.claude/hooks/lib/flavian-helpers.sh` (Bash output, commit detection, the files a commit carries).
 
-**Behavior:**
-- Reads JSON input from stdin (Claude Code tool input format)
-- Extracts `file_path` from tool input
-- If path contains `wp-content/(themes|plugins|mu-plugins)/`, exits with code 2 (blocks operation)
-- Suggests the corrected root-level path
-- Runs for ALL agents, not just figma-fse-converter
+## The Contract
 
-**Exit codes:**
-- `0` — Path is valid, allow operation
-- `2` — Path targets wp-content, block operation
+- **Input:** the event as JSON on stdin. Common fields: `hook_event_name`, `cwd`, `permission_mode`, `session_id`; `agent_id` and `agent_type` when the hook fires inside a subagent. Tool events add `tool_name`, `tool_input` (`command` for Bash, `file_path` for Write/Edit) and, after the tool ran, `tool_response`.
+- **Output:** one JSON object on stdout, or nothing. SessionStart hooks may print plain text, which is added to context.
+- **Decisions:** a PreToolUse hook blocks with `permissionDecision: "deny"` or prompts with `"ask"`, each with a `permissionDecisionReason`. A reminder is `additionalContext`. A one-line user notice is a top-level `systemMessage`.
+- **Exit code:** always 0. Exit 2 also blocks (stderr becomes the reason) but the hooks here never rely on it. A hook that crashes must fail open: `set -u` plus `trap 'exit 0' ERR`.
+- **Not part of the contract:** `$TOOL_INPUT`, `$TOOL_OUTPUT`, `CLAUDE_TOOL_INPUT`. Hooks written against them never fire.
+- **Where a hook cannot prompt** (`bypassPermissions`, `dontAsk`), `hook_gate_decision` turns an `ask` into a `deny` that says where to run the command instead.
 
-### Hook 2: figma-fse-post-template.sh (PostToolUse)
+## Creating a New Hook
 
-**Purpose:** Validates each FSE template after creation during Figma-to-FSE conversion.
-
-**Behavior:**
-- Only triggers for HTML files matching `themes/*/templates/*.html`
-- Runs template validation, security scan, and coding standards checks
-- Always exits 0 (warns, never blocks) to avoid interrupting conversion flow
-- Delegates to `scripts/figma-fse/validate-template.sh`, `scripts/wordpress/security-scan.sh`, and `scripts/wordpress/check-coding-standards.sh` if they exist
-
-### Hook 3: figma-fse-completion.sh (PostToolUse / Manual)
-
-**Purpose:** Runs after all Figma-to-FSE templates are complete. Generates a full conversion report.
-
-**Checks performed:**
-1. Counts generated files (templates, parts, patterns)
-2. Validates zero hardcoded hex colors and pixel sizes in templates
-3. Checks block balance (open/close comment pairs)
-4. Validates theme.json design tokens (color count, font sizes, spacing)
-5. Runs security scan and coding standards check
-6. Generates a Markdown completion report in `.claude/reports/`
-
-**Can run manually:**
 ```bash
-bash .claude/hooks/figma-fse-completion.sh themes/my-theme
+#!/usr/bin/env bash
+# my-guard.sh — PreToolUse hook (matcher: Bash). One paragraph on what it stops and why.
+#
+# Input: the hook event as JSON on stdin. Output: JSON on stdout, or nothing.
+# Always exits 0.
+set -u
+trap 'exit 0' ERR
+
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/hook-io.sh
+source "$HOOK_DIR/lib/hook-io.sh"
+# shellcheck source=lib/flavian-helpers.sh
+source "$HOOK_DIR/lib/flavian-helpers.sh"
+
+hook_read_input      # HOOK_EVENT, TOOL_NAME, TOOL_COMMAND, TOOL_FILE_PATH, TOOL_RESPONSE
+hook_read_context    # HOOK_PERMISSION_MODE, HOOK_AGENT_ID, HOOK_AGENT_TYPE, HOOK_CWD
+
+[ "$TOOL_NAME" = "Bash" ] || exit 0
+printf '%s' "$TOOL_COMMAND" | grep -Eq 'wp[[:space:]]+search-replace' || exit 0
+printf '%s' "$TOOL_COMMAND" | grep -Eq -- '--dry-run' && exit 0
+
+hook_gate_decision ask "Search-replace guard: this rewrites the database. Run it with --dry-run first."
+exit 0
 ```
 
-## Hook Types
+Rules:
 
-| Hook Type | When It Runs | Exit Code Behavior |
-|-----------|--------------|-------------------|
-| **PreToolUse** | Before tool execution | `0` = allow, `2` = block |
-| **PostToolUse** | After tool execution | `0` = success (warnings OK), non-zero = report issue |
+1. Bash 3.2 compatible (macOS): no `grep -P`, `mapfile`, `${var,,}`, GNU `find -printf`.
+2. Every command that may fail inside `$( )` gets `|| true`; the `ERR` trap otherwise ends the hook silently.
+3. Filter early and cheaply (tool name, a `case` on the command) before anything heavy.
+4. Messages start with a stable tag (`Deploy guard:`, `Token guard:`, `[bundle-guard]`) so tests and readers can find them.
+5. Never write files, make network requests or take longer than a few seconds.
 
-## Creating New Hooks
+## Registering a Hook
 
-### Input Format
-
-Hooks receive JSON on stdin from Claude Code:
+In `.claude/settings.json` (project) and `.claude/hooks/hooks.json` (plugin), with the same handlers:
 
 ```json
 {
-  "tool_name": "Write",
-  "tool_input": {
-    "file_path": "themes/my-theme/templates/index.html",
-    "content": "..."
-  }
+  "matcher": "Bash",
+  "hooks": [
+    {
+      "type": "command",
+      "if": "Bash(wp search-replace *)",
+      "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/my-guard.sh",
+      "timeout": 10,
+      "statusMessage": "Checking the search-replace guard"
+    }
+  ]
 }
 ```
 
-Extract values with `jq`:
-```bash
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-```
-
-### Pattern: Blocking Hook (PreToolUse)
-
-```bash
-#!/bin/bash
-# Hook: PreToolUse - blocks invalid operations
-
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-
-# Skip if no file path
-[ -z "$FILE_PATH" ] && exit 0
-
-# Check condition
-if [[ "$FILE_PATH" =~ some-bad-pattern ]]; then
-    echo "BLOCKED: Reason" >&2
-    exit 2
-fi
-
-exit 0
-```
-
-### Pattern: Warning Hook (PostToolUse)
-
-```bash
-#!/bin/bash
-# Hook: PostToolUse - warns but does not block
-
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-
-# Only process relevant files
-[[ ! "$FILE_PATH" =~ \.php$ ]] && exit 0
-
-# Run check
-echo "Running check on $FILE_PATH..." >&2
-# ... validation logic ...
-
-# Always exit 0 (warn, don't block)
-exit 0
-```
-
-## Hook Best Practices
-
-1. **Output to stderr** — Use `>&2` for all echo statements (stdout is reserved for Claude Code)
-2. **Fast execution** — Hooks should complete in < 5 seconds
-3. **Read from stdin** — Claude Code passes tool input as JSON on stdin
-4. **Use jq for parsing** — Extract fields with `jq -r '.tool_input.field // empty'`
-5. **Exit 0 for warnings** — Only use exit 2 for hard blocks (PreToolUse)
-6. **Filter by file path** — Check patterns early and exit 0 if not relevant
-7. **Idempotent** — Safe to run multiple times on the same input
-
-## Integration with 19 Custom Agents
-
-All hooks run for every agent. Use file path patterns and tool name checks to scope hooks to specific workflows:
-
-```bash
-# Only for figma-fse-converter output
-[[ ! "$FILE_PATH" =~ themes/.*/templates/.*\.html$ ]] && exit 0
-
-# Only for PHP pattern files
-[[ ! "$FILE_PATH" =~ themes/.*/patterns/.*\.php$ ]] && exit 0
-
-# Only for theme.json changes
-[[ ! "$FILE_PATH" =~ theme\.json$ ]] && exit 0
-```
+`hooks.json` uses `bash "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/my-guard.sh"`. An `if:` holds one permission rule and keeps the hook from starting for unrelated commands. `onFailure: "block"` makes a guard fail closed; reminders keep the default. The registration test fails if the two files drift apart.
 
 ## Testing Hooks
 
 ```bash
-# Test validate-theme-location with a blocked path
-echo '{"tool_input":{"file_path":"wp-content/themes/test/style.css"}}' | bash .claude/hooks/validate-theme-location.sh
-echo $?  # Should be 2
-
-# Test with a valid path
-echo '{"tool_input":{"file_path":"themes/test/style.css"}}' | bash .claude/hooks/validate-theme-location.sh
-echo $?  # Should be 0
-
-# Test completion hook manually
-bash .claude/hooks/figma-fse-completion.sh themes/my-theme
+node --test tests/claude-code/hooks.test.mjs
 ```
+
+Each hook gets: the contract cases (unrelated event, empty stdin, malformed JSON, executable bit, skeleton present) through the `HOOKS` list, plus behaviour cases built with `runHook(name, event, { cwd })`, `decision(out)`, `reason(out)` and `context(out)`. Repos with the Flavian layout come from `flavianRepo()`; a repo that tracks `wp-content/` from `wpContentRepo()`. A manual check:
+
+```bash
+printf '%s' '{"tool_name":"Write","tool_input":{"file_path":"wp-content/themes/x/style.css"}}' \
+  | CLAUDE_PROJECT_DIR="$PWD" bash .claude/hooks/validate-theme-location.sh
+# {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny", ...}}
+```
+
+The conformance check (`node scripts/claude-code-conformance.js`) fails on a hook that reads positional `TOOL_INPUT`, lacks the `ERR` trap, or is registered under an unknown event or with a missing script.
 
 ## No Exceptions
 
-**NEVER create hooks that:**
-
-1. Run for extended periods (> 10 seconds) without user notification
-2. Modify files without user knowledge
-3. Make network requests without disclosure
-4. Block critical operations silently
-5. Ignore error conditions
-6. Run destructive operations (delete, reset) without confirmation
+Never create hooks that run for more than a few seconds, modify files, make network requests, block silently, or run destructive operations. A guard asks a human; it does not act.
 
 ## Integration with This Template
 
-This skill enables:
-- **Root-level path enforcement** via validate-theme-location.sh
-- **Per-template validation** via figma-fse-post-template.sh
-- **Conversion completion reports** via figma-fse-completion.sh
-
-Works with all 53 custom agents in this template.
+The hooks hold the template's hard rules at runtime for every agent: the root-level layout, no unreviewed deploy or data loss, no hardcoded design values in a commit. Agents that run their own validators (the three converters, the validators and auditors, the test and performance agents) declare those in their frontmatter and point at `scripts/<agent>/`.
 
 ---
 
-**Skill Version:** 2.0.0
-**Last Updated:** 2026-03-06
+**Skill Version:** 3.0.0
+**Last Updated:** 2026-11-02

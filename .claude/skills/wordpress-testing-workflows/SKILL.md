@@ -805,7 +805,7 @@ This skill works with:
 
 Complements:
 - **wordpress-security-hardening skill** - Writing security tests
-- **commit-commands plugin** - Git workflows with test requirements
+- **git** - commit only after the tests pass (Conventional Commits; release-please reads them)
 
 ## Resources
 

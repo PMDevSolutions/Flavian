@@ -1,0 +1,36 @@
+{
+  "$comment": "Claude Code configuration spec used by scripts/claude-code-conformance.js. Verified against the official docs (code.claude.com/docs) and CHANGELOG on the date below; bump verifiedAgainst when re-audited.",
+  "verifiedAgainst": {"claudeCodeVersion": "2.1.316", "date": "2026-11-02", "docs": ["https://code.claude.com/docs/en/sub-agents", "https://code.claude.com/docs/en/skills", "https://code.claude.com/docs/en/hooks", "https://code.claude.com/docs/en/plugins-reference", "https://code.claude.com/docs/en/plugins/components", "https://code.claude.com/docs/en/memory", "https://code.claude.com/docs/en/workflows", "https://code.claude.com/docs/en/plugin-evals"], "note": "Re-verified 2026-11-02 for PMDevSolutions/Flavian#167 against the docs pages above and the CHANGELOG entries 2.1.311 to 2.1.316: no tool renames, hook events, frontmatter fields or manifest fields changed since 2.1.310 (new and irrelevant to this checker: permissions.blockWritesOutsideWorkingDirectories, the SessionStart matcher fork, permissionDecision defer, CLAUDE_CODE_SUBAGENT_EFFORT)."},
+  "agentFields": {
+    "required": ["name", "description"],
+    "optional": ["tools", "disallowedTools", "model", "permissionMode", "maxTurns", "autoCompactWindow", "skills", "mcpServers", "hooks", "memory", "background", "omitClaudeMd", "effort", "isolation", "color", "initialPrompt", "experimental"]
+  },
+  "skillFields": {
+    "required": ["name"],
+    "optional": ["description", "when_to_use", "disable-model-invocation", "user-invocable", "allowed-tools", "disallowed-tools", "model", "effort", "context", "agent", "background", "paths", "arguments", "argument-hint", "shell", "hooks", "metadata", "license", "compatibility", "display-name", "default-enabled", "fallback"]
+  },
+  "ruleFields": ["paths"],
+  "builtinTools": ["Read", "Write", "Edit", "Bash", "PowerShell", "Grep", "Glob", "LSP", "NotebookEdit", "WebFetch", "WebSearch", "Skill", "Agent", "ToolSearch", "EnterWorktree", "ExitWorktree", "Monitor", "TaskStop", "SendMessage", "Artifact", "SubagentHandback", "TodoWrite", "AskUserQuestion", "EnterPlanMode", "ExitPlanMode", "ListMcpResourcesTool", "ReadMcpResourceTool", "ScheduleWakeup", "Workflow", "CronCreate", "CronList", "CronDelete", "TaskCreate", "TaskGet", "TaskList", "TaskUpdate"],
+  "retiredTools": {
+    "MultiEdit": "removed; use Edit",
+    "Task": "renamed to Agent",
+    "TaskOutput": "removed in 2.1.277; Read the task's output file",
+    "BashOutput": "removed in 2.0.64; Read the task's output file",
+    "KillShell": "removed; use TaskStop",
+    "SlashCommand": "removed; use Skill",
+    "Edits": "never existed; use Edit",
+    "AgentOutputTool": "removed in 2.0.64"
+  },
+  "subagentUnavailableTools": ["AskUserQuestion", "EnterPlanMode", "ExitPlanMode", "ScheduleWakeup", "Workflow"],
+  "modelGatedTools": { "TodoWrite": "not offered on Opus 4.8+, Sonnet 5+, Fable, Mythos unless CLAUDE_CODE_ENABLE_TODO_TOOLS=1", "TaskCreate": "same as TodoWrite", "TaskGet": "same as TodoWrite", "TaskList": "same as TodoWrite", "TaskUpdate": "same as TodoWrite" },
+  "colors": ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"],
+  "models": ["sonnet", "opus", "haiku", "fable", "inherit", "best", "opusplan"],
+  "permissionModes": ["default", "acceptEdits", "auto", "dontAsk", "bypassPermissions", "plan", "manual"],
+  "efforts": ["low", "medium", "high", "xhigh", "max"],
+  "memoryScopes": ["user", "project", "local"],
+  "hookEvents": ["SessionStart", "Setup", "SessionEnd", "UserPromptSubmit", "UserPromptExpansion", "Stop", "StopFailure", "PreToolUse", "PostToolUse", "PostToolUseFailure", "PostToolBatch", "PermissionRequest", "PermissionDenied", "FileChanged", "CwdChanged", "ConfigChange", "InstructionsLoaded", "DirectoryAdded", "WorktreeCreate", "WorktreeRemove", "PreCompact", "PostCompact", "SubagentStart", "SubagentStop", "TaskCreated", "TaskCompleted", "TeammateIdle", "MessageDisplay", "Notification", "Elicitation", "ElicitationResult", "PreModelSwitch", "PostModelSwitch"],
+  "hookTypes": ["command", "http", "mcp_tool", "prompt", "agent"],
+  "hookHandlerFields": ["type", "command", "args", "shell", "async", "asyncRewake", "if", "timeout", "onFailure", "statusMessage", "once", "url", "headers", "allowedEnvVars", "server", "tool", "input", "prompt", "model", "continueOnBlock"],
+  "legacyHookEnvVars": ["$TOOL_INPUT", "$TOOL_OUTPUT", "${TOOL_INPUT}", "${TOOL_OUTPUT}"],
+  "pluginManifestFields": ["$schema", "name", "displayName", "version", "description", "author", "homepage", "repository", "license", "keywords", "metadata", "icon", "documentationUrl", "supportUrl", "privacyPolicyUrl", "termsOfServiceUrl", "defaultEnabled", "dependencies", "settings", "userConfig", "types", "channels", "skills", "commands", "agents", "hooks", "mcpServers", "lspServers", "outputStyles", "workflows", "experimental"]
+}

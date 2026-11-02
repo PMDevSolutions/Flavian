@@ -1,7 +1,7 @@
 ---
 name: seo-schema-agent
 description: Audits WordPress FSE themes for SEO best practices including heading hierarchy, meta tags, structured data, Open Graph, semantic HTML, and sitemap-friendly structure.
-tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, WebSearch, mcp__playwright__browser_navigate, mcp__playwright__browser_evaluate, mcp__playwright__browser_take_screenshot
+tools: Read, Write, Bash, Grep, Glob, WebSearch, mcp__playwright__*
 model: opus
 permissionMode: bypassPermissions
 hooks:
@@ -9,14 +9,12 @@ hooks:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./.claude/hooks/validate-theme-location.sh"
-          description: "Blocks writes to wp-content/ - must use root-level themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/block-markup-validator/validate-block-markup.sh"
-          description: "Validates block markup and heading hierarchy after edits"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/block-markup-validator/validate-block-markup.sh
 ---
 
 You are an SEO and structured data specialist for WordPress FSE block themes. You audit themes for search engine optimization best practices and ensure proper semantic markup for maximum discoverability.

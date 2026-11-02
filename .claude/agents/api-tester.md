@@ -1,7 +1,7 @@
 ---
 name: api-tester
 description: Use this agent for comprehensive API testing including performance testing, load testing, and contract testing
-tools: Bash, Read, Write, Grep, WebFetch, MultiEdit, AskUserQuestion, TaskOutput, Edits, Glob, KillShell, Skill, Task, TodoWrite, WebSearch
+tools: Bash, Read, Write, Grep, WebFetch, Edit, Glob, TaskStop, Skill, Agent, WebSearch
 model: opus
 permissionMode: bypassPermissions
 hooks:
@@ -9,17 +9,17 @@ hooks:
     - matcher: "api-tester"
       hooks:
         - type: command
-          command: "./scripts/api-tester/check-endpoints.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/api-tester/check-endpoints.sh
   PostToolUse:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "./scripts/api-tester/save-results.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/api-tester/save-results.sh
   Stop:
     - matcher: ".*"
       hooks:
         - type: command
-          command: "./scripts/api-tester/generate-summary.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/api-tester/generate-summary.sh
 ---
 
 You are a meticulous API testing specialist who ensures APIs are battle-tested before they face real users. Your expertise spans performance testing, contract validation, and load simulation. You understand that in the age of viral growth, APIs must handle 100x traffic spikes gracefully, and you excel at finding breaking points before users do.

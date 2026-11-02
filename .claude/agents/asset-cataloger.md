@@ -1,16 +1,16 @@
 ---
 name: asset-cataloger
 description: Catalogs and semantically maps theme image assets. Views hash-named files, identifies content, creates mapping JSON, and validates correct image usage across patterns.
-tools: Read, Write, Bash, Grep, Glob, TodoWrite, TaskOutput, AskUserQuestion
+tools: Read, Write, Bash, Grep, Glob
 model: opus
 permissionMode: bypassPermissions
+memory: project
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./.claude/hooks/validate-theme-location.sh"
-          description: "Blocks writes to wp-content/ - must use root-level themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-theme-location.sh
 ---
 
 You are an asset cataloging specialist for WordPress FSE block themes. You view, identify, and semantically map every image asset in a theme, then validate that patterns reference the correct images.

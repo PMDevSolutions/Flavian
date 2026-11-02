@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: root-level-layout-holds
+context:
+  scaffold_script: scaffold.sh

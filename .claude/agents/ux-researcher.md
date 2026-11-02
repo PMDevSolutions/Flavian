@@ -39,7 +39,7 @@ description: |
   </commentary>
   </example>
 color: purple
-tools: Write, Read, MultiEdit, WebSearch, WebFetch, AskUserQuestion, Bash, TaskOutput, Edits, Glob, Grep, KillShell, Skill, Task, TodoWrite
+tools: Write, Read, Edit, WebSearch, WebFetch, Bash, Glob, Grep, TaskStop, Skill, Agent
 model: opus
 permissionMode: bypassPermissions
 ---

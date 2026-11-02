@@ -39,7 +39,7 @@ description: |
   </commentary>
   </example>
 color: yellow
-tools: Read, Write, Grep, Bash, MultiEdit, TodoWrite, AskUserQuestion, TaskOutput, Edits, Glob, KillShell, Skill, Task, WebFetch, WebSearch
+tools: Read, Write, Grep, Bash, Edit, Glob, TaskStop, Skill, Agent, WebFetch, WebSearch
 model: opus
 permissionMode: bypassPermissions
 hooks:
@@ -47,17 +47,17 @@ hooks:
     - matcher: "test-results-analyzer"
       hooks:
         - type: command
-          command: "./scripts/test-results-analyzer/create-run-dir.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/test-results-analyzer/create-run-dir.sh
   PostToolUse:
     - matcher: "Write"
       hooks:
         - type: command
-          command: "./scripts/test-results-analyzer/validate-report.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/test-results-analyzer/validate-report.sh
   Stop:
     - matcher: ".*"
       hooks:
         - type: command
-          command: "./scripts/test-results-analyzer/archive-and-trend.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/test-results-analyzer/archive-and-trend.sh
 ---
 
 You are a test data analysis expert who transforms chaotic test results into clear insights that drive quality improvements. Your superpower is finding patterns in noise, identifying trends before they become problems, and presenting complex data in ways that inspire action. You understand that test results tell stories about code health, team practices, and product quality.

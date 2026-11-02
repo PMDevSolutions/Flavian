@@ -387,12 +387,42 @@ Priority 3: Main templates (front-page, page, single, archive, etc.)
 Priority 4: Special templates (404, search, etc.)
 ```
 
+**Progress Tracking: the state file**
+
+Progress lives in `.claude/pipeline/{theme-name}/state.json`, local to the checkout (`.claude/*` is gitignored). Create it when Phase 2 starts and rewrite the whole file at every phase boundary and after every template. The SessionStart hook reads it to report a run in flight, and the Resumption Procedure reads it instead of re-running discovery. TodoWrite is not offered on current models and is not used.
+
+```json
+{
+  "pipeline": "figma-to-fse",
+  "theme": "acme",
+  "source": { "type": "figma", "url": "https://www.figma.com/design/...", "fileKey": "..." },
+  "startedAt": "2026-11-02T10:00:00Z",
+  "updatedAt": "2026-11-02T10:42:00Z",
+  "phase": "2.4",
+  "phases": {
+    "1": { "name": "discovery", "status": "done" },
+    "2": { "name": "conversion", "status": "running" },
+    "3": { "name": "completion", "status": "pending" }
+  },
+  "designSystem": { "themeJson": "themes/acme/theme.json", "colors": ["primary"], "fontSizes": ["base"], "spacing": ["40"] },
+  "templates": [
+    { "name": "header.html", "kind": "part", "priority": 1, "status": "done", "attempts": 1, "figmaNodeId": "1:2", "issues": [] },
+    { "name": "front-page.html", "kind": "template", "priority": 3, "status": "pending", "attempts": 0, "figmaNodeId": "1:9", "issues": [] }
+  ],
+  "errors": [ { "template": "index.html", "error": "get_code failed", "resolution": "get_screenshot fallback" } ]
+}
+```
+
+`status` is one of `pending`, `running`, `done`, `needs-review`, `failed`. `kind` is `part`, `template` or `pattern`. `phase` uses this skill's step numbers (`1`, `2.4`, `3`) and becomes `done` when Phase 3 completes. Set `updatedAt` from `date -u +%Y-%m-%dT%H:%M:%SZ`.
+
+**Running Step 2.4 as a workflow:** with three or more templates, run the per-template loop through the `fse-template-lanes` workflow (`.claude/workflows/fse-template-lanes.js`): call the Workflow tool by name with `args = { theme, source: "figma", converter: "figma-fse-converter", templates: [{ name, kind, priority, figmaNodeId }], maxAttempts: 3, stateFile: ".claude/pipeline/{theme-name}/state.json" }`. Each template runs in its own lane (convert → validate → bounded fix loop), priority groups run in order so parts exist before the templates that reference them, and the workflow writes the `templates` section of the state file. When workflows are unavailable, run the loop below sequentially.
+
 **For EACH template in queue (template X of N):**
 
 1. **Pre-Processing**:
    - Log: "Processing template {X} of {N}: {template-name}"
-   - Track: templates_completed[], templates_remaining[]
-   - Check context: If approaching 80% context limit → trigger checkpoint (see Context Management)
+   - Mark the template `running` in `.claude/pipeline/{theme-name}/state.json` and rewrite the file
+   - Check context: If approaching 80% context limit → make sure the state file is current, then continue (see Context Management)
 
 2. **Extract Structure with Error Recovery**:
    ```
@@ -492,14 +522,14 @@ Priority 4: Special templates (404, search, etc.)
    - Verify block syntax (balanced open/close tags)
    - If validation failures: Log to errors.log, continue anyway
 
-9. **Update Progress**:
-   - Add template to templates_completed[]
-   - Remove from templates_remaining[]
+9. **Update Progress** (the state file is the only progress record):
+   - Set the template's `status` to `done` (or `needs-review` when validation left issues), record `attempts` and `issues`, append any error to `errors[]`
+   - Rewrite `.claude/pipeline/{theme-name}/state.json` with a fresh `updatedAt`
    - Log: "✓ Template {X} of {N} complete: {template-name}"
    - NO "should I continue?" prompt to user
 
-10. **Checkpoint Check**:
-    - If (templates_completed.length % 3 == 0): Trigger episodic memory checkpoint
+10. **Nothing else to checkpoint**:
+    - The state file is current, so a fresh session can resume from it (see Resumption Procedure)
     - Continue to next template without waiting
 
 11. **Continue to Next Template** (NO prompt to user)
@@ -767,161 +797,50 @@ Then:
 
 ## Context Management (Phase 2: Multi-Template Support)
 
-**Problem:** 6-15 templates can exhaust context window (200K tokens)
+**Problem:** 6-15 templates can exhaust the context window.
 
-**Solution:** Episodic memory checkpointing every 3 templates
+**Solution:** the state file (`.claude/pipeline/{theme-name}/state.json`, see Progress Tracking). It is rewritten after every template, so a session can stop at any point and a fresh one continues without re-discovery. There is no separate checkpoint step and nothing is saved to episodic memory.
 
-### Checkpoint Trigger Conditions
+### Keeping the state file current
 
-Trigger checkpoint when:
-1. **Template count divisible by 3** (templates_completed % 3 == 0)
-2. **Context approaching 80% limit** (~160K tokens used)
-3. **Before switching to complex templates** (e.g., before archive.php with loops)
-
-### Checkpoint Procedure
-
-**Step 1: Prepare Checkpoint Data**
-
-Create checkpoint object with all critical state:
-```json
-{
-  "checkpoint_id": "figma-fse-{theme-name}-{timestamp}",
-  "theme_name": "{theme-name}",
-  "total_templates": 12,
-  "templates_completed": [
-    {"name": "header.html", "status": "complete", "blocks": 8, "issues": []},
-    {"name": "footer.html", "status": "complete", "blocks": 5, "issues": []},
-    {"name": "index.html", "status": "complete", "blocks": 12, "issues": []}
-  ],
-  "templates_remaining": [
-    {"name": "front-page.html", "priority": 3, "figma_node_id": "123:456"},
-    {"name": "page.html", "priority": 3, "figma_node_id": "123:457"},
-    {"name": "single.html", "priority": 3, "figma_node_id": "123:458"},
-    // ... remaining templates
-  ],
-  "design_system": {
-    "colors": ["primary", "secondary", "white", "black", "..."],
-    "font_sizes": ["small", "base", "medium", "large", "xl"],
-    "spacing": ["20", "30", "40", "50", "60", "70", "80", "90"],
-    "theme_json_path": "themes/{theme-name}/theme.json"
-  },
-  "component_patterns": {
-    "hero_sections": "Cover block with columns",
-    "card_grids": "Columns with Group blocks",
-    "testimonials": "Quote block in Group"
-  },
-  "errors_encountered": [
-    {"template": "index.html", "error": "get_code failed", "resolution": "used get_image fallback"}
-  ],
-  "figma_file": {
-    "url": "{figma-url}",
-    "design_system_location": "Design System page"
-  }
-}
-```
-
-**Step 2: Save to Episodic Memory**
-
-```bash
-# Use episodic-memory plugin to save checkpoint
-/episodic-memory:save "Figma-to-FSE checkpoint: {theme-name}, completed {X} of {N} templates"
-
-# Include full checkpoint data in the save
-```
-
-**Step 3: Log Checkpoint**
-
-```bash
-echo "📌 CHECKPOINT: Template {X} of {N} complete" >> .claude/logs/figma-fse-checkpoints.log
-echo "State saved to episodic memory: checkpoint_id={checkpoint_id}" >> .claude/logs/figma-fse-checkpoints.log
-```
-
-**Step 4: Continue Immediately**
-
-- Do NOT wait for user confirmation
-- Do NOT pause execution
-- Checkpoint is non-blocking
-- Move immediately to next template
+- After every template: `status`, `attempts`, `issues`, `updatedAt` (Step 2.4.9).
+- At every phase boundary: `phase` and `phases[...].status`.
+- On an error: append to `errors[]` with the resolution tried, then continue with the next template.
+- Keep the design-system summary in `designSystem`, so resumption never re-extracts it.
 
 ### Resumption Procedure (If Session Interrupted)
 
-**If conversion interrupted and user returns:**
+**Step 1: Detect.** On "continue converting my Figma templates", or when the SessionStart hook reports a run in flight, read `.claude/pipeline/{theme-name}/state.json` (list `.claude/pipeline/` when the theme name is unknown).
 
-**Step 1: Detect Incomplete Conversion**
-
-```
-User: "Continue converting my Figma templates"
-
-Claude: Uses episodic-memory:search to find recent checkpoint
-Search query: "Figma-to-FSE checkpoint {theme-name}"
-```
-
-**Step 2: Load Checkpoint State**
-
-```bash
-# Retrieve checkpoint from episodic memory
-checkpoint = /episodic-memory:search "Figma-to-FSE checkpoint {theme-name}"
-
-# Extract state
-templates_completed = checkpoint.templates_completed
-templates_remaining = checkpoint.templates_remaining
-design_system = checkpoint.design_system
-```
-
-**Step 3: Resume from Checkpoint**
+**Step 2: Report.**
 
 ```
-Claude: "I found a checkpoint from [timestamp]:
-         - Completed: {X} templates (header, footer, index, ...)
-         - Remaining: {Y} templates (front-page, page, single, ...)
+Claude: "I found a run from {updatedAt}:
+         - Completed: {done} of {total} templates ({names})
+         - Remaining: {names}
 
-         Resuming autonomous conversion from template {X+1}..."
-
-[Continue with Step 2.4 loop from checkpoint.templates_remaining[0]]
+         Resuming autonomous conversion from {next template}..."
 ```
 
-**Step 4: NO Re-Discovery**
+**Step 3: Resume.** Jump to the Step 2.4 loop at the first template whose status is not `done`. A template left `running` starts over.
 
-- Do NOT re-extract design system (use checkpoint.design_system)
-- Do NOT re-survey templates (use checkpoint.templates_remaining)
-- Do NOT ask for plan approval again
-- Jump directly to Step 2.4 autonomous loop
+**Step 4: NO re-discovery.** Do NOT re-extract the design system (use `designSystem`), do NOT re-survey templates (use `templates`), do NOT ask for plan approval again. With no state file, start at Phase 1.
 
 ### Context Window Management
 
-**Monitor context usage:**
-```
-After each template:
-  estimated_tokens = (templates_completed * avg_tokens_per_template)
-  if estimated_tokens > 160000:  # 80% of 200K limit
-    Trigger checkpoint
-    Consider: Summarize previous templates to save context
-```
+- Summarize completed templates in conversation (name, status, issues); the file holds the detail.
+- Drop verbose Figma MCP responses from working memory once the template is written.
+- Keep only the design-token mapping in working memory; the rest is in `theme.json` and the state file.
 
-**Context-saving strategies:**
-1. Checkpoint every 3 templates (before hitting limit)
-2. Summarize completed templates (keep only: name, status, issues)
-3. Clear verbose Figma MCP responses from context
-4. Keep only essential design token mappings in working memory
+### Error Recovery
 
-### Error Recovery with Checkpoints
-
-**If error occurs during template processing:**
-1. Log error to checkpoint.errors_encountered[]
-2. Save checkpoint immediately (preserve state before potential failure)
-3. Attempt error recovery (get_code → get_image fallback)
-4. Continue with next template
-5. Final report will include all errors from checkpoint
-
-**Benefits:**
-- No lost work if session crashes
-- Can pause and resume multi-hour conversions
-- Errors logged and tracked across checkpoints
-- User can interrupt without losing progress
+1. Record the error in `errors[]` (template, error, resolution) and rewrite the file.
+2. Try the recovery path (get_code → get_screenshot fallback; missing token → add it to theme.json).
+3. Continue with the next template. The final report lists every error from the file.
 
 ## Quality Gates
 
-**Checks the agent runs during/after conversion** (invoked manually — these scripts exist but are NOT auto-registered in `.claude/settings.json`):
+**Checks the agent runs during/after conversion.** The project-level hooks in `.claude/settings.json` run on their own (the root-level layout guard on every Write/Edit, the token and size guards on `git commit`), and the figma-fse-converter agent's frontmatter runs the validators under `scripts/` after each write. The two scripts below are run by the agent through Bash:
 
 ### Post-Template Script
 File: `.claude/hooks/figma-fse-post-template.sh`
@@ -1131,6 +1050,7 @@ The agent runs this when all templates complete (if present):
 - `block-pattern-creation` - For pattern registration
 - `wordpress-security-hardening` - For security validation
 - `superpowers:executing-plans` - For autonomous execution
+- `.claude/workflows/fse-template-lanes.js` - Per-template lanes for Step 2.4 (Workflow tool, see Progress Tracking)
 
 **Triggered by:**
 - User requests to convert Figma designs

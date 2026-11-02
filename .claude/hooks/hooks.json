@@ -1,0 +1,112 @@
+{
+  "description": "Flavian hooks when installed as a plugin. Mirrors .claude/settings.json → hooks with ${CLAUDE_PLUGIN_ROOT} paths; keep the two in sync (tests/claude-code/hooks.test.mjs checks).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-context.sh\"",
+            "timeout": 15,
+            "statusMessage": "Loading Flavian status"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/validate-theme-location.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking the root-level layout"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/deploy-guard.sh\"",
+            "timeout": 10,
+            "onFailure": "block",
+            "statusMessage": "Checking the deploy guard"
+          },
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/pre-commit-token-guard.sh\"",
+            "timeout": 30,
+            "statusMessage": "Checking staged theme files for hardcoded values"
+          },
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/bundle-size-guard.sh\"",
+            "timeout": 15,
+            "statusMessage": "Checking theme and plugin sizes"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(*check-coding-standards*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" build-qa",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*validate-theme*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" build-qa",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*phpcs*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" build-qa",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*phpunit*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" coverage",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*pest*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" coverage",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*visual-diff*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" dark-mode",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*phpunit*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" mutation",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "if": "Bash(*pest*)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-bash-reminders.sh\" mutation",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

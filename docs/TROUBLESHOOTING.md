@@ -328,6 +328,7 @@ chmod +x .claude/hooks/*.sh
 **Solutions:**
 1. Check the full file path — it matches `wp-content/(themes|plugins|mu-plugins)/`
 2. If working on deployment scripts that intentionally target wp-content, use `scripts/deploy.sh` instead of writing directly
+3. The guard answers with a JSON `permissionDecision: deny` that names the root-level path to use. It enforces only in a repo with a root `themes/` directory and nothing tracked under `wp-content/`; a client repo that keeps its theme under `wp-content/themes/` is left alone
 
 ---
 

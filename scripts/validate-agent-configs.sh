@@ -72,8 +72,8 @@ validate_agent() {
   model=$(get_field "$fm" "model")
   if [[ -n "$model" ]]; then
     case "$model" in
-      opus|sonnet|haiku) ;;
-      *) error "$filename" "invalid model: $model (must be opus, sonnet, or haiku)"
+      opus|sonnet|haiku|fable|inherit|best|opusplan|claude-*) ;;
+      *) error "$filename" "invalid model: $model (must be sonnet, opus, haiku, fable, inherit, best, opusplan, or a claude-* model id)"
          local_errors=$((local_errors + 1)) ;;
     esac
   fi
@@ -82,10 +82,11 @@ validate_agent() {
   local perm
   perm=$(get_field "$fm" "permissionMode")
   if [[ -n "$perm" ]]; then
-    if [[ "$perm" != "bypassPermissions" ]]; then
-      error "$filename" "invalid permissionMode: $perm (must be bypassPermissions)"
-      local_errors=$((local_errors + 1))
-    fi
+    case "$perm" in
+      default|acceptEdits|auto|dontAsk|bypassPermissions|plan|manual) ;;
+      *) error "$filename" "invalid permissionMode: $perm (must be default, acceptEdits, auto, dontAsk, bypassPermissions, plan, or manual)"
+         local_errors=$((local_errors + 1)) ;;
+    esac
   fi
 
   # Hook command validation: extract command fields and check file paths
@@ -161,7 +162,7 @@ validate_settings() {
   fi
 
   local local_errors=0
-  local valid_hook_types="PreToolUse PostToolUse Stop SubagentStart"
+  local valid_hook_types="SessionStart Setup SessionEnd UserPromptSubmit UserPromptExpansion Stop StopFailure PreToolUse PostToolUse PostToolUseFailure PostToolBatch PermissionRequest PermissionDenied FileChanged CwdChanged ConfigChange InstructionsLoaded DirectoryAdded WorktreeCreate WorktreeRemove PreCompact PostCompact SubagentStart SubagentStop TaskCreated TaskCompleted TeammateIdle MessageDisplay Notification Elicitation ElicitationResult PreModelSwitch PostModelSwitch"
 
   # Iterate over hook type keys
   local hook_types
@@ -300,7 +301,8 @@ case "$MODE" in
     # Validate all agents
     if [[ -d "$PROJECT_ROOT/.claude/agents" ]]; then
       echo "--- Agents ---"
-      declare -A agent_names
+      # name<TAB>file per line; associative arrays need bash 4 and macOS ships 3.2
+      seen_names=""
       for f in "$PROJECT_ROOT/.claude/agents"/*.md; do
         [[ -f "$f" ]] || continue
         validate_agent "$f" || true
@@ -309,10 +311,12 @@ case "$MODE" in
         local_fm=$(extract_frontmatter "$f")
         local_name=$(get_field "$local_fm" "name")
         if [[ -n "$local_name" ]]; then
-          if [[ -n "${agent_names[$local_name]+x}" ]]; then
-            error "$(basename "$f")" "duplicate agent name: $local_name (also in ${agent_names[$local_name]})"
+          previous=$(printf '%s' "$seen_names" | awk -F'\t' -v n="$local_name" '$1 == n { print $2; exit }')
+          if [[ -n "$previous" ]]; then
+            error "$(basename "$f")" "duplicate agent name: $local_name (also in $previous)"
           else
-            agent_names[$local_name]=$(basename "$f")
+            seen_names="${seen_names}${local_name}	$(basename "$f")
+"
           fi
         fi
       done

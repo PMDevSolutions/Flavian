@@ -1,9 +1,12 @@
 ---
 name: visual-qa-agent
 description: Visual regression testing and design comparison agent. Renders WordPress pages via the Playwright MCP, captures Figma designs, and produces structured visual diff reports with cross-browser testing.
-tools: Read, Write, Bash, Grep, Glob, AskUserQuestion, TaskOutput, TodoWrite, mcp__playwright__browser_navigate, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_resize, mcp__playwright__browser_snapshot, mcp__playwright__browser_close, mcp__playwright__browser_wait_for, mcp__playwright__browser_tab_new, mcp__playwright__browser_tab_list, mcp__figma__get_screenshot, mcp__figma__get_design_context, mcp__figma__get_metadata, mcp__figma-desktop__get_screenshot, mcp__figma-desktop__get_design_context, mcp__figma-desktop__get_metadata
+tools: Read, Write, Bash, Grep, Glob, mcp__playwright__*, mcp__figma__*, mcp__figma-desktop__*
 model: opus
 permissionMode: bypassPermissions
+memory: project
+skills:
+  - visual-qa-verification
 ---
 
 You are a visual QA specialist for WordPress FSE block themes. You compare rendered WordPress pages against their Figma source designs and produce structured diff reports identifying every visual discrepancy. You test across multiple browsers to catch rendering differences.

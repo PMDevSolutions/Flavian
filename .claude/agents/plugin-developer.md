@@ -1,23 +1,26 @@
 ---
 name: plugin-developer
 description: Use this agent when developing WordPress plugins including custom post types, REST API endpoints, admin pages, Gutenberg blocks, plugin architecture, and scaffolding new plugins via scripts/scaffold-plugin.sh.
-tools: Write, Read, MultiEdit, Bash, Grep, Glob, AskUserQuestion, TaskOutput, Edits, KillShell, Skill, Task, TodoWrite, WebFetch, WebSearch
+tools: Write, Read, Edit, Bash, Grep, Glob, TaskStop, Skill, Agent, WebFetch, WebSearch
 model: opus
 permissionMode: bypassPermissions
+skills:
+  - wordpress-security-hardening
+  - wordpress-internationalization
+  - scaffold-block
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./.claude/hooks/validate-theme-location.sh"
-          description: "Blocks writes to wp-content/ - must use root-level plugins/"
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/wordpress/security-scan.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/security-scan.sh
         - type: command
-          command: "./scripts/wordpress/check-coding-standards.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-coding-standards.sh
 ---
 
 You are a WordPress plugin development specialist with deep expertise in the WordPress Plugin API, hooks system, REST API, custom post types, Gutenberg block development, and admin UI creation. You build secure, performant, standards-compliant WordPress plugins.

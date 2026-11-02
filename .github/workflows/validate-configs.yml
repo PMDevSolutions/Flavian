@@ -4,15 +4,31 @@ on:
   push:
     paths:
       - '.claude/**'
+      - '.claude-plugin/**'
+      - 'evals/**'
       - 'scripts/validate-agent-configs*.sh'
+      - 'scripts/claude-code-conformance.js'
+      - 'scripts/lib/**'
+      - 'scripts/check-doc-counts.sh'
       - 'tests/validate-agent-configs.bats'
+      - 'tests/figma-fse/validate-theme-location.bats'
+      - 'tests/claude-code/**'
       - 'tests/fixtures/**'
+      - '**.md'
   pull_request:
     paths:
       - '.claude/**'
+      - '.claude-plugin/**'
+      - 'evals/**'
       - 'scripts/validate-agent-configs*.sh'
+      - 'scripts/claude-code-conformance.js'
+      - 'scripts/lib/**'
+      - 'scripts/check-doc-counts.sh'
       - 'tests/validate-agent-configs.bats'
+      - 'tests/figma-fse/validate-theme-location.bats'
+      - 'tests/claude-code/**'
       - 'tests/fixtures/**'
+      - '**.md'
 
 jobs:
   validate:
@@ -22,11 +38,24 @@ jobs:
         with:
           submodules: true
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Install jq
         run: sudo apt-get install -y jq
 
       - name: Run validation tests
-        run: tests/bats/bin/bats tests/validate-agent-configs.bats
+        run: tests/bats/bin/bats tests/validate-agent-configs.bats tests/figma-fse/validate-theme-location.bats
 
       - name: Validate agent configurations
         run: ./scripts/validate-agent-configs-ci.sh
+
+      - name: Claude Code conformance
+        run: node scripts/claude-code-conformance.js
+
+      - name: Documentation counts
+        run: bash scripts/check-doc-counts.sh
+
+      - name: Claude Code config tests
+        run: node --test tests/claude-code/*.test.mjs

@@ -1,31 +1,32 @@
 ---
 name: performance-benchmarker
 description: Use this agent for comprehensive performance testing, profiling, and optimization recommendations
-tools: Bash, Read, Write, Grep, MultiEdit, WebFetch, AskUserQuestion, TaskOutput, Edits, Glob, KillShell, Skill, Task, TodoWrite, WebSearch
+tools: Bash, Read, Write, Grep, Edit, WebFetch, Glob, TaskStop, Skill, Agent, WebSearch
 model: opus
 permissionMode: bypassPermissions
+memory: project
 hooks:
   SubagentStart:
     - matcher: "performance-benchmarker"
       hooks:
         - type: command
-          command: "./scripts/performance-benchmarker/check-tools.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/performance-benchmarker/check-tools.sh
   PostToolUse:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "./scripts/performance-benchmarker/save-benchmarks.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/performance-benchmarker/save-benchmarks.sh
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/wordpress/security-scan.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/security-scan.sh
         - type: command
-          command: "./scripts/wordpress/check-performance.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-performance.sh
   Stop:
     - matcher: ".*"
       hooks:
         - type: command
-          command: "./scripts/performance-benchmarker/compare-results.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/performance-benchmarker/compare-results.sh
 ---
 
 You are a performance optimization expert who turns sluggish applications into lightning-fast experiences. Your expertise spans frontend rendering, backend processing, database queries, and mobile performance. You understand that in the attention economy, every millisecond counts, and you excel at finding and eliminating performance bottlenecks.

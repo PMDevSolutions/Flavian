@@ -1,4 +1,5 @@
 ---
+name: scaffold-block
 allowed-tools: Bash(bash scripts/scaffold-block.sh:*), Bash(pnpm run scaffold:block:*), Bash(node:*), Read, Edit, AskUserQuestion
 argument-hint: <block-name> [--namespace ns] [--attributes "name:type[:default],..."] [--dynamic]
 description: Scaffold a Gutenberg custom block (block.json, edit/save JS, optional render callback, PHPUnit stub)

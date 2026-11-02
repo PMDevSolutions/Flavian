@@ -169,20 +169,19 @@ See `CLAUDE.md` for comprehensive WP-CLI command reference for:
 This template is optimized for WordPress development with Claude Code, featuring:
 
 ### **Architecture Overview**
-- **Lean Plugin Setup**: 6 Claude Code plugins (5 user + 1 local)
+- **Installable as a Plugin**: the repo is the `flavian` plugin, so other repos get its agents, skills and hooks with `claude plugin install flavian@pmds` instead of copying them
 - **Custom Agents**: 53 specialized agents
-- **Custom Skills**: 12 workflows covering the Figma/Canva/InDesign-to-FSE pipelines, security, testing, and i18n
+- **Custom Skills**: 16 skills covering the Figma/Canva/InDesign-to-FSE pipelines, security, testing, i18n, and the `/lint`, `/test` and `/scaffold-block` commands
 - **Documentation Hub**: Comprehensive guides in `.claude/` directory
 
-### **Installed Plugins**
+### **Install as a Plugin**
+```bash
+claude plugin marketplace add PMDevSolutions/Maecenas   # the pmds marketplace
+claude plugin install flavian@pmds --scope project
+# one step, on Claude Code 2.1.275 or later:
+/plugin install flavian --marketplace PMDevSolutions/Maecenas
 ```
-✅ episodic-memory     # Semantic search and persistent memory
-✅ commit-commands     # Structured git workflows (/commit, /commit-push-pr)
-✅ github              # GitHub integration (PRs, issues, repos)
-✅ php-lsp             # PHP code intelligence (autocomplete, go-to-definition)
-✅ superpowers         # Advanced development workflows and skills
-✅ ai-taskmaster       # Task management (local plugin)
-```
+Ships 27 of the 53 agents (the WordPress and web-engineering ones), all 16 skills, the hooks (root-level layout guard, deploy guard, token guard) and the `fse-template-lanes` workflow. No plugins are installed for this repository itself and none are required; `.claude/PLUGINS-REFERENCE.md` lists the optional official ones (`php-lsp`, `commit-commands`, `playwright`).
 
 ### **WordPress-Relevant Custom Agents** (highlights)
 Full catalog of 53 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-AGENTS-GUIDE.md). Key WordPress-specific ones:
@@ -212,6 +211,10 @@ Full catalog of 53 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-A
 ✅ wordpress-hook-integration        # Claude Code agent hooks for WordPress
 ✅ wp-cli-workflows                  # WP-CLI automation (theme activation, DB, content)
 ✅ wordpress-testing-workflows       # PHPUnit test creation and execution
+✅ scaffold-block                    # /scaffold-block: Gutenberg block plugin generator
+✅ lint                              # /lint: PHPCS, security, performance, conformance checks
+✅ test                              # /test: bats, node --test, PHPUnit and e2e suites
+✅ create-blog-article               # user-invoked only; imported and needs adapting
 ```
 
 **What Skills Provide:**
@@ -232,7 +235,7 @@ Full catalog of 53 agents in [`.claude/CUSTOM-AGENTS-GUIDE.md`](.claude/CUSTOM-A
   - `IMPLEMENTATION.md` - Technical implementation details
   - `EXAMPLES.md` - FSE template syntax examples
 - **`.claude/skills/README.md`** - WordPress skills catalog
-- **`.claude/PLUGINS-REFERENCE.md`** - Plugin commands and usage
+- **`.claude/PLUGINS-REFERENCE.md`** - The `flavian` plugin and optional official plugins
 - **`.claude/CUSTOM-AGENTS-GUIDE.md`** - Custom agent catalog
 - **`.claude/AGENT-NAMING-GUIDE.md`** - Agent disambiguation
 - **`LOCAL-DEVELOPMENT.md`** - Docker setup for local WordPress

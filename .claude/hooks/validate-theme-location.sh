@@ -1,35 +1,52 @@
-#!/bin/bash
-# Project-Level Hook: Validate Theme File Location
-# Blocks ANY Write/Edit operation targeting wp-content/themes/
-# This runs for ALL agents, not just figma-fse-converter
+#!/usr/bin/env bash
+# validate-theme-location.sh — PreToolUse hook (matcher: Write|Edit|NotebookEdit).
 #
-# Exit 0: Path is valid
-# Exit 2: Path is invalid (blocks operation)
+# Flavian develops themes, plugins and must-use plugins in root-level folders
+# (themes/, plugins/, mu-plugins/); the deployment scripts copy them into
+# wp-content/. A Write or Edit that targets wp-content/(themes|plugins|
+# mu-plugins)/ is denied with the corrected root-level path, for every agent.
+#
+# Scoped to the Flavian layout: the guard enforces only when the project root
+# has a themes/ directory and git tracks nothing under wp-content/. The plugin's
+# copy of this hook therefore stays silent in a repo that keeps its theme under
+# wp-content/themes/ (a client site such as RCVMD).
+#
+# Registered in .claude/settings.json for every session, mirrored in
+# .claude/hooks/hooks.json for plugin installs, and referenced from the
+# frontmatter of the agents that write theme files (the three
+# scripts/*-fse/validate-theme-location.sh wrappers exec this file).
+#
+# Input: the hook event as JSON on stdin. Output: JSON on stdout, or nothing.
+# Always exits 0.
+set -u
+trap 'exit 0' ERR
 
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/hook-io.sh
+source "$HOOK_DIR/lib/hook-io.sh"
 
-# No file path = not a file operation, allow
-if [ -z "$FILE_PATH" ]; then
-    exit 0
+hook_read_input
+hook_read_context
+
+case "$TOOL_NAME" in
+  Write|Edit|NotebookEdit|MultiEdit|"") ;;
+  *) exit 0 ;;
+esac
+
+FILE_PATH="$TOOL_FILE_PATH"
+[ -n "$FILE_PATH" ] || FILE_PATH="$(hook_json_get tool_input.notebook_path)"
+[ -n "$FILE_PATH" ] || FILE_PATH="$(hook_json_get tool_input.path)"
+[ -n "$FILE_PATH" ] || exit 0
+
+printf '%s' "$FILE_PATH" | grep -Eq '(^|/)wp-content/(themes|plugins|mu-plugins)/' || exit 0
+
+PROJECT="$(hook_project_dir)"
+[ -d "$PROJECT/themes" ] || exit 0
+if command -v git >/dev/null 2>&1; then
+  TRACKED="$(git -C "$PROJECT" ls-files -- wp-content 2>/dev/null | head -n 1 || true)"
+  [ -z "$TRACKED" ] || exit 0
 fi
 
-# Check if path targets wp-content
-if echo "$FILE_PATH" | grep -qE 'wp-content/(themes|plugins|mu-plugins)/'; then
-    echo "" >&2
-    echo "❌ BLOCKED: File targets wp-content/ directory" >&2
-    echo "   Path: $FILE_PATH" >&2
-    echo "" >&2
-    echo "   This project uses root-level folders:" >&2
-    echo "   ✅ themes/[name]/...     (not wp-content/themes/)" >&2
-    echo "   ✅ plugins/[name]/...    (not wp-content/plugins/)" >&2
-    echo "" >&2
-
-    # Suggest the corrected path
-    CORRECTED=$(echo "$FILE_PATH" | sed 's|wp-content/themes/|themes/|; s|wp-content/plugins/|plugins/|; s|wp-content/mu-plugins/|mu-plugins/|')
-    echo "   Suggested: $CORRECTED" >&2
-    echo "" >&2
-    exit 2
-fi
-
+CORRECTED="$(printf '%s' "$FILE_PATH" | sed -E 's#(^|/)wp-content/(themes|plugins|mu-plugins)/#\1\2/#')"
+hook_pretooluse_decision deny "Root-level layout: $FILE_PATH targets wp-content/, which this project never writes during development. Themes, plugins and must-use plugins live at the project root (themes/, plugins/, mu-plugins/) and reach wp-content/ only through the deployment scripts. Write to $CORRECTED instead."
 exit 0

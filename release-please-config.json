@@ -19,6 +19,11 @@
           "type": "json",
           "path": "packages/gui/package.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
         }
       ]
     }

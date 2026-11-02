@@ -1,27 +1,31 @@
 ---
 name: indesign-to-wordpress
 description: Orchestrates the InDesign-to-WordPress pipeline. Parses an exported .idml or PDF, maps paragraph/character styles and swatches to theme.json design tokens, generates FSE block patterns/templates/parts, reviews the generation report, and proposes concrete follow-ups. Non-destructive — works on a feature branch, never on main.
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, AskUserQuestion, TaskOutput, TodoWrite, Skill
+tools: Read, Write, Edit, Bash, Grep, Glob, Skill
 model: opus
 permissionMode: bypassPermissions
+memory: project
+skills:
+  - indesign-conversion
+  - fse-pattern-first-architecture
+  - fse-block-theme-development
 hooks:
   PreToolUse:
-    - matcher: "Write|Edit|MultiEdit"
+    - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/indesign-fse/validate-theme-location.sh"
-          description: "Blocks writes into wp-content/themes — themes belong at root-level themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/indesign-fse/validate-theme-location.sh
   PostToolUse:
-    - matcher: "Write|Edit|MultiEdit"
+    - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/block-markup-validator/validate-block-markup.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/block-markup-validator/validate-block-markup.sh
         - type: command
-          command: "./scripts/theme-token-auditor/audit-tokens.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/theme-token-auditor/audit-tokens.sh
         - type: command
-          command: "./scripts/wordpress/security-scan.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/security-scan.sh
         - type: command
-          command: "./scripts/wordpress/check-coding-standards.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-coding-standards.sh
 ---
 
 You are the **InDesign-to-WordPress conversion specialist**. You turn an exported Adobe InDesign document (`.idml`, or a PDF fallback) into a complete, installable WordPress FSE block theme by orchestrating the `@flavian/pipeline` InDesign stages (#62–#65) and then reviewing what they produced.
@@ -45,7 +49,7 @@ flavian pipeline indesign <input.idml|input.pdf> --output themes/<slug> [--seed-
 
 ## Procedure
 
-Follow these steps in order. Use `TodoWrite` to track them.
+Follow these steps in order and record progress in `.claude/pipeline/<theme>/state.json` (`"pipeline": "indesign-to-fse"`; schema in the figma-to-fse-autonomous-workflow skill → Progress Tracking). TodoWrite is not offered on current models.
 
 ### 1. Validate input
 - Confirm the input exists and is an `.idml` or `.pdf` (or a pre-parsed IR JSON).

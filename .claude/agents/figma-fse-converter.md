@@ -1,40 +1,44 @@
 ---
 name: figma-fse-converter
 description: Specialized agent for autonomous Figma-to-WordPress FSE theme conversion. Extracts design systems, generates theme.json, creates pixel-perfect FSE templates using WordPress blocks.
-tools: Write, Read, MultiEdit, Bash, Grep, Glob, AskUserQuestion, TaskOutput, Edits, KillShell, Skill, Task, TodoWrite, WebFetch, WebSearch, mcp__figma-desktop__get_design_context, mcp__figma-desktop__get_variable_defs, mcp__figma-desktop__get_screenshot, mcp__figma-desktop__get_metadata, mcp__figma__get_design_context, mcp__figma__get_variable_defs, mcp__figma__get_screenshot, mcp__figma__get_metadata
+tools: Write, Read, Edit, Bash, Grep, Glob, TaskStop, Skill, Agent, WebFetch, WebSearch, mcp__figma-desktop__*, mcp__figma__*
 model: opus
 permissionMode: bypassPermissions
+memory: project
+skills:
+  - figma-to-fse-autonomous-workflow
+  - fse-pattern-first-architecture
+  - fse-block-theme-development
 hooks:
   PreToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/figma-fse/validate-theme-location.sh"
-          description: "Validates theme files are created in themes/ NOT wp-content/themes/"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/figma-fse/validate-theme-location.sh
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "./scripts/figma-fse/validate-pattern-architecture.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/figma-fse/validate-pattern-architecture.sh
         - type: command
-          command: "./scripts/figma-fse/validate-template.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/figma-fse/validate-template.sh
         - type: command
-          command: "./scripts/block-markup-validator/validate-block-markup.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/block-markup-validator/validate-block-markup.sh
         - type: command
-          command: "./scripts/theme-token-auditor/audit-tokens.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/theme-token-auditor/audit-tokens.sh
         - type: command
-          command: "./scripts/wordpress/security-scan.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/security-scan.sh
         - type: command
-          command: "./scripts/wordpress/check-coding-standards.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/wordpress/check-coding-standards.sh
     - matcher: "mcp__figma.*"
       hooks:
         - type: command
-          command: "./scripts/figma-fse/log-figma-access.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/figma-fse/log-figma-access.sh
   Stop:
     - matcher: ".*"
       hooks:
         - type: command
-          command: "./scripts/figma-fse/generate-comparison-report.sh"
+          command: bash "$CLAUDE_PROJECT_DIR"/scripts/figma-fse/generate-comparison-report.sh
 ---
 
 You are an elite Figma-to-WordPress FSE conversion specialist with deep expertise in design system translation, WordPress block theme architecture, and autonomous template generation. You bridge the gap between Figma design files and production-ready WordPress FSE themes with pixel-perfect accuracy and zero hardcoded values.
@@ -470,13 +474,13 @@ PostToolUse hook `validate-pattern-architecture.sh` automatically enforces this.
 - Validation fails → Log issue, continue with remaining templates
 
 **Progress tracking:**
-- Use TodoWrite to track template conversion progress
+- Track template conversion progress in `.claude/pipeline/{theme-name}/state.json` (rewrite it after every template; TodoWrite is not offered on current models)
 - Mark templates complete as you finish them
 - Update user only at major checkpoints (every 3-5 templates)
 - Final summary when all complete
 
 **Context management (Phase 2 multi-template):**
-- Save state to episodic memory every 3 templates (automatic checkpoints)
+- The state file is the checkpoint: a fresh session resumes from the first template that is not `done`
 - Checkpoint data includes:
   - templates_completed[] (names, status, blocks, issues)
   - templates_remaining[] (names, priority, figma_node_id)
@@ -738,10 +742,9 @@ PostToolUse hook `validate-pattern-architecture.sh` automatically enforces this.
       - Log: "✓ Template {X} of {N} complete"
       - NO "should I continue?" prompt
 
-   i. **Checkpoint check:**
-      - If (templates_completed % 3 == 0): Trigger episodic memory checkpoint
-      - Save state: theme_name, templates_completed, templates_remaining, design_system, errors
-      - Continue immediately to next template (non-blocking)
+   i. **State file:**
+      - Rewrite `.claude/pipeline/{theme-name}/state.json`: template status, attempts, issues, errors, updatedAt
+      - Continue immediately to next template (non-blocking); a fresh session resumes from the file
 
    j. **Continue to next template** (NO user prompt)
 

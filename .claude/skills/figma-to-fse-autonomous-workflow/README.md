@@ -134,7 +134,7 @@ scripts/figma-fse/
 - Zero "should I continue?" interruptions
 - Error recovery (fallback patterns)
 - Automatic validation (security, standards, syntax)
-- Progress tracking with TodoWrite
+- Progress tracking in `.claude/pipeline/<theme>/state.json` (resumable in a fresh session)
 - Completion report generation
 
 **Quality Automation:**
@@ -147,7 +147,7 @@ scripts/figma-fse/
 ### 📋 Phase 2 (Future)
 
 - Multi-template batch processing (6-15 templates)
-- Episodic memory checkpointing (every 3 templates)
+- Resumable runs from the state file
 - Screenshot comparison verification
 - Block pattern extraction
 - Complex component handling
@@ -362,7 +362,7 @@ See [TESTING-GUIDE.md](./TESTING-GUIDE.md#troubleshooting) for more details.
 
 - [ ] Test with single template (hero section)
 - [ ] Test with multiple templates (6-15 templates)
-- [ ] Implement episodic memory checkpointing
+- [x] Resumable runs from the state file (`.claude/pipeline/<theme>/state.json`)
 - [ ] Add screenshot comparison verification
 - [ ] Handle complex components (carousels, custom interactions)
 - [ ] Extract reusable block patterns automatically

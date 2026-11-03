@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1](https://github.com/PMDevSolutions/Flavian/compare/v2.1.0...v2.1.1) (2026-11-03)
+
+
+### Fixed
+
+* **gui:** set linux.executableName so electron-builder 26 can build the AppImage ([933b514](https://github.com/PMDevSolutions/Flavian/commit/933b5141a073928ddff12153a6d7694a6948f00f))
+* **gui:** set linux.executableName so electron-builder 26 can build the AppImage ([6e7ac94](https://github.com/PMDevSolutions/Flavian/commit/6e7ac94708cae6c744a94ff3ff0244c8c428a015)), closes [#168](https://github.com/PMDevSolutions/Flavian/issues/168)
+
 ## [2.1.0](https://github.com/PMDevSolutions/Flavian/compare/v2.0.1...v2.1.0) (2026-11-02)
 
 

@@ -25,4 +25,8 @@ mac:
   category: public.app-category.developer-tools
 linux:
   target: AppImage
+  # electron-builder 26.8+ refuses the default Linux binary name, which it derives from the
+  # package name ("@flavian/gui" becomes "@flaviangui", and "@" fails its AppImage path check).
+  # Set it here, under linux:, so macOS and Windows keep productName (Flavian.app, Flavian.exe).
+  executableName: flavian
   category: Development

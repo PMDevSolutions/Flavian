@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0](https://github.com/PMDevSolutions/Flavian/compare/v2.0.1...v2.1.0) (2026-11-02)
+
+
+### Added
+
+* **claude-code:** rules, plugin packaging, fse-template-lanes workflow, evals ([7dac199](https://github.com/PMDevSolutions/Flavian/commit/7dac199c1f72fabf4e66b47698aa306889226680))
+* **scripts:** add the Claude Code conformance and doc-count checks to CI ([72af899](https://github.com/PMDevSolutions/Flavian/commit/72af899220bb9df4c111418e62f8809d6cf05c7d))
+
+
+### Fixed
+
+* **hooks:** move hooks to the stdin JSON contract and add the deploy guard ([2494625](https://github.com/PMDevSolutions/Flavian/commit/2494625fd84f8415bf76b708963f2890a8cf71fd))
+* **release:** keep release-please-config.json in its original formatting ([bab8c10](https://github.com/PMDevSolutions/Flavian/commit/bab8c107c060408112ba91872ace332cadae6706))
+
 ## [2.0.1](https://github.com/PMDevSolutions/Flavian/compare/v2.0.0...v2.0.1) (2026-10-23)
 
 

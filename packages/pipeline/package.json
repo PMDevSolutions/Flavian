@@ -24,7 +24,7 @@
     "fast-xml-parser": "~5.10.1",
     "fflate": "^0.8.3",
     "pdfjs-dist": "^4.10.38",
-    "zod": "^3.25.76"
+    "zod": "^4.6.6"
   },
   "engines": {
     "node": ">=22.12.0"

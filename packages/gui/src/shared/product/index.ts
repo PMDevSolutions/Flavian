@@ -6,24 +6,28 @@
  * the engine uses instead of hard-coding Flavian specifics.
  *
  * ── Extension point ─────────────────────────────────────────────────────────────
- * Adding a second product (the staged plan's "prove reuse with Aurelius" step) is:
- *   1. author packages/gui/src/shared/product/aurelius.ts (another ProductManifest);
+ * Adding a product is:
+ *   1. author packages/gui/src/shared/product/<product>.ts (another ProductManifest);
  *   2. register it in PRODUCTS below;
- *   3. flip ACTIVE_PRODUCT_ID (or, for the unified Trajan app, choose it at runtime).
- * No engine/core/renderer change is required. A scaffold lives in ./aurelius — it is
- * intentionally NOT wired in here yet.
- *     // import { aureliusManifest } from './aurelius';
- *     // export const PRODUCTS = { flavian: flavianManifest, aurelius: aureliusManifest };
+ *   3. flip ACTIVE_PRODUCT_ID (or, for the unified Trajan app, choose it at runtime, #188).
+ * No engine/core/renderer change is required for the shared screens. The Aurelius and
+ * Vespasian manifests are the forks' catalogs as of 2026-11-08; their fork-only screens
+ * (Build from Figma, Wix site) render here once the reconciliation plan ports them
+ * (docs/plans/2026-11-08-trajan-engine-reconciliation-plan.md, #187).
  * ────────────────────────────────────────────────────────────────────────────────
  */
+import { aureliusManifest } from './aurelius';
 import { flavianManifest } from './flavian';
+import { vespasianManifest } from './vespasian';
 import type { ProductId, ProductManifest, ProductScreen, ProductStep, ScreenId } from './manifest';
 
 export type { ProductManifest, ProductScreen, ProductStep, ScreenId, ProductId } from './manifest';
 
-/** Every product the engine knows how to render. */
+/** Every product the engine knows how to render, keyed by its ProductId. */
 export const PRODUCTS: Readonly<Record<string, ProductManifest>> = {
   flavian: flavianManifest,
+  aurelius: aureliusManifest,
+  vespasian: vespasianManifest,
 };
 
 /** The product this build ships. The unified Trajan app will select this at runtime. */

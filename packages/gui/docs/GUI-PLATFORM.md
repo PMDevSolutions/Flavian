@@ -2,7 +2,7 @@
 
 `@flavian/gui` started as a desktop shell hard-wired to drive **Flavian**. We are
 evolving it into a generic engine that renders **any PMDS framework** (Flavian,
-Aurelius, Nerva, …) from a typed descriptor. The unified app that ships all of them is
+Aurelius, Vespasian, Nerva, Claudius) from a typed descriptor. The unified app that ships all of them is
 **Trajan**.
 
 This doc is a pointer for that work, not a spec. It describes the three-layer
@@ -45,21 +45,30 @@ A second product is *only another manifest* — no engine/core/renderer change:
 2. register it in `src/shared/product/index.ts` → `PRODUCTS`;
 3. point `ACTIVE_PRODUCT_ID` at it (or, under Trajan, select per-product at runtime).
 
-A typed scaffold for this is `src/shared/product/aurelius.ts` — intentionally **not**
-wired in yet.
+The Aurelius and Vespasian manifests (`src/shared/product/aurelius.ts`, `vespasian.ts`) are
+registered this way: they are the forks' catalogs as of 2026-11-08 and type-check against the
+same contract (`tests/shared/product/registry.test.mts` pins the invariants every registered
+manifest keeps). Their fork-only screens (Wix site, Build from Figma) render here once the
+reconciliation plan ports the panels; until then this build keeps `ACTIVE_PRODUCT_ID = 'flavian'`.
+Design and plan: `docs/plans/2026-11-08-trajan-engine-reconciliation-design.md` and
+`…-plan.md` (#187).
 
 ## Staged plan
 
 1. **Ship Flavian** — the hard-wired desktop app. ✅ (through v1.10.0)
 2. **Manifest seam** — extract Flavian's implicit catalog into an explicit
-   `ProductManifest`; make the engine render from it with zero behaviour change.
-   ◀ **this step.**
+   `ProductManifest`; make the engine render from it with zero behaviour change. ✅
 3. **Prove reuse with Aurelius** — author a second manifest and drive it through the
-   same engine; fix whatever leaks a Flavian assumption.
+   same engine; fix whatever leaks a Flavian assumption. ✅ Done by forking the engine into
+   Aurelius (2026-09-12) and Vespasian instead; on 2026-11-08 their manifests came back into
+   this engine's contract (#187).
 4. **Extract the engine** — split the generic layer out so products can be packaged
-   independently of any one of them.
-5. **Add Nerva** — a third manifest, validating the engine across three products.
-6. **Ship Trajan** — one app that selects a product at runtime and renders any of them.
+   independently of any one of them. ◀ **this step**: reconcile the forks into this engine,
+   then give it its own home (#187; design and plan under `docs/plans/`).
+5. **Add Nerva and Claudius** — two more manifests (Nerva#140, Claudius#169), validating the
+   engine across five products.
+6. **Ship Trajan** — one app that selects a product at runtime and renders any of them
+   (#188 runtime selection and new-project-from-template; #189 the release chain).
 
 ## Scope notes (intentionally deferred)
 
@@ -84,7 +93,11 @@ of scope for the zero-behaviour-change manifest seam:
 | Manifest type | `src/shared/product/manifest.ts` |
 | Flavian manifest | `src/shared/product/flavian.ts` |
 | Registry + active product + selectors | `src/shared/product/index.ts` |
-| Aurelius scaffold (extension point) | `src/shared/product/aurelius.ts` |
+| Aurelius manifest (fork catalog, 2026-11-08) | `src/shared/product/aurelius.ts` |
+| Vespasian manifest (fork catalog, 2026-11-08) | `src/shared/product/vespasian.ts` |
+| Wix-site vocabulary (`SiteCommand`, `WixSiteStatus`) | `src/shared/types/site.ts` |
+| Registry invariants | `tests/shared/product/registry.test.mts` |
+| Reconciliation design and plan | `docs/plans/2026-11-08-trajan-engine-reconciliation-*.md` |
 | Command interpreter | `src/core/product/command-spec.ts` |
 | Output-parser registry | `src/core/product/parsers.ts` |
 | Manifest injection point | `src/main/index.ts`, `src/main/ipc/register-handlers.ts` |

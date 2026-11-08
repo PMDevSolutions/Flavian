@@ -16,16 +16,23 @@ Releases are driven by [Conventional Commits](https://www.conventionalcommits.or
    - the next semver bump in `.release-please-manifest.json`, and
    - a generated `CHANGELOG.md` entry grouped by section (Added / Fixed / Changed).
 4. A maintainer reviews and merges the Release PR.
-5. release-please creates the `vX.Y.Z` git tag and a GitHub Release with the
-   changelog entry as the release body.
+5. release-please creates the `vX.Y.Z` git tag and a **draft** GitHub Release with
+   the changelog entry as the release body (`draft` and `force-tag-creation` in
+   `release-please-config.json`; the tag is created eagerly so release-please can
+   find the previous release next time).
 6. The same workflow run then calls the **GUI Release Build** workflow
    ([`.github/workflows/gui-release.yml`](../.github/workflows/gui-release.yml))
    with that tag; it builds the desktop installers (DMG for Apple silicon and
-   Intel, NSIS EXE, AppImage), smoke-tests each and attaches them to the Release.
-   It is called rather than triggered by the release event because the Release is
-   published with `GITHUB_TOKEN`, and GitHub never starts a workflow for an event
-   that token created (issue #189). To retry a platform or back-fill an older
-   release: `gh workflow run gui-release.yml -f tag=vX.Y.Z`.
+   Intel, NSIS EXE, AppImage), smoke-tests each, attaches them to the draft and
+   publishes the Release. Draft first because this repository's releases are
+   immutable once published, so nothing can be attached afterwards; called rather
+   than triggered by the release event because the Release is created with
+   `GITHUB_TOKEN`, and GitHub never starts a workflow for an event that token
+   created (issue #189).
+7. If a platform fails, the draft stays unpublished. Fix the cause and run
+   `gh workflow run gui-release.yml -f tag=vX.Y.Z`: it attaches the installers and
+   publishes. A tag whose release is already published is refused. A release made
+   by hand must be created as a draft on an existing tag for the same reason.
 
 The Release PR is the human gate: no tag is created until it is merged.
 

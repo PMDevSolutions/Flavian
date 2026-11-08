@@ -1,10 +1,13 @@
 name: release-please
 
 # release-please opens the release PR and, when it merges, tags the commit and
-# publishes the GitHub Release. The installers job then builds the desktop GUI
-# installers in the same run and attaches them to that Release (issue #189): the
-# Release is created with GITHUB_TOKEN, and GitHub never fires `on: release` for an
-# event that token created, so gui-release.yml has to be called from here.
+# creates the GitHub Release as a DRAFT (`draft` and `force-tag-creation` in
+# release-please-config.json). The installers job then calls gui-release.yml in the
+# same run, which builds the desktop GUI installers, attaches them to the draft and
+# publishes it (issue #189). Two reasons for this shape: the Release is created with
+# GITHUB_TOKEN, and GitHub never fires `on: release` for an event that token created;
+# and this repository's releases are immutable once published, so the installers have
+# to be attached before publication.
 
 on:
   push:

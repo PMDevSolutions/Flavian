@@ -1,25 +1,30 @@
 name: GUI Release Build
 
 # Builds the desktop GUI installers (macOS DMG for Apple silicon and Intel, Windows
-# NSIS, Linux AppImage) and attaches them to a GitHub Release. The app version is
-# whatever release-please wrote into packages/gui/package.json (an extra-file in
-# release-please-config.json), never hand-bumped.
+# NSIS, Linux AppImage), attaches them to a DRAFT GitHub Release and publishes it.
+# The app version is whatever release-please wrote into packages/gui/package.json
+# (an extra-file in release-please-config.json), never hand-bumped.
 #
-# How it runs (issue #189):
+# Why draft first (issue #189): this repository has GitHub's immutable releases
+# enabled, so nothing can be attached to a release once it is published. release-please
+# therefore creates the tag and a draft release (`draft` + `force-tag-creation` in
+# release-please-config.json); this workflow attaches the installers to the draft and
+# publishes it as its last step. A release that is already published cannot be
+# back-filled; the check job refuses such a tag with a clear message.
+#
+# How it runs:
 #
 #   workflow_call      → the normal path. release-please.yml calls this from the run
-#                        that just created the Release and passes its tag. It cannot
-#                        rely on an `on: release` trigger: release-please publishes
-#                        the Release with GITHUB_TOKEN, and GitHub never starts a
-#                        workflow for an event that token created (this workflow had
-#                        zero runs through v2.1.4 for exactly that reason).
-#   workflow_dispatch  → manual. With a tag: build and attach to that Release, e.g.
-#                        to retry one platform or back-fill an older release:
-#                          gh workflow run gui-release.yml -f tag=v2.1.4
-#                        Without a tag: a dry run that builds everything and keeps
-#                        the installers as workflow artifacts only.
-#   release: published → a Release published by hand, outside release-please, still
-#                        gets its installers.
+#                        that just created the draft release and passes its tag. It
+#                        cannot be an `on: release` trigger: the Release is created
+#                        with GITHUB_TOKEN, and GitHub never starts a workflow for an
+#                        event that token created (this workflow had zero runs through
+#                        v2.1.4 for exactly that reason).
+#   workflow_dispatch  → manual. With a tag whose release is still a draft (e.g. the
+#                        automatic run failed on one platform): build, attach, publish:
+#                          gh workflow run gui-release.yml -f tag=v2.2.0
+#                        Without a tag: a dry run that builds everything and keeps the
+#                        installers as workflow artifacts only.
 #
 # Builds are unsigned (packages/gui/electron-builder.yml, docs/GUI.md).
 
@@ -27,25 +32,48 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: "Release tag to attach the installers to (e.g. v2.1.4)"
+        description: "Tag of the draft release to attach the installers to and publish (e.g. v2.2.0)"
         required: true
         type: string
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to attach the installers to (e.g. v2.1.4). Leave empty to build only and keep the installers as workflow artifacts."
+        description: "Tag of a DRAFT release to attach the installers to and publish (e.g. v2.2.0). Leave empty to build only and keep the installers as workflow artifacts."
         required: false
         default: ""
         type: string
-  release:
-    types: [published]
 
 permissions:
   contents: write
 
 jobs:
+  check:
+    name: Check the release is a draft
+    if: inputs.tag != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refuse a published (immutable) release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if ! draft=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft); then
+            echo "::error::No release found for tag $TAG. release-please creates the tag and the draft release; for a manual release, create a draft release on an existing tag first."
+            exit 1
+          fi
+          if [ "$draft" != "true" ]; then
+            echo "::error::Release $TAG is already published. This repository's releases are immutable once published, so nothing can be attached to it."
+            exit 1
+          fi
+          echo "Release $TAG is a draft; installers will be attached and the release published."
+
   build:
     name: Installer (${{ matrix.os }})
+    needs: check
+    # Run on a dry run (check skipped) and after a passed check; never after a failed one.
+    if: ${{ !cancelled() && (needs.check.result == 'success' || needs.check.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
@@ -66,13 +94,13 @@ jobs:
       run:
         shell: bash
     env:
-      # Empty on a dispatch without a tag: build only, nothing is uploaded to a release.
-      RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+      # Empty on a dry run: build only, nothing is attached to a release.
+      RELEASE_TAG: ${{ inputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
           # Build exactly the tagged commit; a dry run builds the dispatched ref.
-          ref: ${{ inputs.tag || github.event.release.tag_name || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Enable Corepack (pnpm)
         run: corepack enable
@@ -131,9 +159,27 @@ jobs:
           path: ${{ matrix.artifacts }}
           if-no-files-found: error
 
-      - name: Attach installers to the GitHub Release
+      - name: Attach installers to the draft release
         if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # --clobber so a re-run replaces assets from a previous attempt.
+        # --clobber so a re-run replaces assets a previous attempt left on the draft.
         run: gh release upload "$RELEASE_TAG" ${{ matrix.artifacts }} --clobber
+
+  publish:
+    name: Publish the release
+    # Runs only when every platform attached its installers (needs succeeded).
+    needs: build
+    if: inputs.tag != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Publish the draft release (it becomes immutable)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+          echo "Published $TAG with:" >> "$GITHUB_STEP_SUMMARY"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | sed 's/^/- /' >> "$GITHUB_STEP_SUMMARY"

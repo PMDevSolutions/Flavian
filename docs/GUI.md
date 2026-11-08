@@ -112,16 +112,18 @@ an elevated shell, so it 404s the build — disabling signing sidesteps it entir
 **Versioning & release artifacts.** The GUI version is written by release-please
 (`packages/gui/package.json` is an `extra-files` entry in `release-please-config.json`), so
 it tracks the repo's git-tag-driven version and is **never hand-bumped**. When release-please
-publishes a GitHub Release, the same workflow run calls the **GUI Release Build** workflow
-(`.github/workflows/gui-release.yml`, a reusable workflow) with the new tag; it builds the
-installers (DMG for Apple silicon and Intel, NSIS EXE, AppImage), smoke-tests each, keeps them as
-workflow artifacts and attaches them to the release. It has to be called from
-`release-please.yml` rather than triggered by the release event: the release is published with
-`GITHUB_TOKEN`, and GitHub never starts a workflow for an event that token created (issue #189).
-To retry a platform or back-fill an older release, run it by hand with the tag:
-`gh workflow run gui-release.yml -f tag=v2.1.4`; without a tag it only builds and keeps the
-installers as artifacts. A packaged-launch smoke test also runs on every GUI PR
-(`.github/workflows/gui.yml`, via Xvfb).
+creates the tag and a **draft** GitHub Release, the same workflow run calls the **GUI Release
+Build** workflow (`.github/workflows/gui-release.yml`, a reusable workflow) with the new tag; it
+builds the installers (DMG for Apple silicon and Intel, NSIS EXE, AppImage), smoke-tests each,
+keeps them as workflow artifacts, attaches them to the draft and then publishes the release. Draft
+first because this repository's releases are immutable once published (nothing can be attached
+afterwards), and called from `release-please.yml` because the release is created with
+`GITHUB_TOKEN`, for which GitHub never starts an `on: release` workflow (issue #189). If a platform
+fails, the draft stays unpublished: fix the cause and run the workflow by hand with the tag,
+`gh workflow run gui-release.yml -f tag=v2.2.0`, which attaches and publishes; a tag whose release
+is already published is refused. Without a tag the workflow only builds and keeps the installers
+as artifacts. A packaged-launch smoke test also runs on every GUI PR (`.github/workflows/gui.yml`,
+via Xvfb).
 
 The GUI **operates on a Flavian project directory on disk** — it writes themes, `.env`, and
 conversion output there, so those files must stay writable. The app bundle therefore ships

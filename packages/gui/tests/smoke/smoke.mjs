@@ -7,10 +7,16 @@
 import { _electron as electron } from 'playwright';
 import { strict as assert } from 'node:assert';
 import { fileURLToPath } from 'node:url';
+import { electronLaunchArgs, electronLaunchEnv } from '../../scripts/launch-flags.mjs';
 
 const mainPath = fileURLToPath(new URL('../../out/main/index.js', import.meta.url));
 
-const app = await electron.launch({ args: [mainPath] });
+// Linux gets --ozone-platform=x11 and the environment loses ELECTRON_RUN_AS_NODE, the same
+// way the dev runner starts the app (scripts/launch-flags.mjs, issue #190).
+const app = await electron.launch({
+  args: [...electronLaunchArgs(process.platform), mainPath],
+  env: electronLaunchEnv(process.env),
+});
 try {
   const win = await app.firstWindow();
   await win.waitForLoadState('domcontentloaded');

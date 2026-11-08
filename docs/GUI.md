@@ -112,10 +112,16 @@ an elevated shell, so it 404s the build — disabling signing sidesteps it entir
 **Versioning & release artifacts.** The GUI version is written by release-please
 (`packages/gui/package.json` is an `extra-files` entry in `release-please-config.json`), so
 it tracks the repo's git-tag-driven version and is **never hand-bumped**. When release-please
-publishes a GitHub Release, the **GUI Release Build** workflow
-(`.github/workflows/gui-release.yml`) builds the macOS / Windows / Linux installers,
-smoke-tests each, and attaches them to the release. A packaged-launch smoke test also runs on
-every GUI PR (`.github/workflows/gui.yml`, via Xvfb).
+publishes a GitHub Release, the same workflow run calls the **GUI Release Build** workflow
+(`.github/workflows/gui-release.yml`, a reusable workflow) with the new tag; it builds the
+installers (DMG for Apple silicon and Intel, NSIS EXE, AppImage), smoke-tests each, keeps them as
+workflow artifacts and attaches them to the release. It has to be called from
+`release-please.yml` rather than triggered by the release event: the release is published with
+`GITHUB_TOKEN`, and GitHub never starts a workflow for an event that token created (issue #189).
+To retry a platform or back-fill an older release, run it by hand with the tag:
+`gh workflow run gui-release.yml -f tag=v2.1.4`; without a tag it only builds and keeps the
+installers as artifacts. A packaged-launch smoke test also runs on every GUI PR
+(`.github/workflows/gui.yml`, via Xvfb).
 
 The GUI **operates on a Flavian project directory on disk** — it writes themes, `.env`, and
 conversion output there, so those files must stay writable. The app bundle therefore ships

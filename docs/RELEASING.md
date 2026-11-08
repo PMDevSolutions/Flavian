@@ -18,6 +18,14 @@ Releases are driven by [Conventional Commits](https://www.conventionalcommits.or
 4. A maintainer reviews and merges the Release PR.
 5. release-please creates the `vX.Y.Z` git tag and a GitHub Release with the
    changelog entry as the release body.
+6. The same workflow run then calls the **GUI Release Build** workflow
+   ([`.github/workflows/gui-release.yml`](../.github/workflows/gui-release.yml))
+   with that tag; it builds the desktop installers (DMG for Apple silicon and
+   Intel, NSIS EXE, AppImage), smoke-tests each and attaches them to the Release.
+   It is called rather than triggered by the release event because the Release is
+   published with `GITHUB_TOKEN`, and GitHub never starts a workflow for an event
+   that token created (issue #189). To retry a platform or back-fill an older
+   release: `gh workflow run gui-release.yml -f tag=vX.Y.Z`.
 
 The Release PR is the human gate: no tag is created until it is merged.
 
@@ -74,8 +82,10 @@ theme `style.css` headers.
 - `.release-please-manifest.json` — current version state.
 - `package.json` (and `packages/gui/package.json`) — `version` field is kept in
   sync with the manifest by release-please; never hand-edited.
-- `.github/workflows/release-please.yml` — opens / updates the Release PR and
-  tags on merge.
+- `.github/workflows/release-please.yml` — opens / updates the Release PR,
+  tags on merge, and calls `gui-release.yml` for the installers.
+- `.github/workflows/gui-release.yml` — reusable workflow that builds the GUI
+  installers and attaches them to a Release (also runnable by hand with a tag).
 - `.github/workflows/commitlint.yml` — lints PR commit messages.
 - `.commitlintrc.json` — commitlint ruleset.
 - `CHANGELOG.md` — generated; existing `[1.0.0]` entry is preserved.

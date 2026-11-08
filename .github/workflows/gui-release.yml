@@ -1,33 +1,78 @@
 name: GUI Release Build
 
-# Builds installable GUI artifacts for macOS / Windows / Linux and attaches them to
-# the GitHub Release that release-please publishes. The app version is whatever
-# release-please wrote into packages/gui/package.json (an extra-file in
-# release-please-config.json) — never hand-bumped.
+# Builds the desktop GUI installers (macOS DMG for Apple silicon and Intel, Windows
+# NSIS, Linux AppImage) and attaches them to a GitHub Release. The app version is
+# whatever release-please wrote into packages/gui/package.json (an extra-file in
+# release-please-config.json), never hand-bumped.
+#
+# How it runs (issue #189):
+#
+#   workflow_call      → the normal path. release-please.yml calls this from the run
+#                        that just created the Release and passes its tag. It cannot
+#                        rely on an `on: release` trigger: release-please publishes
+#                        the Release with GITHUB_TOKEN, and GitHub never starts a
+#                        workflow for an event that token created (this workflow had
+#                        zero runs through v2.1.4 for exactly that reason).
+#   workflow_dispatch  → manual. With a tag: build and attach to that Release, e.g.
+#                        to retry one platform or back-fill an older release:
+#                          gh workflow run gui-release.yml -f tag=v2.1.4
+#                        Without a tag: a dry run that builds everything and keeps
+#                        the installers as workflow artifacts only.
+#   release: published → a Release published by hand, outside release-please, still
+#                        gets its installers.
+#
+# Builds are unsigned (packages/gui/electron-builder.yml, docs/GUI.md).
 
 on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "Release tag to attach the installers to (e.g. v2.1.4)"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the installers to (e.g. v2.1.4). Leave empty to build only and keep the installers as workflow artifacts."
+        required: false
+        default: ""
+        type: string
   release:
     types: [published]
-  workflow_dispatch: # allow a manual dry run (builds, but skips upload)
 
 permissions:
   contents: write
 
 jobs:
   build:
+    name: Installer (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: macos-latest
-            artifacts: 'packages/gui/dist/*.dmg'
+            artifacts: packages/gui/dist/*.dmg
+            # One DMG per architecture: Apple silicon and Intel.
+            builder_args: --x64 --arm64
           - os: windows-latest
-            artifacts: 'packages/gui/dist/*.exe'
+            artifacts: packages/gui/dist/*.exe
+            builder_args: ""
           - os: ubuntu-latest
-            artifacts: 'packages/gui/dist/*.AppImage'
+            artifacts: packages/gui/dist/*.AppImage
+            builder_args: ""
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      # Empty on a dispatch without a tag: build only, nothing is uploaded to a release.
+      RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Build exactly the tagged commit; a dry run builds the dispatched ref.
+          ref: ${{ inputs.tag || github.event.release.tag_name || github.ref }}
 
       - name: Enable Corepack (pnpm)
         run: corepack enable
@@ -38,7 +83,18 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # side-effects-cache off so a postinstall recorded by a skip-binary install
+        # can never be replayed here without Electron's binary (same as gui.yml).
+        run: pnpm install --frozen-lockfile --config.side-effects-cache=false
+
+      - name: Ensure Electron binary present
+        working-directory: packages/gui
+        run: |
+          ELECTRON_DIR="$(node -e "console.log(require('path').dirname(require.resolve('electron/package.json')))")"
+          if [ ! -f "$ELECTRON_DIR/path.txt" ] || [ ! -e "$ELECTRON_DIR/dist" ]; then
+            echo "Electron binary missing — running its install script"
+            (cd "$ELECTRON_DIR" && node install.js)
+          fi
 
       - name: Install Electron runtime libraries + Xvfb (Linux)
         if: runner.os == 'Linux'
@@ -51,7 +107,6 @@ jobs:
         run: pnpm --filter @flavian/gui build
 
       - name: Smoke test (app launches and reaches the setup view)
-        shell: bash
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
             xvfb-run --auto-servernum pnpm --filter @flavian/gui smoke
@@ -60,12 +115,25 @@ jobs:
           fi
 
       - name: Package installer
-        # Unsigned (no certs in CI) — see electron-builder.yml signAndEditExecutable.
-        run: pnpm --filter @flavian/gui exec electron-builder --publish never
-
-      - name: Upload artifacts to the release
-        if: github.event_name == 'release'
-        shell: bash
+        # --publish never: the upload below is the only publishing step. No signing
+        # identity is looked up (no certificates in CI; see electron-builder.yml).
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" ${{ matrix.artifacts }} --clobber
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: pnpm --filter @flavian/gui exec electron-builder --publish never ${{ matrix.builder_args }}
+
+      - name: List installers
+        run: ls -la packages/gui/dist
+
+      - name: Keep installers as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flavian-gui-${{ runner.os }}
+          path: ${{ matrix.artifacts }}
+          if-no-files-found: error
+
+      - name: Attach installers to the GitHub Release
+        if: env.RELEASE_TAG != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # --clobber so a re-run replaces assets from a previous attempt.
+        run: gh release upload "$RELEASE_TAG" ${{ matrix.artifacts }} --clobber

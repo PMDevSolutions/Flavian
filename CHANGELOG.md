@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1](https://github.com/PMDevSolutions/Flavian/compare/v2.2.0...v2.2.1) (2026-11-08)
+
+
+### Fixed
+
+* **gui:** portable Canva converter, clearer prerequisites banner, executable script ([#191](https://github.com/PMDevSolutions/Flavian/issues/191)) ([dfbab1f](https://github.com/PMDevSolutions/Flavian/commit/dfbab1f6193b4c8827db78a85f8f8955f8c76ab4))
+* **gui:** portable Canva converter, clearer prerequisites banner, executable script ([#191](https://github.com/PMDevSolutions/Flavian/issues/191)) ([c29059c](https://github.com/PMDevSolutions/Flavian/commit/c29059c00d9d3db941a933916b0080a1e780f467))
+
 ## [2.2.0](https://github.com/PMDevSolutions/Flavian/compare/v2.1.4...v2.2.0) (2026-11-08)
 
 

@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "flavian",
   "displayName": "Flavian",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "WordPress development for Claude Code: FSE block-theme agents and skills, Figma, Canva and InDesign to FSE pipelines, a root-level layout guard, a token guard on commit, and a deploy guard that stops production deploys and local data loss for a human. The pipeline skills need a Flavian checkout; the agents, knowledge skills, hooks and the fse-template-lanes workflow work in any WordPress repo.",
   "author": {
     "name": "Paul Mulligan",

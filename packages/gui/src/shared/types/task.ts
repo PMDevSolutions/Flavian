@@ -1,23 +1,27 @@
 /**
  * Task model — the uniform shape for every long-running, streamed operation the
- * GUI orchestrates (prereq check, docker lifecycle, conversions, visual QA).
+ * GUI orchestrates (prereq check, docker or Wix-site lifecycle, conversions, visual QA).
  * Shared verbatim across core, main, preload and renderer.
  */
+import type { DockerCommand } from './docker';
+import type { PipelineKind } from './pipeline';
+import type { SiteCommand } from './site';
 
 export type TaskState = 'pending' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 
 /**
- * Known task kinds. The `(string & {})` member keeps literal autocompletion while
- * still allowing sub-issues 2–6 to introduce new kinds without editing this union.
+ * Known task kinds: the vocabulary the product manifests emit (shared/product/*.ts). The
+ * `(string & {})` member keeps literal autocompletion while still allowing a new product
+ * to introduce kinds without editing this union.
  */
 export type TaskKind =
   | 'prereq-check'
-  | 'docker-start'
-  | 'docker-stop'
-  | 'pipeline-indesign'
-  | 'pipeline-canva'
-  | 'pipeline-figma'
-  | 'visual-qa'
+  | `prereq:${string}`
+  | 'init'
+  | `docker:${DockerCommand}`
+  | `site:${SiteCommand}`
+  | `pipeline:${PipelineKind}`
+  | `qa:${string}`
   // (string & {}) preserves literal autocomplete while still allowing any string.
   | (string & {});
 

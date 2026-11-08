@@ -211,6 +211,10 @@ button:disabled {
   font-size: 13px;
 }
 
+.banner .banner-detail {
+  font-size: 13px;
+}
+
 .banner-ok {
   border-color: color-mix(in srgb, var(--ok) 50%, var(--border));
 }

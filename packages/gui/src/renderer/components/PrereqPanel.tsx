@@ -4,6 +4,7 @@ import type { PrereqGroup, PrereqReport } from '../../shared/types/prerequisites
 import { usePrerequisites } from '../hooks/usePrerequisites';
 import { LogStream } from './LogStream';
 import { PrereqItemRow } from './PrereqItemRow';
+import { readinessSummary } from './prereq-readiness';
 
 const GROUP_TITLES: Record<PrereqGroup, string> = {
   'required-software': 'Required software',
@@ -23,9 +24,11 @@ const GROUP_ORDER: PrereqGroup[] = [
 
 function ReadyBanner({ report }: { report: PrereqReport }) {
   const s = report.summary;
+  const copy = readinessSummary(report, activeManifest.displayName);
   return (
-    <div className={`banner ${report.ready ? 'banner-ok' : 'banner-warn'}`}>
-      <strong>Ready to use this template: {report.ready ? 'YES' : 'NO'}</strong>
+    <div className={`banner ${copy.tone === 'ok' ? 'banner-ok' : 'banner-warn'}`}>
+      <strong>{copy.title}</strong>
+      {copy.detail && <span className="banner-detail">{copy.detail}</span>}
       <span className="summary">
         Required {s.requiredPassed}/{s.requiredTotal} · Optional {s.optionalInstalled}/
         {s.optionalTotal} · System {s.systemPassed}/{s.systemTotal}

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.4](https://github.com/PMDevSolutions/Flavian/compare/v2.1.3...v2.1.4) (2026-11-08)
+
+
+### Fixed
+
+* **gui:** pin Ozone to X11 on Linux so Electron 42 stops segfaulting on Wayland ([#190](https://github.com/PMDevSolutions/Flavian/issues/190)) ([441d9af](https://github.com/PMDevSolutions/Flavian/commit/441d9af31e0f1ebb2969e723b36b418b9889a16a))
+* **gui:** pin Ozone to X11 on Linux so Electron 42 stops segfaulting on Wayland ([#190](https://github.com/PMDevSolutions/Flavian/issues/190)) ([c82ccd9](https://github.com/PMDevSolutions/Flavian/commit/c82ccd98cfac459ea8e38eb25cbc5de371c47163))
+
+## [2.1.3](https://github.com/PMDevSolutions/Flavian/compare/v2.1.2...v2.1.3) (2026-11-08)
+
+
+### Fixed
+
+* **deps:** upgrade @lhci/cli to 0.16 and pin minimatch 11 ([#169](https://github.com/PMDevSolutions/Flavian/issues/169)) ([92ea40f](https://github.com/PMDevSolutions/Flavian/commit/92ea40f4addc17a67859b4e48020c650a198ddcd))
+* **deps:** upgrade @lhci/cli to 0.16 and pin minimatch 11 ([#169](https://github.com/PMDevSolutions/Flavian/issues/169)) ([d8f5afd](https://github.com/PMDevSolutions/Flavian/commit/d8f5afd35a085ef045b3d383d058ab57b97a3290))
+
 ## [2.1.2](https://github.com/PMDevSolutions/Flavian/compare/v2.1.1...v2.1.2) (2026-11-03)
 
 

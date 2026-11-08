@@ -1,6 +1,6 @@
 {
   "name": "@flavian/gui",
-  "version": "2.1.2",
+  "version": "2.1.4",
   "private": true,
   "description": "Desktop GUI for Flavian — a thin orchestration shell over the init wizard, Docker WordPress lifecycle, design-to-FSE pipelines, and visual QA. Invokes the existing scripts/pipelines; does not reimplement them.",
   "license": "MIT",
@@ -10,10 +10,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "node scripts/run-electron-vite.mjs dev",
     "build": "electron-vite build",
-    "preview": "electron-vite preview",
-    "start": "electron-vite preview",
+    "preview": "node scripts/run-electron-vite.mjs preview",
+    "start": "node scripts/run-electron-vite.mjs preview",
     "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit",
     "lint": "eslint .",
     "test": "node --import tsx --test \"tests/**/*.test.mts\"",

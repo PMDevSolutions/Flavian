@@ -149,3 +149,39 @@ Running the GUI requires the same tools Flavian itself needs — Claude Code, Do
 Node — which is exactly what the **Prerequisites** screen detects (by running
 `scripts/check-prerequisites.sh` and rendering the result with actionable guidance). On
 Windows the GUI needs Git Bash available to run the repo's `.sh` scripts.
+
+## Troubleshooting
+
+**Linux: the window never opens and the process dies with SIGSEGV** (Ubuntu 26.04 and other
+Wayland desktops; the log shows `ui/gtk/gtk_ui.cc … Schema org.gnome.desktop.interface does not
+have key font-antialiasing` just before the crash). Electron 42 selects the Wayland backend on its
+own before any main-process code runs and then crashes creating its first window. Neither
+`app.commandLine.appendSwitch` nor `ELECTRON_OZONE_PLATFORM_HINT` changes that choice; only
+`--ozone-platform=x11` on the real command line does (the app then runs through XWayland). So every
+launcher this package owns passes it on Linux (issue #190):
+
+- `pnpm gui:dev`, `preview` and `start` go through `packages/gui/scripts/run-electron-vite.mjs`,
+  which forwards the switch to Electron after electron-vite's `--` separator;
+- the smoke test (`tests/smoke/smoke.mjs`) launches with it, so CI under Xvfb and a local Wayland
+  session start the app the same way;
+- the packaged AppImage carries it in `appImage.executableArgs` (`electron-builder.yml`), together
+  with the `--no-sandbox` default that setting `executableArgs` would otherwise drop.
+
+- any other launcher (a bare `electron out/main/index.js`, the binary in `dist/linux-unpacked/`, an
+  AppImage started from a terminal, whose `AppRun` only forwards the arguments it was given) is
+  caught by the main process: when Electron has already chosen Wayland and no `--ozone-platform…`
+  switch was passed, it relaunches itself once with the pin (`src/main/x11-relaunch.ts`; inside an
+  AppImage it relaunches the AppImage file, because the mount goes away with the first process).
+
+To try native Wayland anyway, choose the backend yourself; both the runner and the relaunch respect
+an explicit `--ozone-platform…` switch or `ELECTRON_OZONE_PLATFORM_HINT`:
+`pnpm --filter @flavian/gui exec electron-vite dev -- --ozone-platform=wayland`. Do not run
+`electron-vite dev` without a backend switch on Wayland: electron-vite exits when its Electron does,
+so the relaunch would lose the dev server. The shared flag list lives in
+`packages/gui/scripts/launch-flags.mjs`.
+
+**`electron --version` prints a Node version, or the app dies with `Cannot read properties of
+undefined (reading 'whenReady')`.** The shell exports `ELECTRON_RUN_AS_NODE=1`, which turns the
+Electron binary into plain Node; editor-hosted terminals (VS Code) set it. The dev runner and the
+smoke test strip it from the environment they launch with. For a direct `electron` invocation,
+unset it for that command: `env -u ELECTRON_RUN_AS_NODE pnpm --filter @flavian/gui exec electron …`.

@@ -243,7 +243,7 @@ native PR annotations).
 
 Every threshold lives in **one place**:
 [`lighthouserc.json`](lighthouserc.json) under `ci.assert.assertMatrix`. There is
-no separate budgets file — Lighthouse 12 dropped the `budgets.json` mechanism,
+no separate budgets file — Lighthouse 12 dropped the `budgets.json` mechanism (13 keeps `resource-summary`),
 so page-weight limits are expressed as `resource-summary:<type>:size`
 assertions instead. Budgets are split into **two URL classes** (each gated by
 one mutually-exclusive `matchingUrlPattern`): **content** pages (`/`, `/shop/`,

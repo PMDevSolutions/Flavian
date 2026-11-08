@@ -212,7 +212,7 @@ and `:count` (request count).
 inline `assertions` / `assertMatrix`, but [not both][lhci-assert] — and we need
 category assertions and per-URL budgets. Inlining `resource-summary:*:size` into
 the `assertMatrix` keeps every threshold in one file and is the only budget
-mechanism that still works under Lighthouse 12.
+mechanism that still works under Lighthouse 12 and 13.
 
 [lhci-assert]: https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md#assert
 
@@ -224,7 +224,8 @@ theme-quality signals:
 
 - `is-on-https` — weight 5/30 (~17%) of best-practices; always fails on http,
   so it alone would cap best-practices below the 0.90 gate.
-- `uses-http2` — a weight-0 perf diagnostic localhost can't satisfy.
+- `uses-http2` used to be skipped too (a weight-0 perf diagnostic localhost
+  could not satisfy); Lighthouse 13 removed the audit, so the entry is gone.
 
 Remove an entry only if/when CI serves that scenario for real (e.g. HTTPS).
 
@@ -285,8 +286,9 @@ the **same PR** and explain it in the commit body:
    `metrics` audit's `observed*` timings show what the runner actually did, as
    opposed to the simulated (Lantern) values that are scored. Note that with
    Lighthouse 12.1 (bundled by `@lhci/cli` 0.14) on current Chrome, the
-   `largest-contentful-paint-element` and `layout-shifts` audits error out
-   (`frame_sequence`), so identify the LCP element / shift sources in a real
+   `largest-contentful-paint-element` and `layout-shifts` audits errored out
+   (`frame_sequence`); `@lhci/cli` 0.16 bundles Lighthouse 13.6, so recheck
+   those audits in a fresh report and otherwise identify the LCP element / shift sources in a real
    browser (DevTools Performance panel) instead.
 
 ## Adding a new URL to the suite

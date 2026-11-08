@@ -48,7 +48,7 @@ jobs:
           # For the bootstrap path we need a push-capable token.
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Node 20
+      - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
           node-version: "22"

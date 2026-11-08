@@ -1,5 +1,11 @@
 name: release-please
 
+# release-please opens the release PR and, when it merges, tags the commit and
+# publishes the GitHub Release. The installers job then builds the desktop GUI
+# installers in the same run and attaches them to that Release (issue #189): the
+# Release is created with GITHUB_TOKEN, and GitHub never fires `on: release` for an
+# event that token created, so gui-release.yml has to be called from here.
+
 on:
   push:
     branches: [main]
@@ -12,10 +18,23 @@ jobs:
   release-please:
     name: Release PR / Tag
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Run release-please
+        id: release
         uses: googleapis/release-please-action@v4
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  installers:
+    name: Build and attach GUI installers
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    uses: ./.github/workflows/gui-release.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag_name }}
+    secrets: inherit

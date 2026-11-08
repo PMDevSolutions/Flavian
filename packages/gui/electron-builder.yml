@@ -30,3 +30,10 @@ linux:
   # Set it here, under linux:, so macOS and Windows keep productName (Flavian.app, Flavian.exe).
   executableName: flavian
   category: Development
+appImage:
+  # electron-builder adds --no-sandbox to the AppImage launcher by default (an AppImage cannot ship a
+  # SUID chrome-sandbox) and drops that default once executableArgs is set, so keep it here.
+  # --ozone-platform=x11: Electron 42 segfaults at its first window on Wayland desktops (Ubuntu 26.04)
+  # unless Ozone is pinned to X11, and the pin only works as a real command-line argument
+  # (issue #190; the dev runner and the smoke test pass the same switch, see scripts/launch-flags.mjs).
+  executableArgs: ["--no-sandbox", "--ozone-platform=x11"]

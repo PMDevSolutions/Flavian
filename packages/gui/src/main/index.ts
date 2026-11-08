@@ -6,6 +6,7 @@ import { resolveInitialProject } from './env';
 import { createTaskBridge } from './ipc/task-bridge';
 import { registerHandlers } from './ipc/register-handlers';
 import { createWindow, installCsp } from './window';
+import { x11RelaunchPlan } from './x11-relaunch';
 
 async function openWindow(): Promise<void> {
   // electron-vite emits CJS main/preload as out/main and out/preload siblings.
@@ -18,6 +19,23 @@ async function openWindow(): Promise<void> {
   }
 }
 
+// Electron resolved its Ozone backend before this script ran and segfaults on Wayland desktops
+// at the first window (issue #190). Launchers we own pass --ozone-platform=x11; for any other
+// launcher, start over once with it instead of booting into the crash.
+const relaunch = x11RelaunchPlan({
+  platform: process.platform,
+  argv: process.argv.slice(1),
+  env: process.env,
+  selectedOzonePlatform: app.commandLine.getSwitchValue('ozone-platform'),
+});
+if (relaunch) {
+  app.relaunch({ ...(relaunch.execPath ? { execPath: relaunch.execPath } : {}), args: [...relaunch.args] });
+  app.exit(0);
+} else {
+  start();
+}
+
+function start(): void {
 app.whenReady().then(
   async () => {
     // The project context is mutable: the renderer's "Open project folder" action
@@ -48,3 +66,4 @@ app.whenReady().then(
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+}

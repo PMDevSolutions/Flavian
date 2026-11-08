@@ -28,6 +28,33 @@ content="$(echo "$content" \
 echo "$content" | awk '
 BEGIN { in_ul = 0; in_ol = 0; ul_buf = ""; ol_buf = "" }
 
+# POSIX awk only (mawk on Debian/Ubuntu, BWK awk on macOS): no gawk 3-argument
+# match() with a capture array. Helpers below do the capturing with RSTART/RLENGTH.
+
+# Value of the first name="value" attribute in s, or "".
+function attr(s, name,    re) {
+    re = name "=\"[^\"]*\""
+    if (match(s, re)) return substr(s, RSTART + length(name) + 2, RLENGTH - length(name) - 3)
+    return ""
+}
+
+# Start index of the LAST match of re in s, or 0 (the greedy .* of the old regexes).
+function last_index(s, re,    pos, off) {
+    pos = 0; off = 1
+    while (match(substr(s, off), re)) { pos = off + RSTART - 1; off = pos + 1 }
+    return pos
+}
+
+# Text between the opening tag matching open_re at the start of s and the last
+# closing tag matching close_re; "" when either is missing.
+function inner_text(s, open_re, close_re,    t, last) {
+    if (!match(s, open_re)) return ""
+    t = substr(s, RLENGTH + 1)
+    last = last_index(t, close_re)
+    if (!last) return ""
+    return substr(t, 1, last - 1)
+}
+
 function flush_ul() {
     if (in_ul) {
         print "<!-- wp:list -->"
@@ -72,9 +99,9 @@ function flush_ol() {
 
 # --- headings h1-h6 ---
 /^<h[1-6][ >]/ {
-    if (match($0, /^<h([1-6])[^>]*>(.*)<\/h[1-6]>/, m)) {
-        lvl = m[1]
-        inner = m[2]
+    if (match($0, /^<h[1-6][^>]*>.*<\/h[1-6]>/)) {
+        lvl = substr($0, 3, 1)
+        inner = inner_text($0, "^<h[1-6][^>]*>", "<\\/h[1-6]>")
         printf "<!-- wp:heading {\"level\":%s} -->\n", lvl
         printf "<h%s class=\"wp-block-heading\">%s</h%s>\n", lvl, inner, lvl
         print "<!-- /wp:heading -->"
@@ -84,8 +111,8 @@ function flush_ol() {
 
 # --- paragraph ---
 /^<p[ >]/ {
-    if (match($0, /^<p[^>]*>(.*)<\/p>/, m)) {
-        inner = m[1]
+    if (match($0, /^<p[^>]*>.*<\/p>/)) {
+        inner = inner_text($0, "^<p[^>]*>", "<\\/p>")
         print "<!-- wp:paragraph -->"
         printf "<p>%s</p>\n", inner
         print "<!-- /wp:paragraph -->"
@@ -96,8 +123,8 @@ function flush_ol() {
 # --- image (self-closing) ---
 /^<img[ ]/ {
     src = ""; alt = ""
-    if (match($0, /src="([^"]*)"/, ms)) src = ms[1]
-    if (match($0, /alt="([^"]*)"/, ma)) alt = ma[1]
+    src = attr($0, "src")
+    alt = attr($0, "alt")
     print "<!-- wp:image -->"
     printf "<figure class=\"wp-block-image\"><img src=\"%s\" alt=\"%s\" /></figure>\n", src, alt
     print "<!-- /wp:image -->"
@@ -107,8 +134,8 @@ function flush_ol() {
 # --- button (anchor with class containing "button") ---
 /^<a [^>]*class="[^"]*button[^"]*"/ {
     href = ""; text = ""
-    if (match($0, /href="([^"]*)"/, mh)) href = mh[1]
-    if (match($0, /class="[^"]*"[^>]*>(.*)<\/a>/, mt)) text = mt[1]
+    href = attr($0, "href")
+    text = inner_text($0, "class=\"[^\"]*\"[^>]*>", "<\\/a>")
     print "<!-- wp:button -->"
     printf "<div class=\"wp-block-button\"><a class=\"wp-block-button__link\" href=\"%s\">%s</a></div>\n", href, text
     print "<!-- /wp:button -->"

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { stripAnsi } from '../../shared/strip-ansi';
 
 /** A scrolling, auto-following view of streamed log lines. Reused by every task UI. */
 export function LogStream({ lines }: { lines: string[] }) {
@@ -8,7 +9,7 @@ export function LogStream({ lines }: { lines: string[] }) {
   }, [lines]);
   return (
     <pre className="log-stream" ref={ref}>
-      {lines.length === 0 ? 'Waiting for output…' : lines.join('\n')}
+      {lines.length === 0 ? 'Waiting for output…' : stripAnsi(lines.join('\n'))}
     </pre>
   );
 }

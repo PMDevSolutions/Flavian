@@ -94,7 +94,7 @@ if [ -n "$TEMPLATE_FILES" ]; then
         if grep -q '#[0-9A-Fa-f]\{6\}' "$template" 2>/dev/null; then
             HARDCODED_COLORS=$((HARDCODED_COLORS + 1))
         fi
-        if grep -qE ':\s*"[0-9]+px"' "$template" 2>/dev/null; then
+        if grep -qE ':[[:space:]]*"[0-9]+px"' "$template" 2>/dev/null; then
             HARDCODED_SIZES=$((HARDCODED_SIZES + 1))
         fi
     done

@@ -2,6 +2,23 @@
 # WordPress Security Scanner - Blocks critical security issues
 # Exit 2 (block) - prevents operation on critical security vulnerabilities
 
+# CLI use: security-scan.sh <file-or-dir>... scans every .php file under the paths
+# (post-bash-reminders.sh tells agents to run it this way, and figma-fse-completion.sh
+# calls it with a theme directory). With no arguments it reads PreToolUse hook JSON from
+# stdin as before; reading stdin when a path was given made those calls hang.
+if [ $# -gt 0 ]; then
+    scanned=0; blocked=0
+    while IFS= read -r -d '' php; do
+        scanned=$((scanned + 1))
+        rc=0
+        printf '{"tool_input":{"file_path":%s}}' "$(printf '%s' "$php" | jq -Rs .)" | bash "$0" || rc=$?
+        if [ "$rc" -eq 2 ]; then blocked=$((blocked + 1)); fi
+    done < <(find "$@" -type f -name '*.php' -print0 2>/dev/null)
+    echo "security-scan: $scanned PHP file(s) scanned, $blocked with critical issues"
+    if [ "$blocked" -gt 0 ]; then exit 2; fi
+    exit 0
+fi
+
 # Read JSON input from stdin
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')

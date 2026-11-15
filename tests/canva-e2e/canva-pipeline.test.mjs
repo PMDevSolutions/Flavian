@@ -50,6 +50,12 @@ describe('canva-fse helper scripts (deterministic agent-path pieces)', () => {
 		for (const type of ['heading', 'paragraph', 'image', 'button', 'list']) {
 			assert.match(blocks, new RegExp(`<!-- wp:${type}`), `expected a wp:${type} block`);
 		}
+		assert.match(
+			blocks,
+			/<a class="wp-block-button__link" href="#contact">Get started<\/a>/,
+			'button keeps its href and exact label text',
+		);
+		assert.match(blocks, /<h1 class="wp-block-heading">Welcome to Acme<\/h1>/, 'heading text is intact');
 
 		const opens = (blocks.match(/<!-- wp:group -->/g) ?? []).length;
 		const closes = (blocks.match(/<!-- \/wp:group -->/g) ?? []).length;

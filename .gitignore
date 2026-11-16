@@ -14,7 +14,12 @@
 !.claude/workflows/
 !.claude/agent-memory/
 .claude/agent-memory-local/
-# .claude/pipeline/ (conversion state files) stays local to a checkout: covered by .claude/* above
+# .claude/pipeline/ holds per-checkout conversion state files, which stay local. Only the folder
+# itself is tracked (.gitkeep), so the pipeline skills' resume check (`ls .claude/pipeline`) finds it
+# on a fresh checkout instead of exiting 1 and showing as an error in Claude Code.
+!.claude/pipeline/
+.claude/pipeline/*
+!.claude/pipeline/.gitkeep
 
 # Deployment configs: example templates are tracked; real env files are not.
 .claude/config/deployment/*.yml

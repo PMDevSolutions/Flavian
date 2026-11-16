@@ -65,7 +65,9 @@ fi
 # Output helper
 log() {
     echo "$1"
-    [ "$REPORT" = true ] && echo "$1" >> "$REPORT_FILE"
+    # An if, not `[ ... ] && echo`: under set -e that form returned 1 whenever --report was
+    # off, which ended the whole script at the first log line.
+    if [ "$REPORT" = true ]; then echo "$1" >> "$REPORT_FILE"; fi
 }
 
 check_pass() {
@@ -121,8 +123,8 @@ if [ -f "$PROJECT_ROOT/scripts/wordpress/security-scan.sh" ]; then
     PHP_FILES=$(find "$THEME_DIR" -name "*.php" 2>/dev/null)
     if [ -n "$PHP_FILES" ]; then
         for f in $PHP_FILES; do
-            RESULT=$(echo "{\"tool_input\":{\"file_path\":\"$f\"}}" | "$PROJECT_ROOT/scripts/wordpress/security-scan.sh" 2>&1) || true
-            EXIT_CODE=$?
+            EXIT_CODE=0
+            RESULT=$(echo "{\"tool_input\":{\"file_path\":\"$f\"}}" | "$PROJECT_ROOT/scripts/wordpress/security-scan.sh" 2>&1) || EXIT_CODE=$?
             if [ $EXIT_CODE -eq 2 ]; then
                 SEC_ISSUES=$((SEC_ISSUES + 1))
                 check_fail "Security issue in $(basename "$f")"
@@ -144,12 +146,14 @@ log ""
 log "--- 3. WordPress Coding Standards ---"
 
 if [ -f "$PROJECT_ROOT/vendor/bin/phpcs" ]; then
-    PHPCS_RESULT=$("$PROJECT_ROOT/vendor/bin/phpcs" --standard=WordPress --severity=5 --report=summary "$THEME_DIR" 2>&1) || true
-    if echo "$PHPCS_RESULT" | grep -q "FOUND 0 ERRORS"; then
+    # The summary report prints nothing for a clean theme, so judge by phpcs's exit code.
+    PHPCS_EXIT=0
+    PHPCS_RESULT=$("$PROJECT_ROOT/vendor/bin/phpcs" --standard=WordPress --severity=5 --report=summary "$THEME_DIR" 2>&1) || PHPCS_EXIT=$?
+    if [ "$PHPCS_EXIT" -eq 0 ]; then
         check_pass "PHPCS: No errors"
-    elif echo "$PHPCS_RESULT" | grep -q "ERROR"; then
-        ERROR_COUNT=$(echo "$PHPCS_RESULT" | grep -oE '[0-9]+ ERROR' | head -1 | grep -oE '[0-9]+')
-        check_warn "PHPCS: $ERROR_COUNT coding standard issue(s)"
+    else
+        ERROR_COUNT=$(echo "$PHPCS_RESULT" | grep -oE '[0-9]+ ERRORS?' | head -1 | grep -oE '[0-9]+' || true)
+        check_warn "PHPCS: ${ERROR_COUNT:-some} coding standard issue(s)"
     fi
 else
     check_warn "PHPCS not installed (run: ./scripts/wordpress/setup-phpcs.sh)"
@@ -190,8 +194,8 @@ if [ -f "$PROJECT_ROOT/scripts/block-markup-validator/validate-block-markup.sh" 
     TEMPLATE_FILES=$(find "$THEME_DIR/templates" "$THEME_DIR/parts" -name "*.html" 2>/dev/null)
     if [ -n "$TEMPLATE_FILES" ]; then
         for f in $TEMPLATE_FILES; do
-            RESULT=$(echo "{\"tool_input\":{\"file_path\":\"$f\"}}" | "$PROJECT_ROOT/scripts/block-markup-validator/validate-block-markup.sh" 2>&1) || true
-            EXIT_CODE=$?
+            EXIT_CODE=0
+            RESULT=$(echo "{\"tool_input\":{\"file_path\":\"$f\"}}" | "$PROJECT_ROOT/scripts/block-markup-validator/validate-block-markup.sh" 2>&1) || EXIT_CODE=$?
             if [ $EXIT_CODE -eq 2 ]; then
                 MARKUP_ISSUES=$((MARKUP_ISSUES + 1))
                 check_fail "Block markup issue in $(basename "$f")"
@@ -217,8 +221,8 @@ if [ -f "$PROJECT_ROOT/scripts/theme-token-auditor/audit-tokens.sh" ]; then
     ALL_FILES=$(find "$THEME_DIR" \( -name "*.php" -o -name "*.css" -o -name "*.html" \) -not -path "*/node_modules/*" 2>/dev/null)
     if [ -n "$ALL_FILES" ]; then
         for f in $ALL_FILES; do
-            RESULT=$(echo "{\"tool_input\":{\"file_path\":\"$f\"}}" | "$PROJECT_ROOT/scripts/theme-token-auditor/audit-tokens.sh" 2>&1) || true
-            EXIT_CODE=$?
+            EXIT_CODE=0
+            RESULT=$(echo "{\"tool_input\":{\"file_path\":\"$f\"}}" | "$PROJECT_ROOT/scripts/theme-token-auditor/audit-tokens.sh" 2>&1) || EXIT_CODE=$?
             if [ $EXIT_CODE -eq 2 ]; then
                 TOKEN_ISSUES=$((TOKEN_ISSUES + 1))
                 check_warn "Hardcoded token in $(basename "$f")"
@@ -271,8 +275,9 @@ log "--- 8. Frontend Standards ---"
 
 if [ -f "$PROJECT_ROOT/scripts/wordpress/check-frontend-standards.sh" ]; then
     FE_RESULT=$("$PROJECT_ROOT/scripts/wordpress/check-frontend-standards.sh" "$THEME_DIR" 2>&1) || true
-    FE_WARNINGS=$(echo "$FE_RESULT" | grep -c "Warning:" 2>/dev/null || echo 0)
-    FE_ERRORS=$(echo "$FE_RESULT" | grep -c "ERROR:" 2>/dev/null || echo 0)
+    # grep -c already prints 0 when nothing matches; `|| echo 0` made that "0<newline>0".
+    FE_WARNINGS=$(echo "$FE_RESULT" | grep -c "Warning:" 2>/dev/null || true)
+    FE_ERRORS=$(echo "$FE_RESULT" | grep -c "ERROR:" 2>/dev/null || true)
     if [ "$FE_ERRORS" -gt 0 ]; then
         check_fail "$FE_ERRORS frontend error(s)"
     elif [ "$FE_WARNINGS" -gt 0 ]; then

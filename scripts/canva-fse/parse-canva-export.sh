@@ -106,8 +106,8 @@ extract_fonts() {
 
     # Extract quoted font family names (the primary font, not fallbacks)
     local fonts
-    fonts=$(grep -oE 'font-family:\s*"[^"]+"' "$file" 2>/dev/null \
-        | sed 's/font-family:\s*"//' | sed 's/"//' | sort -u || true)
+    fonts=$(grep -oE 'font-family:[[:space:]]*"[^"]+"' "$file" 2>/dev/null \
+        | sed 's/font-family:[[:space:]]*"//' | sed 's/"//' | sort -u || true)
 
     echo "["
     local first=true
@@ -129,7 +129,7 @@ extract_font_sizes() {
     validate_file "$file"
 
     local sizes
-    sizes=$(grep -oE 'font-size:\s*[0-9]+px' "$file" 2>/dev/null \
+    sizes=$(grep -oE 'font-size:[[:space:]]*[0-9]+px' "$file" 2>/dev/null \
         | grep -oE '[0-9]+px' | sort -t'p' -k1 -n -u || true)
 
     echo "["

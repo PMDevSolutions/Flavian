@@ -254,7 +254,7 @@ tail -f /var/log/mysql/slow.log
 du -sh dist/*.js | sort -h
 
 # Network waterfall
-har-analyzer network.har --threshold 500
+node -e 'const h=JSON.parse(require("fs").readFileSync("network.har","utf8"));for(const e of h.log.entries)if(e.time>500)console.log(Math.round(e.time)+"ms "+e.request.url)'
 ```
 
 **Performance Optimization Checklist**:

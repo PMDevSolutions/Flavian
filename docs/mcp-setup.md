@@ -2,7 +2,7 @@
 
 **Step-by-step guide for connecting Flavian's MCP servers to the Claude Desktop app.**
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -86,64 +86,33 @@ If the file doesn't exist, create it with an empty MCP servers object:
 
 ## Configuring MCP Servers
 
-Flavian uses three MCP servers. Add each one inside the `"mcpServers"` object in your `claude_desktop_config.json`.
-
-> **⚠️ Verified vs. unverified config.** The **verified** Figma MCP configuration is the
-> HTTP transport in this project's `.mcp.json` (used by Claude Code): `figma-desktop` →
-> `http://127.0.0.1:3845/mcp` and `figma` (remote) → `https://mcp.figma.com/mcp`. The
-> `@anthropic-ai/figma-mcp-server` npm package shown in the Figma examples below is an
-> **unverified** stdio wrapper (the package name is not confirmed to exist). If your
-> Claude Desktop build supports HTTP/remote MCP servers, prefer the `.mcp.json` URLs
-> above; otherwise treat the npx examples as a starting point and substitute a wrapper
-> you have verified.
+Flavian uses three MCP servers. Only Playwright goes in `claude_desktop_config.json`, because that file launches local stdio servers and Figma publishes no npm package for its MCP server. Figma's server is built into the Figma desktop app (`http://127.0.0.1:3845/mcp`) or hosted by Figma (`https://mcp.figma.com/mcp`), the same two URLs the project's `.mcp.json` gives Claude Code. Do not add an `npx` entry for Figma.
 
 ### 1. Figma Desktop MCP (Local)
 
 Connects to the Figma Desktop app running on your machine. This is the **preferred** Figma MCP server for development because it provides direct access to open files without authentication tokens.
 
 **Requirements:**
-- Figma Desktop app installed and running
-- Dev Mode enabled (click the `</>` toggle in Figma)
+- Figma desktop app, signed in with a Dev or Full seat on a paid plan (Professional, Education, Organization, Government or Enterprise)
+- The desktop server switched on: open a file, switch to Dev Mode, and click **Enable desktop MCP server** in the MCP server section of the right sidebar
 
-**Configuration:**
+**Configuration:** nothing to install. The desktop app serves Streamable HTTP at `http://127.0.0.1:3845/mcp`, and the project's `.mcp.json` already points Claude Code's `figma-desktop` server at it (outside this repo: `claude mcp add --transport http figma-desktop http://127.0.0.1:3845/mcp`).
 
-```json
-{
-  "mcpServers": {
-    "figma-desktop": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/figma-mcp-server@latest", "--local"]
-    }
-  }
-}
-```
-
-**How it works:** The Figma Desktop app exposes a local MCP endpoint at `http://127.0.0.1:3845/mcp` when Dev Mode is enabled. The MCP server package connects to this endpoint automatically.
-
-> **Note:** If you use Claude Code (CLI), the project's `.mcp.json` configures this as an HTTP server pointing directly to `http://127.0.0.1:3845/mcp`. Claude Desktop uses the stdio-based wrapper package instead.
+> **Claude Desktop:** this server is not reachable from Claude Desktop. `claude_desktop_config.json` only launches local stdio servers, and custom connectors connect from Anthropic's cloud, which cannot reach `127.0.0.1`. Use the Figma connector (section 2) in Claude Desktop, and run work that needs the desktop server in Claude Code.
 
 ### 2. Figma Remote MCP (Cloud)
 
-Connects to Figma's cloud MCP service. Use this as a **fallback** when Figma Desktop is not available, or when working with files you don't have open locally.
+Connects to Figma's hosted MCP server at `https://mcp.figma.com/mcp`. It needs no desktop app, Figma recommends it for most people, and it is how Claude Desktop reaches Figma.
 
 **Requirements:**
 - Internet connection
-- Figma account (authentication handled by Claude Desktop on first use)
+- A Figma account
 
-**Configuration:**
+**Configuration (Claude Desktop):** do not edit `claude_desktop_config.json`. Open **Customize > Connectors** and add **Figma** from the connector directory (made by Figma: https://claude.com/marketplace/connectors/figma). On Team and Enterprise plans an Owner adds it under **Organization settings > Connectors**.
 
-```json
-{
-  "mcpServers": {
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/figma-mcp-server@latest"]
-    }
-  }
-}
-```
+**Configuration (Claude Code):** already in the project's `.mcp.json` as `figma` (`"type": "http"`, `"url": "https://mcp.figma.com/mcp"`). Outside this repo: `claude mcp add --transport http figma https://mcp.figma.com/mcp`, or Figma's own plugin, `claude plugin install figma@claude-plugins-official`.
 
-**Authentication:** On first connection, Claude Desktop will prompt you to authenticate with Figma via OAuth. Follow the browser prompt to grant access.
+**Authentication:** on first use you sign in to Figma in the browser (OAuth). There is no token to set, and Figma only accepts clients listed in its MCP catalog.
 
 ### 3. Playwright MCP (Browser Automation)
 
@@ -200,19 +169,11 @@ To use a headed browser (visible window), remove `--headless`:
 
 ## Complete Configuration Example
 
-Here is a full `claude_desktop_config.json` with all three Flavian MCP servers:
+Here is the full `claude_desktop_config.json` for Flavian. Playwright is the only server it launches; Figma comes from the Figma connector (see [Figma Remote MCP](#2-figma-remote-mcp-cloud)).
 
 ```json
 {
   "mcpServers": {
-    "figma-desktop": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/figma-mcp-server@latest", "--local"]
-    },
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/figma-mcp-server@latest"]
-    },
     "playwright": {
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest", "--headless"]
@@ -220,11 +181,6 @@ Here is a full `claude_desktop_config.json` with all three Flavian MCP servers:
   }
 }
 ```
-
-> **Figma servers:** the `figma-desktop` / `figma` entries above use the unverified
-> `@anthropic-ai/figma-mcp-server` package — see the warning under
-> [Configuring MCP Servers](#configuring-mcp-servers). The verified transport is the HTTP
-> config in `.mcp.json` (`http://127.0.0.1:3845/mcp`, `https://mcp.figma.com/mcp`).
 
 > **Merging with existing servers:** If your `claude_desktop_config.json` already has other MCP servers configured, add the Flavian servers alongside them inside the existing `"mcpServers"` object. Do not create a second `"mcpServers"` key.
 
@@ -244,22 +200,22 @@ If your servers appear in the list, they are connected.
 
 ### Step 2: Test Each Server
 
-**Test Figma Desktop MCP:**
+**Test Figma Desktop MCP (Claude Code only):**
 
-Ask Claude: *"Use the Figma MCP to check who I am (whoami)"*
+Select a frame in Figma, then ask Claude: *"Use figma-desktop to get the metadata for my current selection"*
 
-Expected: Claude calls `figma-desktop.whoami` and returns your Figma user info.
+Expected: Claude calls `get_metadata` on `figma-desktop` and returns the frame's layers. (`whoami` is a remote-only tool, so it cannot test the desktop server.)
 
 If this fails, verify:
-- Figma Desktop is open
-- Dev Mode is enabled (`</>` toggle)
+- Figma Desktop is open, with a file open
+- The desktop server is on (Dev Mode, MCP server section, **Enable desktop MCP server**)
 - No firewall is blocking `127.0.0.1:3845`
 
-**Test Figma Remote MCP:**
+**Test Figma Remote MCP (the Figma connector):**
 
-Ask Claude: *"Use the remote Figma MCP to get my account info"*
+Ask Claude: *"Use Figma to check who I am (whoami)"*
 
-Expected: OAuth prompt on first use, then your Figma user info.
+Expected: a Figma sign-in on first use, then your Figma user info.
 
 **Test Playwright MCP:**
 
@@ -287,8 +243,8 @@ When developing on your local machine with WordPress running locally:
 
 | Server | Use Case |
 |--------|----------|
-| **figma-desktop** | Primary Figma access - fastest, no auth tokens needed |
-| **figma** (remote) | Fallback when Desktop unavailable or for shared files |
+| **figma-desktop** | Primary Figma access in Claude Code - fastest, no auth tokens needed |
+| **figma** (remote) | Fallback in Claude Code; the only Figma option in Claude Desktop (Figma connector) |
 | **playwright** | Visual QA against `localhost` WordPress instance |
 
 This is the default setup. All three servers run locally alongside your development environment.
@@ -300,28 +256,10 @@ When running on a remote server, CI pipeline, or headless environment:
 | Server | Available? | Notes |
 |--------|-----------|-------|
 | **figma-desktop** | No | Requires Figma Desktop GUI |
-| **figma** (remote) | Yes | Use as primary Figma access; requires auth token |
+| **figma** (remote) | Only after an interactive sign-in | OAuth only; Figma documents no personal-access-token option |
 | **playwright** | Yes | Must use `--headless` flag |
 
-**Remote Figma configuration with personal access token:**
-
-For CI or headless environments where OAuth is not available, set the `FIGMA_PERSONAL_ACCESS_TOKEN` environment variable:
-
-```json
-{
-  "mcpServers": {
-    "figma": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/figma-mcp-server@latest"],
-      "env": {
-        "FIGMA_PERSONAL_ACCESS_TOKEN": "figd_xxxxxxxxxxxxxxxxxxxx"
-      }
-    }
-  }
-}
-```
-
-Generate a personal access token at: **Figma > Account Settings > Personal access tokens**.
+**Figma in CI:** Figma's hosted server signs in with OAuth and documents no personal-access-token option, so a fresh headless runner cannot use it. In CI, read design data with the Figma REST API and a personal access token (Figma **Settings > Security > Personal access tokens**, sent as the `X-Figma-Token` header), or run the Figma steps locally. The community server `figma-developer-mcp` (Framelink) accepts a `FIGMA_API_KEY`, but its tools (`get_figma_data`, `download_figma_images`) are not the `get_design_context` / `get_variable_defs` / `get_screenshot` calls Flavian's agents make, and it sends usage telemetry unless `FRAMELINK_TELEMETRY=off` is set.
 
 ### Claude Code (CLI) vs Claude Desktop
 
@@ -329,7 +267,7 @@ The project's `.mcp.json` configures MCP servers for **Claude Code (CLI)**. Clau
 
 | Feature | `.mcp.json` (Claude Code) | `claude_desktop_config.json` (Claude Desktop) |
 |---------|--------------------------|----------------------------------------------|
-| HTTP servers | `"type": "http", "url": "..."` | Not directly supported; use stdio wrapper |
+| HTTP servers | `"type": "http", "url": "..."` | Not in this file; add remote servers as connectors (Customize > Connectors), which connect from Anthropic's cloud and cannot reach localhost |
 | Stdio servers | `"command": "...", "args": [...]` | `"command": "...", "args": [...]` |
 | Location | Project root | OS-specific app data directory |
 | Scope | Per-project | Global (all conversations) |
@@ -429,4 +367,4 @@ Both files coexist without conflict. Configure each for its respective tool.
 
 - **Detailed troubleshooting:** See [MCP-TROUBLESHOOTING.md](MCP-TROUBLESHOOTING.md) for in-depth debugging
 - **Validation script:** Run `./scripts/check-mcp.sh` from the project root
-- **Claude Desktop docs:** Check the [Claude Desktop MCP documentation](https://docs.anthropic.com/en/docs/claude-code/mcp)
+- **Claude Desktop docs:** [Connect to local MCP servers](https://modelcontextprotocol.io/docs/develop/connect-local-servers) (the config file) and [Custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) (remote servers)

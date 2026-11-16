@@ -6,7 +6,7 @@
 
 ## Goal
 
-One-line project initialization for the Flavian template via `npx create-flavian <name>` or `composer create-project pmds/flavian <name>`. Interactive prompts capture project name, theme starter, design-tool source, and WooCommerce support. Auto-configures Docker `.env`, theme files, and runs an initial git commit. Supports `--yes` for non-interactive runs.
+One-line project initialization for the Flavian template via `npm create @pmds/flavian <name>` or `composer create-project pmds/flavian <name>`. Interactive prompts capture project name, theme starter, design-tool source, and WooCommerce support. Auto-configures Docker `.env`, theme files, and runs an initial git commit. Supports `--yes` for non-interactive runs.
 
 ## Architecture
 
@@ -22,7 +22,7 @@ Two entry points share one core wizard:
    tarballs/clones template ──── runs scripts/init.mjs (in user dir)
 ```
 
-- **`npx create-flavian my-site`** — tiny published package (`@pmds/create-flavian`). `bin/index.mjs` downloads the latest Flavian release tarball, extracts to `my-site/`, then spawns `node scripts/init.mjs`. Bootstrap stays <50 lines.
+- **`npm create @pmds/flavian my-site`** — tiny published package (`@pmds/create-flavian`). `bin/index.mjs` downloads the latest Flavian release tarball, extracts to `my-site/`, then spawns `node scripts/init.mjs`. Bootstrap stays <50 lines.
 - **`composer create-project pmds/flavian my-site`** — Composer clones this repo. A `post-create-project-cmd` in `composer.json` runs `node scripts/init.mjs`.
 - **`scripts/init.mjs`** — the real wizard. Ships with the template so it evolves in lockstep with theme/config changes.
 - **Prompts**: `@clack/prompts` (single dep, ~80kb, clean cancel semantics).

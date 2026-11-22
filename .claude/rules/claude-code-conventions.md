@@ -50,7 +50,7 @@ Run `node scripts/claude-code-conformance.js` after editing anything under `.cla
 
 ## Plugin packaging (`.claude-plugin/`)
 - `plugin.json` points at the live `.claude/agents` files, `.claude/skills`, `.claude/hooks/hooks.json` and `.claude/workflows`, so the repo is both a project and an installable plugin with one source of truth. Validate with `claude plugin validate .`. `version` follows `package.json` through release-please's extra-files.
-- Install elsewhere: `claude plugin marketplace add PMDevSolutions/Maecenas` (the `pmds` marketplace) then `claude plugin install flavian@pmds --scope project`. The pipeline skills call `./scripts/...` and need a Flavian checkout; the agents, knowledge skills, hooks and the workflow work in any repo.
+- Install elsewhere: `claude plugin marketplace add PMDevSolutions/Flavian` (this repo is its own marketplace, `.claude-plugin/marketplace.json`) then `claude plugin install flavian@flavian --scope project`. The pipeline skills call `./scripts/...` and need a Flavian checkout; the agents, knowledge skills, hooks and the workflow work in any repo.
 - `evals/` holds one case per hard rule (root-level layout, tokens not literals, no production deploy). `claude plugin eval . --scaffold --allow-tools Write Edit Bash` runs them by hand; they cost model calls.
 
 ## Counts

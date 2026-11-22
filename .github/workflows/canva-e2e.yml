@@ -41,7 +41,10 @@ jobs:
   e2e:
     needs: check-paths
     if: needs.check-paths.outputs.should-run == 'true'
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is now 26.04, and Playwright 1.60 cannot install Chromium
+    # there (#212). Go back to ubuntu-latest after bumping Playwright to a release that
+    # supports 26.04.
+    runs-on: ubuntu-24.04
     name: Fixture conversion + activate + no-fatals
     steps:
       - name: Checkout

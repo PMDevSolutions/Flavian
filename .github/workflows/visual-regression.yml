@@ -36,7 +36,10 @@ concurrency:
 jobs:
   visual-regression:
     name: Capture + diff
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is now 26.04, and Playwright 1.60 cannot install Chromium
+    # there (#212). Go back to ubuntu-latest after bumping Playwright to a release that
+    # supports 26.04 and re-capturing the baselines.
+    runs-on: ubuntu-24.04
     # Soft-fail for two weeks while baselines stabilize. Flip to `false` on or after 2026-06-02.
     continue-on-error: true
     steps:

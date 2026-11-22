@@ -114,8 +114,8 @@ Agent-scoped hooks (validators under `scripts/<agent>/`) run from the agents' fr
 The repo ships as the `flavian` plugin: 27 of the 53 agents (`.claude-plugin/plugin.json` → `metadata.excludedAgents` keeps the marketing and meta agents out, since the `maecenas` plugin ships those names), all 16 skills, the hooks and the workflow. Install in another repo:
 
 ```bash
-claude plugin marketplace add PMDevSolutions/Maecenas     # the pmds marketplace
-claude plugin install flavian@pmds --scope project
+claude plugin marketplace add PMDevSolutions/Flavian      # this repo is its own marketplace
+claude plugin install flavian@flavian --scope project
 ```
 
 No Claude Code plugins are installed for this repository itself and none are needed; `.claude/PLUGINS-REFERENCE.md` lists the official plugins that fit WordPress work (`php-lsp`, `commit-commands`, `github`, `playwright`, `figma`, `canva`). `claude plugin validate .` checks the manifest; `evals/` holds one `claude plugin eval` case per hard rule (run by hand, it costs model calls).

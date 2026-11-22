@@ -42,7 +42,7 @@ Prefer not to use a terminal? A cross-platform **desktop GUI** wraps the whole w
 
 ```bash
 # 1. Clone and enter
-git clone <repository-url>
+git clone https://github.com/PMDevSolutions/Flavian.git
 cd Flavian
 
 # 2. Install deps and run the interactive setup wizard
@@ -90,7 +90,7 @@ Site at http://localhost:8080 · Admin at /wp-admin · Database UI at :8081.
 If you already run WordPress outside Docker and just want Flavian's scripts and Claude Code integration:
 
 ```bash
-git clone <repository-url> wp-content
+git clone https://github.com/PMDevSolutions/Flavian.git wp-content
 cd .. && wp core download --skip-content
 wp config create --dbname=your_db --dbuser=root --dbpass=password
 wp core install --url=example.test --title="Your Site" --admin_user=admin --admin_password=password --admin_email=you@example.com
@@ -169,17 +169,17 @@ See `CLAUDE.md` for comprehensive WP-CLI command reference for:
 This template is optimized for WordPress development with Claude Code, featuring:
 
 ### **Architecture Overview**
-- **Installable as a Plugin**: the repo is the `flavian` plugin, so other repos get its agents, skills and hooks with `claude plugin install flavian@pmds` instead of copying them
+- **Installable as a Plugin**: the repo is the `flavian` plugin, so other repos get its agents, skills and hooks with `/plugin install flavian --marketplace PMDevSolutions/Flavian` instead of copying them
 - **Custom Agents**: 53 specialized agents
 - **Custom Skills**: 16 skills covering the Figma/Canva/InDesign-to-FSE pipelines, security, testing, i18n, and the `/lint`, `/test` and `/scaffold-block` commands
 - **Documentation Hub**: Comprehensive guides in `.claude/` directory
 
 ### **Install as a Plugin**
 ```bash
-claude plugin marketplace add PMDevSolutions/Maecenas   # the pmds marketplace
-claude plugin install flavian@pmds --scope project
+claude plugin marketplace add PMDevSolutions/Flavian   # this repo is its own marketplace
+claude plugin install flavian@flavian --scope project
 # one step, on Claude Code 2.1.275 or later:
-/plugin install flavian --marketplace PMDevSolutions/Maecenas
+/plugin install flavian --marketplace PMDevSolutions/Flavian
 ```
 Ships 27 of the 53 agents (the WordPress and web-engineering ones), all 16 skills, the hooks (root-level layout guard, deploy guard, token guard) and the `fse-template-lanes` workflow. No plugins are installed for this repository itself and none are required; `.claude/PLUGINS-REFERENCE.md` lists the optional official ones (`php-lsp`, `commit-commands`, `playwright`).
 

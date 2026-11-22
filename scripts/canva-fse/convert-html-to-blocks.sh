@@ -18,10 +18,10 @@ content="$(cat "$INPUT_FILE" | tr '\n' ' ' | sed -E 's/>[[:space:]]+</></g')"
 # Insert a newline before every opening tag (not closing tags like </h1>).
 # Also split before closing container tags (</div>, </ul>, </ol>) so they
 # get their own line for proper wp:group / wp:list closing.
+# POSIX awk gsub, not sed: BSD sed (macOS) has no \x00 escape in replacements,
+# so the old sed split mangled every tag there.
 content="$(echo "$content" \
-    | sed -E 's/<([a-zA-Z])/\x00<\1/g' \
-    | sed -E 's/<\/(div|ul|ol)>/\x00<\/\1>/g' \
-    | tr '\0' '\n' \
+    | awk '{ gsub(/<[a-zA-Z]/, "\n&"); gsub(/<\/(div|ul|ol)>/, "\n&"); print }' \
     | sed '/^$/d')"
 
 # Process each line through awk for block conversion.
@@ -45,11 +45,13 @@ function last_index(s, re,    pos, off) {
     return pos
 }
 
-# Text between the opening tag matching open_re at the start of s and the last
-# closing tag matching close_re; "" when either is missing.
+# Text between the first match of open_re in s and the last closing tag
+# matching close_re; "" when either is missing. open_re need not be anchored
+# (the button rule matches its class attribute mid-tag), so slice from the end
+# of the match, RSTART + RLENGTH, not from RLENGTH + 1.
 function inner_text(s, open_re, close_re,    t, last) {
     if (!match(s, open_re)) return ""
-    t = substr(s, RLENGTH + 1)
+    t = substr(s, RSTART + RLENGTH)
     last = last_index(t, close_re)
     if (!last) return ""
     return substr(t, 1, last - 1)

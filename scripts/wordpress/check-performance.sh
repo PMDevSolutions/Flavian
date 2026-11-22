@@ -3,6 +3,20 @@
 # Warns about performance anti-patterns in WordPress code
 # Exit 0 (warn) - displays suggestions but doesn't block
 
+# CLI use: check-performance.sh <file-or-dir>... checks every .php file under the paths
+# (post-bash-reminders.sh tells agents to run it this way). With no arguments it reads
+# PostToolUse hook JSON from stdin as before; reading stdin when a path was given made
+# those calls hang. Suggestions print to stderr; the exit code is always 0.
+if [ $# -gt 0 ]; then
+    checked=0
+    while IFS= read -r -d '' php; do
+        checked=$((checked + 1))
+        printf '{"tool_input":{"file_path":%s}}' "$(printf '%s' "$php" | jq -Rs .)" | bash "$0"
+    done < <(find "$@" -type f -name '*.php' -print0 2>/dev/null)
+    echo "check-performance: $checked PHP file(s) checked"
+    exit 0
+fi
+
 # Read JSON input from stdin
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')

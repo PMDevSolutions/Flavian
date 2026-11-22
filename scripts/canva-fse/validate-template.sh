@@ -36,14 +36,14 @@ if grep -q '#[0-9A-Fa-f]\{6\}' "$FILE_PATH"; then
 fi
 
 # Check for hardcoded pixel sizes
-if grep -qE ':\s*"[0-9]+px"' "$FILE_PATH"; then
+if grep -qE ':[[:space:]]*"[0-9]+px"' "$FILE_PATH"; then
     echo "" >&2
     echo "⚠️  Found hardcoded pixel sizes in template" >&2
     echo "   Consider using theme.json spacing tokens:" >&2
     echo "   ✅ \"var(--wp--preset--spacing--50)\"" >&2
     echo "   ❌ \"32px\"" >&2
     echo "" >&2
-    grep -nE ':\s*"[0-9]+px"' "$FILE_PATH" | head -5 | while read line; do
+    grep -nE ':[[:space:]]*"[0-9]+px"' "$FILE_PATH" | head -5 | while read line; do
         echo "   $line" >&2
     done
     ISSUES_FOUND=1

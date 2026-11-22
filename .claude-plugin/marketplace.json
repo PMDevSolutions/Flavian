@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "flavian",
+  "description": "Flavian, the PMDS WordPress development framework for Claude Code.",
+  "owner": {
+    "name": "Paul Mulligan",
+    "url": "https://pmds.info"
+  },
+  "plugins": [
+    {
+      "name": "flavian",
+      "source": "./",
+      "description": "WordPress agents and skills, Figma, Canva and InDesign to FSE block-theme pipelines, and guards for the root-level layout, design tokens and production deploys.",
+      "category": "development",
+      "tags": ["wordpress", "fse", "block-theme", "design-to-code", "visual-qa"]
+    }
+  ]
+}

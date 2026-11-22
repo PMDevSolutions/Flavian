@@ -22,12 +22,12 @@ claude plugin list          # installed plugins and their scopes
 | Hooks | `.claude/hooks/hooks.json`: the root-level layout guard (silent in a repo that tracks `wp-content/`), the deploy guard, the commit guards, the reminders, the session status (silent outside a Flavian checkout). |
 | Workflow | `fse-template-lanes` |
 
-Install in another repo through the `pmds` marketplace, which lives in Maecenas:
+Install in another repo from this repository, which is its own marketplace (`.claude-plugin/marketplace.json`):
 
 ```bash
-claude plugin marketplace add PMDevSolutions/Maecenas
-claude plugin install flavian@pmds --scope project     # writes enabledPlugins to that repo's .claude/settings.json
-claude plugin update flavian@pmds                      # later
+claude plugin marketplace add PMDevSolutions/Flavian
+claude plugin install flavian@flavian --scope project  # writes enabledPlugins to that repo's .claude/settings.json
+claude plugin update flavian@flavian                   # later
 ```
 
 Plugin agents run without their frontmatter `hooks`, `mcpServers` and `permissionMode` (Claude Code ignores those for plugin agents); the settings-level hooks in `hooks.json` are what hold there. Validate the manifest after any change with `claude plugin validate .`; the conformance check (`node scripts/claude-code-conformance.js`) fails if the `agents` list drifts from `.claude/agents/`.
@@ -56,7 +56,7 @@ None of these is required by anything in this repository.
 | **Skills** | Workflows and standards | Keyword detection, or `/<name>` | "create block theme" triggers `fse-block-theme-development`; `/lint` |
 | **Agents** | Specialized task execution in a subagent | The Agent tool, on delegation or request | `frontend-developer` builds a pattern |
 | **Hooks** | Guards and reminders at lifecycle events | Automatic | `deploy-guard.sh` asks before a production deploy |
-| **Plugins** | A packaged set of the above, installed from a marketplace | `claude plugin install` | `flavian@pmds` |
+| **Plugins** | A packaged set of the above, installed from a marketplace | `claude plugin install` | `flavian@flavian` |
 
 ## Verify
 

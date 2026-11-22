@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.3](https://github.com/PMDevSolutions/Flavian/compare/v2.2.2...v2.2.3) (2026-11-22)
+
+
+### Fixed
+
+* **canva:** make the Canva helper scripts work with macOS sed and keep button labels ([ac2f51a](https://github.com/PMDevSolutions/Flavian/commit/ac2f51a999050c4d787508f2abaf4790fe36d166))
+* demo-readiness fixes from a macOS run (Canva and Figma scripts, validate-theme.sh, scan scripts, script modes, GUI log codes, PHPCS-clean starter) ([f5f66d8](https://github.com/PMDevSolutions/Flavian/commit/f5f66d897616350f4d87f97fd08a8091372a0be7))
+* **figma:** use POSIX space classes in the Figma validators, matching the Canva fix ([99ced27](https://github.com/PMDevSolutions/Flavian/commit/99ced275ece12f2a80a08b7a3cec2419ce2bae90))
+* **gui:** strip ANSI color codes from the log views ([fd00cbc](https://github.com/PMDevSolutions/Flavian/commit/fd00cbc537168869b84f7957c5f5a50e254596e8))
+* **pipeline:** track an empty .claude/pipeline/ so first runs do not show an error ([10588e6](https://github.com/PMDevSolutions/Flavian/commit/10588e69ff65cc3ab972e77d55f5fdefeea8a47f))
+* **plugin:** make the repo its own marketplace so the documented install works ([aaf6ce0](https://github.com/PMDevSolutions/Flavian/commit/aaf6ce083d3da78af3607249dc01fcfc3ccf4d60))
+* **plugin:** make the repo its own marketplace so the documented install works ([a8d174a](https://github.com/PMDevSolutions/Flavian/commit/a8d174a962008c102649dc19bf436ebcde1095ed)), closes [#203](https://github.com/PMDevSolutions/Flavian/issues/203)
+* **scripts:** track every shell script as executable ([889eece](https://github.com/PMDevSolutions/Flavian/commit/889eeceaae335499166b1c74dacc6cb9d2a19849))
+* **templates:** make functions.php PHPCS-clean for the blank and Canva starters ([9b1484c](https://github.com/PMDevSolutions/Flavian/commit/9b1484c5626e0d2ad8bff00e9b177526830b188e))
+* **validate-theme:** run every check and report real exit codes ([0db285d](https://github.com/PMDevSolutions/Flavian/commit/0db285d6e99274abc8d53f8d5a771b1ad5e6eaf5))
+* **wordpress:** let security-scan.sh and check-performance.sh take paths ([e7e5689](https://github.com/PMDevSolutions/Flavian/commit/e7e5689e08cfefee260e3d5388b6909a8dd4076e))
+
 ## [2.2.2](https://github.com/PMDevSolutions/Flavian/compare/v2.2.1...v2.2.2) (2026-11-16)
 
 

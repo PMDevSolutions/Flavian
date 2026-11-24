@@ -30,7 +30,7 @@ jobs:
     name: Scaffold drift check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Regenerate flavian-starter from templates
         run: |
           rm -rf plugins/flavian-starter
@@ -56,7 +56,7 @@ jobs:
       plugins: ${{ steps.list.outputs.plugins }}
       count: ${{ steps.list.outputs.count }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - id: list
         run: |
           plugins=$(find plugins -mindepth 1 -maxdepth 1 -type d -name 'flavian-*' -printf '%f\n' \
@@ -77,8 +77,8 @@ jobs:
       matrix:
         plugin: ${{ fromJSON(needs.discover.outputs.plugins) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.2"
           tools: composer
@@ -100,8 +100,8 @@ jobs:
       matrix:
         plugin: ${{ fromJSON(needs.discover.outputs.plugins) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.2"
           tools: composer, cs2pr

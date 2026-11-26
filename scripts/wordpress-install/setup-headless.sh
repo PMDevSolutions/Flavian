@@ -123,9 +123,14 @@ log "Enabling HEADLESS_MODE option"
 wp_in_container option update flavian_headless_mode 1 >/dev/null
 wp_in_container option update flavian_headless_frontend_url "$FRONTEND_URL" >/dev/null
 
+# Fresh random 32-byte hex value, generated at run time and never committed.
+# wp eval avoids needing openssl in the container.
+generate_hex_secret() {
+  wp_in_container eval 'echo bin2hex(random_bytes(32));' 2>/dev/null | tr -d '\r\n'
+}
+
 if [[ -z "$PREVIEW_SECRET" ]]; then
-  # 32-byte hex secret. wp eval avoids needing openssl in the container.
-  PREVIEW_SECRET="$(wp_in_container eval 'echo bin2hex(random_bytes(32));' 2>/dev/null | tr -d '\r\n')"
+  PREVIEW_SECRET=$(generate_hex_secret)
 fi
 wp_in_container option update flavian_headless_preview_secret "$PREVIEW_SECRET" >/dev/null
 log "Preview secret stored in wp_options (key: flavian_headless_preview_secret)"
@@ -134,7 +139,7 @@ log "Preview secret stored in wp_options (key: flavian_headless_preview_secret)"
 # reads GRAPHQL_JWT_AUTH_SECRET_KEY from wp-config.php OR a filter. We can't
 # write to wp-config from here safely, so we surface the value to the user.
 if $INSTALL_JWT; then
-  JWT_SECRET="$(wp_in_container eval 'echo bin2hex(random_bytes(32));' 2>/dev/null | tr -d '\r\n')"
+  JWT_SECRET=$(generate_hex_secret)
   wp_in_container option update flavian_headless_jwt_secret "$JWT_SECRET" >/dev/null
 fi
 

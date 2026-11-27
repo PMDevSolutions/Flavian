@@ -32,7 +32,7 @@ export function loadPdfjs() {
 /**
  * Open a PDF document from raw bytes with settings tuned for headless,
  * extraction-only use:
- *   - no worker / no eval (we never render to a canvas)
+ *   - no worker, and isEvalSupported off (we never render to a canvas)
  *   - verbosity errors-only (base-14 fonts otherwise spam "standard font data"
  *     warnings we handle ourselves via fidelity warnings)
  *   - a private copy of the bytes, because pdfjs transfers/detaches the buffer

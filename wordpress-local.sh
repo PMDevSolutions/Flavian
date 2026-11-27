@@ -24,6 +24,16 @@ read_env() {
     printf '%s' "${val:-$default}"
 }
 
+env_or_dotenv() {
+    # env_or_dotenv KEY [default] — echo KEY from the environment, else .env, else the default.
+    local key="$1" default="${2:-}"
+    if [ -n "${!key:-}" ]; then
+        printf '%s' "${!key}"
+    else
+        read_env "$key" "$default"
+    fi
+}
+
 WP_PORT="$(read_env WP_PORT 8080)"
 SITE_URL="http://localhost:${WP_PORT}"
 WP_MULTISITE="$(read_env WP_MULTISITE false)"
@@ -243,10 +253,12 @@ install() {
     echo "Waiting for WordPress to be ready..."
     sleep 5
 
-    # Admin credentials (override via environment variables, else .env, else defaults)
-    local admin_user="${WP_ADMIN_USER:-$(read_env WP_ADMIN_USER admin)}"
-    local admin_password="${WP_ADMIN_PASSWORD:-$(read_env WP_ADMIN_PASSWORD admin)}"
-    local admin_email="${WP_ADMIN_EMAIL:-$(read_env WP_ADMIN_EMAIL admin@example.com)}"
+    # Admin credentials (override via environment variables, else .env, else
+    # local-only defaults for the throwaway Docker site on localhost).
+    local admin_user admin_password admin_email
+    admin_user=$(env_or_dotenv WP_ADMIN_USER admin)
+    admin_password=$(env_or_dotenv WP_ADMIN_PASSWORD admin)
+    admin_email=$(env_or_dotenv WP_ADMIN_EMAIL admin@example.com)
 
     # Multisite is configured by the init wizard via WP_MULTISITE in .env.
     if [ "$WP_MULTISITE" = "true" ]; then
@@ -262,7 +274,7 @@ install() {
         --url="$SITE_URL" \
         --title="$site_title" \
         --admin_user="$admin_user" \
-        --admin_password="$admin_password" \
+        --admin_password="${admin_password}" \
         --admin_email="$admin_email" \
         --skip-email \
         --allow-root
@@ -348,7 +360,7 @@ install_multisite() {
         --url="$SITE_URL" \
         --title="$network_title" \
         --admin_user="$admin_user" \
-        --admin_password="$admin_password" \
+        --admin_password="${admin_password}" \
         --admin_email="$admin_email" \
         $subdomains_flag \
         --skip-email \
